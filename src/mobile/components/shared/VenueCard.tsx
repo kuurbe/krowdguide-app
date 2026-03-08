@@ -1,0 +1,50 @@
+import type { Venue } from '../../types';
+import { CrowdPill } from './CrowdPill';
+import { ShieldCheck, Navigation } from 'lucide-react';
+import { openDirections } from '../../utils/directions';
+
+export function VenueCard({ venue, verified }: { venue: Venue; verified?: boolean }) {
+  const isOracle = venue.id.startsWith('oracle-');
+
+  return (
+    <div className={`flex gap-3.5 p-3.5 rounded-2xl bg-[var(--k-surface-solid)] border ios-press transition-all
+                    shadow-[var(--k-card-shadow)] ${isOracle ? 'border-emerald-500/20 ring-1 ring-emerald-500/[0.06]' : 'border-[var(--k-border)]'}`}>
+      <div className="relative w-14 h-14 rounded-xl bg-[var(--k-surface)] overflow-hidden flex-shrink-0">
+        <img src={venue.image} alt={venue.name} className="w-full h-full object-cover" loading="lazy" />
+        {isOracle && (
+          <div className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full bg-emerald-500 flex items-center justify-center border-[1.5px] border-[var(--k-surface-solid)]">
+            <ShieldCheck className="w-2.5 h-2.5 text-white" />
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <h4 className="font-bold text-[14px] truncate text-[var(--k-text)] tracking-[-0.02em] leading-tight">{venue.icon} {venue.name}</h4>
+          <CrowdPill crowd={venue.crowd} pct={venue.pct} />
+        </div>
+        <p className="text-[12px] text-[var(--k-text-m)] mt-0.5 leading-tight">{venue.type} · {venue.dist}</p>
+        {venue.wait && (
+          <p className="text-[12px] text-amber-400 mt-1 font-semibold">⏱️ ~{venue.wait}</p>
+        )}
+        {venue.hasHH && (
+          <p className="text-[12px] text-[#ff8c42] mt-1 font-semibold">🍺 HH: {venue.hhDeal}</p>
+        )}
+        {(isOracle || verified) && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <span className="inline-flex items-center gap-1 px-1.5 py-[1px] rounded-full bg-emerald-500/[0.10] text-emerald-400 text-[10px] font-bold">
+              <ShieldCheck className="w-2.5 h-2.5" /> Verified Live
+            </span>
+          </div>
+        )}
+      </div>
+      <button
+        onClick={(e) => { e.stopPropagation(); openDirections(venue.coordinates[0], venue.coordinates[1], venue.name); }}
+        aria-label={`Directions to ${venue.name}`}
+        className="self-center flex-shrink-0 w-10 h-10 rounded-full bg-[#ff4d6a]/10 flex items-center justify-center
+                   active:scale-90 transition-transform hover:bg-[#ff4d6a]/20"
+      >
+        <Navigation className="w-4 h-4 text-[#ff4d6a]" />
+      </button>
+    </div>
+  );
+}

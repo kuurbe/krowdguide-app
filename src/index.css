@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800;900&family=Syne:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4.3%;
+    --foreground: 240 5% 96%;
+    --card: 240 5% 7%;
+    --card-foreground: 240 5% 96%;
+    --popover: 240 5% 7%;
+    --popover-foreground: 240 5% 96%;
+    --primary: 330 100% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 12%;
+    --secondary-foreground: 240 5% 96%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 4% 67%;
+    --accent: 330 100% 59%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 330 100% 59%;
+    --radius: 0.625rem;
+    --sidebar-background: 0 0% 4.3%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 330 100% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 12%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 5% 15%;
+    --sidebar-ring: 330 100% 59%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-krowd-bg text-krowd-text-primary font-body antialiased;
+    overflow-x: hidden;
+  }
+  
+  ::selection {
+    background: rgba(255, 45, 143, 0.3);
+    color: #F4F4F5;
+  }
+}
+
+@layer components {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #F4F4F5 0%, #FF2D8F 100%);
+  }
+  
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/5 border border-white/10;
+  }
+  
+  .noise-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+  
+  .section-pinned {
+    @apply relative w-screen h-screen overflow-hidden;
+  }
+  
+  .heading-display {
+    @apply font-display font-black tracking-tight uppercase;
+    font-size: clamp(2.5rem, 6vw, 5.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  
+  .heading-section {
+    @apply font-display font-bold tracking-tight;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.1;
+  }
+  
+  .label-mono {
+    @apply font-mono font-medium uppercase tracking-widest text-xs;
+    letter-spacing: 0.12em;
+  }
+  
+  .body-text {
+    @apply font-body text-krowd-text-secondary leading-relaxed;
+    font-size: clamp(0.9375rem, 1.1vw, 1.125rem);
+  }
+  
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-4 bg-krowd-accent text-white font-semibold rounded-pill transition-all duration-300;
+  }
+  
+  .btn-primary:hover {
+    @apply -translate-y-0.5 scale-[1.02];
+    box-shadow: 0 8px 30px rgba(255, 45, 143, 0.4);
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+  
+  .card-hover:hover {
+    @apply -translate-y-1.5;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+  
+  .image-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-krowd-bg/90 via-krowd-bg/40 to-transparent;
+  }
+  
+  .bg-image-cover {
+    @apply absolute inset-0 w-full h-full object-cover;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+  
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+}

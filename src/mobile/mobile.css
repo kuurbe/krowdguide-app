@@ -1,0 +1,657 @@
+/* ═══════════════════════════════════════════════════════════
+   KROWD GUIDE — Premium Nightlife Design System
+   Inspired by Dallas.Live, Apple Maps, Google Local Vibe
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 1. DESIGN TOKENS ──────────────────────────────────── */
+
+:root,
+[data-theme="dark"] {
+  /* Surface hierarchy — deep immersive blacks */
+  --k-bg: #050508;
+  --k-bg2: #0f1117;
+  --k-surface: rgba(255, 255, 255, 0.04);
+  --k-surface-h: rgba(255, 255, 255, 0.08);
+  --k-surface-solid: #141620;
+  --k-elevated: rgba(20, 22, 32, 0.95);
+
+  /* Border hierarchy */
+  --k-border: rgba(255, 255, 255, 0.07);
+  --k-border-s: rgba(255, 255, 255, 0.04);
+  --k-separator: rgba(84, 84, 88, 0.50);
+
+  /* Typography hierarchy */
+  --k-text: #f0f0f5;
+  --k-text-2: rgba(255, 255, 255, 0.72);
+  --k-text-m: rgba(255, 255, 255, 0.45);
+  --k-text-f: rgba(255, 255, 255, 0.28);
+
+  /* Overlays & materials */
+  --k-overlay: rgba(5, 5, 8, 0.6);
+  --k-overlay-h: rgba(14, 17, 23, 0.88);
+  --k-popup-bg: rgba(20, 22, 32, 0.97);
+  --k-popup-text: #f4f4f5;
+
+  /* Fills (iOS system fills) */
+  --k-fill: rgba(120, 120, 128, 0.28);
+  --k-fill-2: rgba(120, 120, 128, 0.18);
+  --k-fill-3: rgba(120, 120, 128, 0.12);
+
+  /* Accents — coral/red nightlife signature */
+  --k-accent: #ff4d6a;
+  --k-accent-bg: rgba(255, 77, 106, 0.14);
+  --k-accent-pressed: #e63e58;
+  --k-accent-2: #22d3ee;
+  --k-accent-3: #a855f7;
+
+  /* Ambient */
+  --k-orb-opacity: 0.15;
+
+  /* Elevation (shadows) */
+  --k-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255,255,255,0.05);
+  --k-bar-shadow: 0 -0.5px 0 rgba(255, 255, 255, 0.06);
+  --k-search-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --k-float-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --k-modal-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] {
+  /* Surface hierarchy */
+  --k-bg: #f7f7fa;
+  --k-bg2: #ffffff;
+  --k-surface: rgba(0, 0, 0, 0.03);
+  --k-surface-h: rgba(0, 0, 0, 0.06);
+  --k-surface-solid: #ffffff;
+  --k-elevated: rgba(255, 255, 255, 0.97);
+
+  /* Border hierarchy */
+  --k-border: rgba(0, 0, 0, 0.06);
+  --k-border-s: rgba(0, 0, 0, 0.04);
+  --k-separator: rgba(60, 60, 67, 0.29);
+
+  /* Typography hierarchy */
+  --k-text: #0a0a0f;
+  --k-text-2: rgba(30, 30, 40, 0.80);
+  --k-text-m: rgba(60, 60, 67, 0.5);
+  --k-text-f: rgba(60, 60, 67, 0.3);
+
+  /* Overlays & materials */
+  --k-overlay: rgba(247, 247, 250, 0.88);
+  --k-overlay-h: rgba(255, 255, 255, 0.94);
+  --k-popup-bg: rgba(255, 255, 255, 0.97);
+  --k-popup-text: #000000;
+
+  /* Fills */
+  --k-fill: rgba(120, 120, 128, 0.2);
+  --k-fill-2: rgba(120, 120, 128, 0.14);
+  --k-fill-3: rgba(120, 120, 128, 0.10);
+
+  /* Accents */
+  --k-accent: #e63e58;
+  --k-accent-bg: rgba(230, 62, 88, 0.10);
+  --k-accent-pressed: #cc2e48;
+  --k-accent-2: #0891b2;
+  --k-accent-3: #9333ea;
+
+  /* Ambient */
+  --k-orb-opacity: 0.04;
+
+  /* Elevation */
+  --k-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0,0,0,0.04);
+  --k-bar-shadow: 0 -0.5px 0 rgba(0, 0, 0, 0.10);
+  --k-search-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --k-float-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  --k-modal-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ── 2. MAPBOX GL OVERRIDES ────────────────────────────── */
+
+.mapboxgl-ctrl-attrib {
+  display: none !important;
+}
+
+.mapboxgl-ctrl-bottom-right {
+  bottom: 80px !important;
+  right: 12px !important;
+}
+
+.mapboxgl-ctrl-group {
+  background: var(--k-elevated) !important;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid var(--k-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--k-card-shadow) !important;
+  overflow: hidden;
+}
+
+.mapboxgl-ctrl-group button {
+  width: 36px !important;
+  height: 36px !important;
+  border: none !important;
+}
+
+.mapboxgl-ctrl-group button + button {
+  border-top: 1px solid var(--k-border-s) !important;
+}
+
+[data-theme="dark"] .mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
+  filter: invert(1) brightness(0.85);
+}
+
+
+/* ── 3. MAPBOX POPUP — iOS Card Style ──────────────────── */
+
+.krowd-popup .mapboxgl-popup-content {
+  background: var(--k-popup-bg);
+  color: var(--k-popup-text);
+  border: 1px solid var(--k-border);
+  border-radius: 14px;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: var(--k-modal-shadow);
+  padding: 14px;
+}
+
+.krowd-popup .mapboxgl-popup-tip {
+  border-top-color: var(--k-popup-bg);
+}
+
+.krowd-popup .mapboxgl-popup-close-button {
+  color: var(--k-text-m);
+  font-size: 18px;
+  padding: 4px 8px;
+  right: 4px;
+  top: 4px;
+}
+
+
+/* ── 3b. GEOLOCATE CONTROL — Apple-styled location button ─ */
+
+.mapboxgl-ctrl-geolocate {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: var(--k-elevated) !important;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: var(--k-float-shadow) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-bottom: 8px !important;
+}
+
+.mapboxgl-ctrl-geolocate:active {
+  transform: scale(0.92);
+}
+
+.mapboxgl-ctrl-geolocate.mapboxgl-ctrl-geolocate-active {
+  background: var(--k-accent) !important;
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25), var(--k-float-shadow) !important;
+}
+
+.mapboxgl-ctrl-geolocate.mapboxgl-ctrl-geolocate-active .mapboxgl-ctrl-icon {
+  filter: brightness(0) invert(1) !important;
+}
+
+.mapboxgl-ctrl-geolocate.mapboxgl-ctrl-geolocate-active-error {
+  background: rgba(244, 63, 94, 0.15) !important;
+}
+
+.mapboxgl-ctrl-geolocate.mapboxgl-ctrl-geolocate-background .mapboxgl-ctrl-icon {
+  opacity: 0.5;
+}
+
+/* Remove the default group wrapper border for standalone geolocate */
+.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-group:has(.mapboxgl-ctrl-geolocate) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-theme="dark"] .mapboxgl-ctrl-geolocate .mapboxgl-ctrl-icon {
+  filter: invert(1) brightness(0.85);
+}
+
+
+/* ── 5. USER LOCATION MARKER ──────────────────────────── */
+
+.user-marker-pulse {
+  animation: user-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes user-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  75%, 100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+
+/* ── 6. AMBIENT BACKGROUND ORBS ────────────────────────── */
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: var(--k-orb-opacity);
+  pointer-events: none;
+}
+
+.orb-1 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, #ff4d6a, #ff1a4d);
+  top: -120px;
+  left: -120px;
+  animation: float 8s ease-in-out infinite;
+}
+
+.orb-2 {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, #a855f7, #7c3aed);
+  bottom: 80px;
+  right: -100px;
+  animation: float 10s ease-in-out infinite reverse;
+}
+
+.orb-3 {
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, #22d3ee, #0891b2);
+  top: 40%;
+  left: 25%;
+  animation: float 12s ease-in-out infinite 2s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(15px, -20px) scale(1.05); }
+  66% { transform: translate(-10px, 15px) scale(0.95); }
+}
+
+
+/* ── 7. GRADIENT TEXT ──────────────────────────────────── */
+
+.gradient-text {
+  background: linear-gradient(135deg, #ff4d6a, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-warm {
+  background: linear-gradient(135deg, #ff4d6a, #ff8c42);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+
+/* ── PREMIUM GLASS CARD ─────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+}
+
+.glass-card-solid {
+  background: var(--k-surface-solid);
+  border: 1px solid var(--k-border);
+  border-radius: 20px;
+  box-shadow: var(--k-card-shadow);
+}
+
+
+/* ── LIVE PULSE DOT ─────────────────────────────────────── */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  position: relative;
+}
+
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.3);
+  animation: live-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes live-ping {
+  0% { transform: scale(1); opacity: 0.6; }
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+
+/* ── GLOW BUTTON ────────────────────────────────────────── */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #ff4d6a, #a855f7);
+  z-index: -1;
+  filter: blur(12px);
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+
+.btn-glow:hover::before {
+  opacity: 0.6;
+}
+
+
+/* ── 8. CROWD PILL — iOS Badge Style ───────────────────── */
+
+.crowd-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+
+/* ── 9. SCROLL UTILITIES ───────────────────────────────── */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
+/* ── 10. ANIMATIONS — iOS Spring System ────────────────── */
+
+/* Card entrance — staggered fade + translate */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeUp {
+  animation: fadeUp 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Scale entrance */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Splash screen */
+@keyframes splash-fade {
+  0% { opacity: 0; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-splash {
+  animation: splash-fade 1.5s ease-out forwards;
+}
+
+/* Shimmer loading */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Float animation (AI icon) */
+@keyframes animate-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-float {
+  animation: animate-float 3s ease-in-out infinite;
+}
+
+
+/* ── 11. iOS INTERACTION PATTERNS ──────────────────────── */
+
+/* Pressed state — Apple's UIKit press spring */
+.ios-press {
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-press:active {
+  transform: scale(0.97);
+  opacity: 0.7;
+}
+
+/* Material blur — Apple's vibrancy */
+.ios-blur {
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Thick material */
+.ios-blur-thick {
+  backdrop-filter: saturate(200%) blur(30px);
+  -webkit-backdrop-filter: saturate(200%) blur(30px);
+}
+
+
+/* ── 12. DRAWER OVERRIDES ──────────────────────────────── */
+
+[vaul-drawer] [data-vaul-drawer] {
+  border-radius: 14px 14px 0 0 !important;
+}
+
+
+/* ── 13. SECTION HEADER — Apple's grouped list style ───── */
+
+.section-header {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--k-text-m);
+  padding: 0 0 8px 0;
+}
+
+
+/* ── 14. SAFE AREA SUPPORT ─────────────────────────────── */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+
+/* ── 15. FOCUS STATES — Accessibility ──────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--k-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Disable focus ring for mouse/touch */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+
+/* ── 16. VENUE MARKERS — Map POI Pins ─────────────────── */
+
+.venue-marker {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  background: var(--k-surface-solid);
+  border: 3px solid #34d399;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  position: relative;
+}
+
+.venue-marker.crowd-moderate {
+  border-color: #fbbf24;
+}
+
+.venue-marker.crowd-busy {
+  border-color: #ff4d6a;
+  animation: marker-pulse 2s ease-in-out infinite;
+}
+
+.venue-marker.selected {
+  transform: scale(1.25);
+  border-color: #ff4d6a;
+  box-shadow: 0 0 0 4px rgba(255, 77, 106, 0.25), 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 10 !important;
+}
+
+@keyframes marker-pulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 77, 106, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3); }
+}
+
+/* Cluster markers */
+.cluster-marker {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff4d6a, #a855f7);
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(255, 77, 106, 0.35);
+  transition: transform 0.15s ease;
+}
+
+.cluster-marker:active {
+  transform: scale(0.92);
+}
+
+
+/* ── 17. POI POPUP — Glassmorphism Info Card ──────────── */
+
+.poi-popup .mapboxgl-popup-content {
+  background: var(--k-popup-bg);
+  color: var(--k-popup-text);
+  border: 1px solid var(--k-border);
+  border-radius: 16px;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: var(--k-modal-shadow);
+  padding: 12px 14px;
+  min-width: 160px;
+}
+
+.poi-popup .mapboxgl-popup-tip {
+  border-top-color: var(--k-popup-bg);
+}
+
+
+/* ── 18. SEARCH DROPDOWN ─────────────────────────────── */
+
+.search-dropdown {
+  animation: dropdown-in 0.2s ease-out both;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ── 19. VENUE DETAIL SHEET ──────────────────────────── */
+
+.venue-sheet-hero {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+}
+
+.venue-sheet-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.venue-sheet-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--k-bg) 0%, transparent 60%);
+}
+
+.crowd-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--k-fill-3);
+  overflow: hidden;
+}
+
+.crowd-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
