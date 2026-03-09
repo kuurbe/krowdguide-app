@@ -12,6 +12,7 @@ import { LiveMap } from './components/map/LiveMap';
 import { PredictView } from './components/ai/PredictView';
 import { AccountView } from './components/account/AccountView';
 import { AlertsDrawer } from './components/alerts/AlertsDrawer';
+import { CityGuideDrawer } from './components/map/CityGuideDrawer';
 
 type Stage = 'splash' | 'city' | 'intent' | 'app';
 
@@ -45,6 +46,15 @@ export default function MobileApp() {
 
   const [activeTab, setActiveTab] = useState('map');
   const [alertsOpen, setAlertsOpen] = useState(false);
+  const [cityGuideOpen, setCityGuideOpen] = useState(false);
+
+  const handleTabChange = useCallback((tab: string) => {
+    if (tab === 'guide') {
+      setCityGuideOpen(true);
+    } else {
+      setActiveTab(tab);
+    }
+  }, []);
 
   const handleSplashComplete = useCallback((coords?: { lat: number; lng: number }) => {
     if (coords) {
@@ -109,14 +119,17 @@ export default function MobileApp() {
             {activeTab === 'account' && <AccountView />}
           </div>
 
-          {/* Floating Bottom Nav — only Map and Account */}
+          {/* Floating Bottom Nav */}
           <div className="absolute bottom-4 left-5 right-5 z-[1100]">
-            <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+            <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
           </div>
         </div>
 
-        {/* Alerts Drawer — accessible via bell icon only */}
+        {/* Alerts Drawer */}
         <AlertsDrawer open={alertsOpen} onOpenChange={setAlertsOpen} />
+
+        {/* City Guide Drawer — opened via Guide tab */}
+        <CityGuideDrawer open={cityGuideOpen} onOpenChange={setCityGuideOpen} />
       </div>
     </AppProvider>
   );

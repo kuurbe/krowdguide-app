@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Navigation, Locate } from 'lucide-react';
+import { Navigation, Locate } from 'lucide-react';
 
 export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: number; lng: number }) => void }) {
   const [phase, setPhase] = useState<'splash' | 'location'>('splash');

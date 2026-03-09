@@ -32,7 +32,7 @@ export function usePulseData() {
   const [liveVenue, setLiveVenue] = useState<Venue | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
   const fetchPulse = useCallback(async () => {
     try {

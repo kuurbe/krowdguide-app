@@ -1,22 +1,41 @@
 import { useMemo } from 'react';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { CrowdPill } from '../shared/CrowdPill';
-import { Navigation, Clock, Beer, X } from 'lucide-react';
+import { Navigation, Clock, Beer, X, Users, Star } from 'lucide-react';
 import { openDirections } from '../../utils/directions';
 import type { Venue } from '../../types';
+
+/** Star rating component */
+function StarRating({ rating }: { rating: number }) {
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    const fill = rating >= i ? 1 : rating >= i - 0.5 ? 0.5 : 0;
+    stars.push(
+      <div key={i} className="relative w-[14px] h-[14px]">
+        {/* Empty star (background) */}
+        <Star className="absolute inset-0 w-[14px] h-[14px] text-[var(--k-fill)] stroke-[1.5] fill-[var(--k-fill)]" />
+        {/* Filled star (overlay) */}
+        {fill > 0 && (
+          <div className="absolute inset-0 overflow-hidden" style={{ width: fill === 1 ? '100%' : '50%' }}>
+            <Star className="w-[14px] h-[14px] text-amber-400 stroke-[1.5] fill-amber-400" />
+          </div>
+        )}
+      </div>
+    );
+  }
+  return <div className="flex items-center gap-[2px]">{stars}</div>;
+}
 
 /** Google-style "Popular Times" bar chart */
 const HOURS = ['12p', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11p'];
 
-function PopularTimesBar({ pct, crowd }: { pct: number; crowd: string }) {
+function PopularTimesBar({ pct }: { pct: number }) {
   const bars = useMemo(() => {
     const base = pct / 100;
-    // Synthetic hourly pattern: ramps up through afternoon, peaks around 8-9 PM
     const pattern = [0.15, 0.12, 0.18, 0.25, 0.35, 0.5, 0.65, 0.8, 0.95, 1.0, 0.85, 0.55];
     return pattern.map(p => Math.min(Math.round(p * base * 100), 100));
   }, [pct]);
 
-  // Current hour marker (simulate ~8 PM as "now")
   const nowIndex = 8;
 
   const barColor = (value: number) => {
@@ -34,7 +53,7 @@ function PopularTimesBar({ pct, crowd }: { pct: number; crowd: string }) {
               className="w-full rounded-[3px] min-h-[3px] transition-all"
               style={{
                 height: `${Math.max(value * 0.56, 3)}px`,
-                backgroundColor: i === nowIndex ? barColor(value) : barColor(value),
+                backgroundColor: barColor(value),
                 opacity: i === nowIndex ? 1 : 0.5,
               }}
             />
@@ -67,12 +86,13 @@ export function VenueDetailSheet({
   if (!venue) return null;
 
   const crowdColor = venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399';
+  const crowdLabel = venue.crowd === 'busy' ? 'Busy' : venue.crowd === 'moderate' ? 'Moderate' : 'Quiet';
 
   return (
     <Drawer open={!!venue} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DrawerContent className="max-w-md mx-auto bg-[var(--k-bg)] border-[var(--k-border)] rounded-t-[20px] overflow-hidden">
         <DrawerTitle className="sr-only">{venue.name}</DrawerTitle>
-        {/* Hero image */}
+        {/* Hero image — taller */}
         {venue.image && (
           <div className="venue-sheet-hero">
             <img src={venue.image} alt={venue.name} />
@@ -97,7 +117,7 @@ export function VenueDetailSheet({
 
         <div className="px-4 pb-6 -mt-4 relative z-10">
           {/* Title row */}
-          <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-start justify-between gap-3 mb-1.5">
             <div className="min-w-0 flex-1">
               <h2 className="font-syne text-[20px] font-extrabold text-[var(--k-text)] tracking-tight leading-tight">
                 {venue.icon} {venue.name}
@@ -107,39 +127,73 @@ export function VenueDetailSheet({
             <CrowdPill crowd={venue.crowd} pct={venue.pct} />
           </div>
 
-          {/* Crowd progress bar */}
+          {/* Star ratings */}
+          {venue.rating && (
+            <div className="flex items-center gap-2 mb-3">
+              <StarRating rating={venue.rating} />
+              <span className="text-[13px] font-bold text-[var(--k-text)]">{venue.rating}</span>
+            </div>
+          )}
+
+          {/* Side-by-side info chips */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {/* Crowd chip */}
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[var(--k-surface)] border border-[var(--k-border)]">
+              <Users className="w-4 h-4 flex-shrink-0" style={{ color: crowdColor }} />
+              <div className="min-w-0">
+                <p className="text-[10px] text-[var(--k-text-m)] font-medium">Crowd</p>
+                <p className="text-[13px] font-bold truncate" style={{ color: crowdColor }}>
+                  {crowdLabel}
+                </p>
+              </div>
+            </div>
+            {/* Wait / Happy Hour chip */}
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[var(--k-surface)] border border-[var(--k-border)]">
+              {venue.hasHH ? (
+                <>
+                  <Beer className="w-4 h-4 flex-shrink-0 text-[#ff8c42]" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-[var(--k-text-m)] font-medium">Happy Hour</p>
+                    <p className="text-[13px] font-bold text-[#ff8c42] truncate">{venue.hhDeal}</p>
+                  </div>
+                </>
+              ) : venue.wait ? (
+                <>
+                  <Clock className="w-4 h-4 flex-shrink-0 text-amber-400" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-[var(--k-text-m)] font-medium">Wait Time</p>
+                    <p className="text-[13px] font-bold text-amber-400 truncate">~{venue.wait}</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Clock className="w-4 h-4 flex-shrink-0 text-emerald-400" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-[var(--k-text-m)] font-medium">Wait Time</p>
+                    <p className="text-[13px] font-bold text-emerald-400">No wait</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Crowd progress bar — thinner */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-bold text-[var(--k-text-m)] uppercase tracking-[0.06em]">
                 Crowd Level
               </span>
               <span className="text-[11px] font-bold" style={{ color: crowdColor }}>
-                {venue.crowd === 'busy' ? 'Busy' : venue.crowd === 'moderate' ? 'Moderate' : 'Quiet'}
+                {venue.pct}%
               </span>
             </div>
-            <div className="crowd-bar">
+            <div className="crowd-bar" style={{ height: 4, borderRadius: 2 }}>
               <div
                 className="crowd-bar-fill"
-                style={{ width: `${venue.pct}%`, backgroundColor: crowdColor }}
+                style={{ width: `${venue.pct}%`, backgroundColor: crowdColor, borderRadius: 2 }}
               />
             </div>
           </div>
-
-          {/* Info chips */}
-          {(venue.wait || venue.hasHH) && (
-            <div className="flex gap-2 mb-4 flex-wrap">
-              {venue.wait && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 text-[12px] font-bold">
-                  <Clock className="w-3.5 h-3.5" /> ~{venue.wait} wait
-                </span>
-              )}
-              {venue.hasHH && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ff8c42]/10 text-[#ff8c42] text-[12px] font-bold">
-                  <Beer className="w-3.5 h-3.5" /> {venue.hhDeal}
-                </span>
-              )}
-            </div>
-          )}
 
           {/* Popular Times — Google-style bar chart */}
           <div className="mb-4">
@@ -147,19 +201,20 @@ export function VenueDetailSheet({
               Popular Times
             </p>
             <div className="rounded-xl bg-[var(--k-surface)] border border-[var(--k-border)] p-3">
-              <PopularTimesBar pct={venue.pct} crowd={venue.crowd} />
+              <PopularTimesBar pct={venue.pct} />
             </div>
           </div>
 
-          {/* Directions button */}
+          {/* Gradient CTA button — warm coral to amber */}
           <button
             onClick={() => openDirections(venue.coordinates[0], venue.coordinates[1], venue.name)}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#ff4d6a] to-[#a855f7] text-white
-                       font-bold text-[15px] flex items-center justify-center gap-2
+            className="w-full py-4 rounded-[20px] text-white font-bold text-[15px]
+                       flex items-center justify-center gap-2
                        active:scale-[0.98] transition-transform
-                       shadow-[0_4px_20px_rgba(255,77,106,0.3)]"
+                       shadow-[0_4px_20px_rgba(255,107,107,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
+            style={{ background: 'linear-gradient(135deg, #ff6b6b, #ffa726)' }}
           >
-            <Navigation className="w-4.5 h-4.5" /> Get Directions
+            <Navigation className="w-4.5 h-4.5" /> Explore Location
           </button>
         </div>
       </DrawerContent>

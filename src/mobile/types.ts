@@ -18,6 +18,7 @@ export interface Venue {
   hasHH?: boolean;
   hhDeal?: string;
   image?: string;
+  rating?: number;
   coordinates: [number, number];
 }
 

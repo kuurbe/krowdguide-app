@@ -5,11 +5,9 @@ import { CrowdPill } from '../shared/CrowdPill';
 import type { Venue } from '../../types';
 
 export function MapSearchBar({
-  onKGClick,
   venues = [],
   onVenueSelect,
 }: {
-  onKGClick: () => void;
   venues?: Venue[];
   onVenueSelect?: (venue: Venue) => void;
 }) {
@@ -52,14 +50,14 @@ export function MapSearchBar({
   };
 
   return (
-    <div ref={containerRef} className="absolute top-3 left-4 right-4 z-[1010]">
+    <div ref={containerRef} className="absolute top-4 left-4 right-4 z-[1010]">
       <div
-        className="flex items-center gap-2.5 py-[10px] pl-4 pr-[6px] rounded-2xl
+        className="flex items-center gap-2.5 py-[12px] pl-4 pr-4 rounded-[20px]
                     bg-[var(--k-elevated)] ios-blur-thick
                     border border-[var(--k-border)]
                     shadow-[var(--k-search-shadow)]"
       >
-        <Search className="w-[17px] h-[17px] text-[var(--k-text-f)] flex-shrink-0" />
+        <Search className="w-[17px] h-[17px] text-[var(--k-text-m)] flex-shrink-0" />
         <input
           ref={inputRef}
           type="text"
@@ -78,16 +76,6 @@ export function MapSearchBar({
             <X className="w-3 h-3 text-[var(--k-text-m)]" />
           </button>
         )}
-        {/* KG Module */}
-        <button
-          onClick={onKGClick}
-          className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-[#ff4d6a] to-[#a855f7]
-                     flex items-center justify-center flex-shrink-0
-                     hover:scale-105 active:scale-95 transition-transform
-                     shadow-[0_2px_12px_rgba(255,77,106,0.3)]"
-        >
-          <span className="font-syne font-extrabold text-white text-[12px] tracking-tight">KG</span>
-        </button>
       </div>
 
       {/* Search results dropdown */}

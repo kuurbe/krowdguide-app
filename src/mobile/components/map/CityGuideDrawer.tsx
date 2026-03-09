@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppContext } from '../../context';
@@ -9,7 +9,7 @@ import { VenueCard } from '../shared/VenueCard';
 import { EventCard } from '../shared/EventCard';
 import { CrowdPill } from '../shared/CrowdPill';
 import { SmartAlertBanner } from '../shared/SmartAlertBanner';
-import { Sparkles, Radio, Navigation, TrendingUp, Flame } from 'lucide-react';
+import { Sparkles, Radio, Navigation, TrendingUp, Flame, Gem, UtensilsCrossed, Moon, Ticket } from 'lucide-react';
 import { openDirections } from '../../utils/directions';
 
 /** Segment control — premium glass style */
@@ -17,6 +17,42 @@ const SEGMENT_CLASS = `flex-1 py-[8px] text-[12px] font-bold !rounded-[12px] whi
                        text-[var(--k-text-f)] border-none
                        data-[state=active]:bg-[var(--k-surface-solid)] data-[state=active]:text-[var(--k-text)]
                        data-[state=active]:shadow-[var(--k-card-shadow)] transition-all tracking-[-0.01em]`;
+
+/** Discovery vibe cards */
+const VIBE_CARDS = [
+  {
+    id: 'gems',
+    title: 'Hidden Gems',
+    subtitle: 'Off the beaten path',
+    gradient: 'from-[#22d3ee] to-[#0891b2]',
+    Icon: Gem,
+    tab: 'things',
+  },
+  {
+    id: 'food',
+    title: 'Food & Drink',
+    subtitle: 'Local favorites',
+    gradient: 'from-[#ff4d6a] to-[#e63e58]',
+    Icon: UtensilsCrossed,
+    tab: 'restaurants',
+  },
+  {
+    id: 'nightlife',
+    title: 'Nightlife',
+    subtitle: 'After dark spots',
+    gradient: 'from-[#a855f7] to-[#7c3aed]',
+    Icon: Moon,
+    tab: 'restaurants',
+  },
+  {
+    id: 'events',
+    title: 'Events Nearby',
+    subtitle: 'What\'s happening',
+    gradient: 'from-[#fbbf24] to-[#f59e0b]',
+    Icon: Ticket,
+    tab: 'events',
+  },
+] as const;
 
 export function CityGuideDrawer({
   open,
@@ -26,6 +62,7 @@ export function CityGuideDrawer({
   onOpenChange: (open: boolean) => void;
 }) {
   const { selectedCity } = useAppContext();
+  const [activeTab, setActiveTab] = useState('restaurants');
   const staticVenues = useMemo(() => getVenuesForCity(selectedCity.id), [selectedCity.id]);
   const things = useMemo(() => getThingsForCity(selectedCity.id), [selectedCity.id]);
   const { events, loading } = useTicketmasterEvents(selectedCity.name);
@@ -43,6 +80,18 @@ export function CityGuideDrawer({
     () => [...venues].sort((a, b) => b.pct - a.pct).slice(0, 4),
     [venues]
   );
+
+  // Activity feed — derived from venue crowd data
+  const activityChips = useMemo(() => {
+    const busy = venues.filter(v => v.crowd === 'busy').length;
+    const moderate = venues.filter(v => v.crowd === 'moderate').length;
+    const quiet = venues.filter(v => v.crowd === 'quiet').length;
+    const chips: { emoji: string; text: string }[] = [];
+    if (busy > 0) chips.push({ emoji: '\u{1F37B}', text: `${busy * 3} at happy hours` });
+    if (moderate > 0) chips.push({ emoji: '\u{1F6B6}', text: `${moderate * 2} exploring ${selectedCity.name.split(',')[0]}` });
+    if (quiet > 0) chips.push({ emoji: '\u2615', text: `${quiet * 2} at coffee spots` });
+    return chips;
+  }, [venues, selectedCity.name]);
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -76,7 +125,52 @@ export function CityGuideDrawer({
           </div>
         </DrawerHeader>
 
-        <Tabs defaultValue="restaurants" className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        {/* ── Select Your Vibe — 2x2 gradient cards ─── */}
+        <div className="px-4 pb-3 flex-shrink-0">
+          <p className="text-[11px] font-bold text-[var(--k-text-m)] uppercase tracking-[0.06em] mb-2">
+            Select Your Vibe
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {VIBE_CARDS.map((card) => (
+              <button
+                key={card.id}
+                onClick={() => setActiveTab(card.tab)}
+                className={`relative h-[88px] rounded-2xl bg-gradient-to-br ${card.gradient}
+                           overflow-hidden ios-press transition-all text-left p-3 flex flex-col justify-end`}
+              >
+                {/* Watermark icon */}
+                <card.Icon className="absolute top-2 right-2 w-10 h-10 text-white/[0.15] stroke-[1.5]" />
+                <p className="text-[14px] font-extrabold text-white tracking-[-0.02em] leading-tight relative z-[1]">
+                  {card.title}
+                </p>
+                <p className="text-[10px] text-white/70 font-medium mt-0.5 relative z-[1]">
+                  {card.subtitle}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Activity Feed — horizontal scroll ─── */}
+        {activityChips.length > 0 && (
+          <div className="px-4 pb-3 flex-shrink-0">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              {activityChips.map((chip, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-1.5 px-3 py-[6px] rounded-full
+                             bg-[var(--k-surface)] border border-[var(--k-border-s)]
+                             text-[11px] font-semibold text-[var(--k-text-2)] whitespace-nowrap flex-shrink-0"
+                >
+                  <span>{chip.emoji}</span>
+                  <span>{chip.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <div className="px-4 pb-3 flex-shrink-0">
             <TabsList className="w-full bg-[var(--k-fill-3)] p-[3px] !rounded-[14px] h-auto gap-0">
               <TabsTrigger value="restaurants" className={SEGMENT_CLASS}>Food & Bars</TabsTrigger>
@@ -122,11 +216,11 @@ export function CityGuideDrawer({
                         </h4>
                         <p className="text-[10px] text-[var(--k-text-m)] mt-0.5 truncate">{venue.type} · {venue.dist}</p>
                         {venue.hasHH && (
-                          <p className="text-[10px] text-[#ff8c42] mt-0.5 font-semibold truncate">🍺 {venue.hhDeal}</p>
+                          <p className="text-[10px] text-[#ff8c42] mt-0.5 font-semibold truncate">{venue.hhDeal}</p>
                         )}
                         {venue.id === 'oracle-1' && pulse?.community_check && (
                           <p className="text-[9px] text-emerald-400 mt-0.5 font-medium truncate">
-                            👍 {pulse.community_check.thumbs_up} · Verified {pulse.community_check.last_verified}
+                            {pulse.community_check.thumbs_up} · Verified {pulse.community_check.last_verified}
                           </p>
                         )}
                       </div>

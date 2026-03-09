@@ -6,7 +6,6 @@ import { getVenuesForCity } from '../../data/venues';
 import { MapSearchBar } from './MapSearchBar';
 import { CategoryPills } from './CategoryPills';
 import { MapLegend } from './MapLegend';
-import { CityGuideDrawer } from './CityGuideDrawer';
 import { VenueDetailSheet } from './VenueDetailSheet';
 import type { Venue } from '../../types';
 
@@ -136,25 +135,36 @@ function buildGeoJSON(venues: Venue[]) {
 
 function poiPopupHTML(name: string, category: string, coords: [number, number]): string {
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const dirUrl = isIOS
-    ? `maps://maps.apple.com/?daddr=${coords[1]},${coords[0]}&dirflg=w`
-    : `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}&travelmode=walking`;
-  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro',system-ui,sans-serif;min-width:170px">
+  const lat = coords[1];
+  const lng = coords[0];
+
+  // Direction URLs for each mode
+  const walkUrl = isIOS
+    ? `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`
+    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
+  const driveUrl = isIOS
+    ? `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`
+    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+  const transitUrl = isIOS
+    ? `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=r`
+    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=transit`;
+  const uberUrl = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}&dropoff[nickname]=${encodeURIComponent(name)}`;
+
+  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro',system-ui,sans-serif;min-width:220px">
     <p style="font-weight:700;font-size:15px;color:var(--k-text,#fff);margin:0 0 3px;letter-spacing:-0.01em">${name}</p>
     <p style="font-size:12px;color:var(--k-text-m,rgba(255,255,255,0.48));margin:0 0 10px;text-transform:capitalize">${category || 'Place'}</p>
-    <a href="${dirUrl}" target="_blank" rel="noopener"
-       style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 0;border-radius:10px;
-              background:linear-gradient(135deg,#ff4d6a,#a855f7);color:#fff;font-weight:700;font-size:13px;
-              text-decoration:none;letter-spacing:-0.01em">
-      Directions
-    </a>
+    <div class="poi-mode-row">
+      <a href="${driveUrl}" target="_blank" rel="noopener" class="poi-mode-btn">Drive</a>
+      <a href="${walkUrl}" target="_blank" rel="noopener" class="poi-mode-btn poi-mode-active">Walk</a>
+      <a href="${transitUrl}" target="_blank" rel="noopener" class="poi-mode-btn">Transit</a>
+      <a href="${uberUrl}" target="_blank" rel="noopener" class="poi-mode-btn">Uber</a>
+    </div>
   </div>`;
 }
 
 export function LiveMap() {
   const { selectedCity, theme } = useAppContext();
   const [activeCategory, setActiveCategory] = useState('All');
-  const [cityGuideOpen, setCityGuideOpen] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -171,7 +181,6 @@ export function LiveMap() {
   }, [venues, activeCategory]);
 
   const selectVenue = useCallback((venue: Venue) => {
-    setCityGuideOpen(false);
     setSelectedVenue(venue);
     if (popupRef.current) { popupRef.current.remove(); popupRef.current = null; }
     const map = mapRef.current;
@@ -181,11 +190,6 @@ export function LiveMap() {
   }, []);
 
   const closeVenueSheet = useCallback(() => { setSelectedVenue(null); }, []);
-
-  const openCityGuide = useCallback(() => {
-    setSelectedVenue(null);
-    setCityGuideOpen(true);
-  }, []);
 
   // 1. Create map — zoom in closer by default so POIs are visible
   useEffect(() => {
@@ -345,10 +349,9 @@ export function LiveMap() {
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
-      <MapSearchBar onKGClick={openCityGuide} venues={venues} onVenueSelect={selectVenue} />
+      <MapSearchBar venues={venues} onVenueSelect={selectVenue} />
       <CategoryPills active={activeCategory} onChange={setActiveCategory} />
       <MapLegend />
-      <CityGuideDrawer open={cityGuideOpen} onOpenChange={setCityGuideOpen} />
       <VenueDetailSheet venue={selectedVenue} onClose={closeVenueSheet} />
     </div>
   );
