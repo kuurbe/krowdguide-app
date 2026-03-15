@@ -1,9 +1,10 @@
 import type { Venue } from '../../types';
 import { CrowdPill } from './CrowdPill';
 import { ShieldCheck, Navigation } from 'lucide-react';
-import { openDirections } from '../../utils/directions';
+import { useAppContext } from '../../context';
 
 export function VenueCard({ venue, verified }: { venue: Venue; verified?: boolean }) {
+  const { startDirections } = useAppContext();
   const isOracle = venue.id.startsWith('oracle-');
 
   return (
@@ -38,7 +39,7 @@ export function VenueCard({ venue, verified }: { venue: Venue; verified?: boolea
         )}
       </div>
       <button
-        onClick={(e) => { e.stopPropagation(); openDirections(venue.coordinates[0], venue.coordinates[1], venue.name); }}
+        onClick={(e) => { e.stopPropagation(); startDirections({ coords: venue.coordinates, name: venue.name }); }}
         aria-label={`Directions to ${venue.name}`}
         className="self-center flex-shrink-0 w-10 h-10 rounded-full bg-[#ff4d6a]/10 flex items-center justify-center
                    active:scale-90 transition-transform hover:bg-[#ff4d6a]/20"

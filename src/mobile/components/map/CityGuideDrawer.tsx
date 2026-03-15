@@ -9,8 +9,7 @@ import { VenueCard } from '../shared/VenueCard';
 import { EventCard } from '../shared/EventCard';
 import { CrowdPill } from '../shared/CrowdPill';
 import { SmartAlertBanner } from '../shared/SmartAlertBanner';
-import { Sparkles, Radio, Navigation, TrendingUp, Flame, Gem, UtensilsCrossed, Moon, Ticket } from 'lucide-react';
-import { openDirections } from '../../utils/directions';
+import { Sparkles, Radio, Navigation, TrendingUp, Flame, Gem, UtensilsCrossed, Moon, Ticket, Video } from 'lucide-react';
 
 /** Segment control — premium glass style */
 const SEGMENT_CLASS = `flex-1 py-[8px] text-[12px] font-bold !rounded-[12px] whitespace-nowrap
@@ -61,7 +60,7 @@ export function CityGuideDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { selectedCity } = useAppContext();
+  const { selectedCity, startDirections, setFlyoverActive } = useAppContext();
   const [activeTab, setActiveTab] = useState('restaurants');
   const staticVenues = useMemo(() => getVenuesForCity(selectedCity.id), [selectedCity.id]);
   const things = useMemo(() => getThingsForCity(selectedCity.id), [selectedCity.id]);
@@ -118,9 +117,19 @@ export function CityGuideDrawer({
                 )}
               </p>
             </div>
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#ff4d6a] to-[#a855f7]
-                            flex items-center justify-center flex-shrink-0 shadow-[0_4px_16px_rgba(255,77,106,0.25)]">
-              <span className="font-syne font-extrabold text-white text-[12px]">KG</span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => { onOpenChange(false); setTimeout(() => setFlyoverActive(true), 400); }}
+                className="w-10 h-10 rounded-2xl bg-[var(--k-surface)] border border-[var(--k-border)]
+                           flex items-center justify-center active:scale-90 transition-transform"
+                aria-label="Start flyover tour"
+              >
+                <Video className="w-4 h-4 text-[var(--k-text-2)]" />
+              </button>
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#ff4d6a] to-[#a855f7]
+                              flex items-center justify-center shadow-[0_4px_16px_rgba(255,77,106,0.25)]">
+                <span className="font-syne font-extrabold text-white text-[12px]">KG</span>
+              </div>
             </div>
           </div>
         </DrawerHeader>
@@ -294,7 +303,7 @@ export function CityGuideDrawer({
                       <CrowdPill crowd={thing.crowd} pct={thing.crowd === 'quiet' ? 25 : 55} />
                       {thing.coordinates && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); openDirections(thing.coordinates[0], thing.coordinates[1], thing.name); }}
+                          onClick={(e) => { e.stopPropagation(); startDirections({ coords: thing.coordinates, name: thing.name }); onOpenChange(false); }}
                           aria-label={`Directions to ${thing.name}`}
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ff4d6a]/12 text-[#ff4d6a] text-[10px] font-bold
                                      active:scale-95 transition-transform"

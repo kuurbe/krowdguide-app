@@ -2,14 +2,18 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useAppContext } from '../../context';
+import { MAPBOX_TOKEN } from '../../config/mapbox';
 import { getVenuesForCity } from '../../data/venues';
 import { MapSearchBar } from './MapSearchBar';
 import { CategoryPills } from './CategoryPills';
 import { MapLegend } from './MapLegend';
 import { VenueDetailSheet } from './VenueDetailSheet';
+import { FlyoverOverlay } from './FlyoverOverlay';
 import type { Venue } from '../../types';
+import { Navigation } from 'lucide-react';
+import { formatDistance } from '../../services/directionsService';
 
-mapboxgl.accessToken = 'pk.eyJ1IjoiamNvbGJ5eTIiLCJhIjoiY21pcWV5dTBmMGw1MzNlcHdrbnBxZGlxNSJ9.ltCqt3qSjsuUsP_Q3D0F7g';
+mapboxgl.accessToken = MAPBOX_TOKEN;
 
 /** Set up custom POI layers from the composite source — shows ALL places */
 function setupPOILayers(map: mapboxgl.Map, popupRef: React.MutableRefObject<mapboxgl.Popup | null>) {
@@ -80,10 +84,32 @@ function setupPOILayers(map: mapboxgl.Map, popupRef: React.MutableRefObject<mapb
       const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number];
 
       if (popupRef.current) popupRef.current.remove();
-      popupRef.current = new mapboxgl.Popup({ offset: 14, closeButton: true, maxWidth: '240px', className: 'poi-popup' })
+      const popup = new mapboxgl.Popup({ offset: 14, closeButton: true, maxWidth: '260px', className: 'poi-popup' })
         .setLngLat(e.lngLat)
         .setHTML(poiPopupHTML(name, category, coords))
         .addTo(map);
+      popupRef.current = popup;
+
+      // Delegated click handler for in-app directions buttons
+      const el = popup.getElement();
+      if (el) {
+        el.addEventListener('click', (evt) => {
+          const btn = (evt.target as HTMLElement).closest('[data-dir-mode]') as HTMLElement | null;
+          if (!btn) return;
+          evt.preventDefault();
+          const mode = btn.dataset.dirMode as 'walking' | 'driving' | 'cycling';
+          const container = el.querySelector('[data-poi-name]') as HTMLElement | null;
+          if (!container) return;
+          const poiName = container.dataset.poiName || name;
+          const poiLat = parseFloat(container.dataset.poiLat || '0');
+          const poiLng = parseFloat(container.dataset.poiLng || '0');
+          // Dispatch custom event — LiveMap will listen for this
+          window.dispatchEvent(new CustomEvent('kg-directions', {
+            detail: { name: poiName, lat: poiLat, lng: poiLng, mode },
+          }));
+          popup.remove();
+        });
+      }
     };
 
     map.on('click', 'all-poi-dots', onPoiClick);
@@ -134,42 +160,32 @@ function buildGeoJSON(venues: Venue[]) {
 }
 
 function poiPopupHTML(name: string, category: string, coords: [number, number]): string {
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
   const lat = coords[1];
   const lng = coords[0];
-
-  // Direction URLs for each mode
-  const walkUrl = isIOS
-    ? `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`
-    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
-  const driveUrl = isIOS
-    ? `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`
-    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-  const transitUrl = isIOS
-    ? `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=r`
-    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=transit`;
   const uberUrl = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}&dropoff[nickname]=${encodeURIComponent(name)}`;
 
-  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro',system-ui,sans-serif;min-width:220px">
+  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro',system-ui,sans-serif;min-width:220px"
+              data-poi-name="${name.replace(/"/g, '&quot;')}" data-poi-lat="${lat}" data-poi-lng="${lng}">
     <p style="font-weight:700;font-size:15px;color:var(--k-text,#fff);margin:0 0 3px;letter-spacing:-0.01em">${name}</p>
     <p style="font-size:12px;color:var(--k-text-m,rgba(255,255,255,0.48));margin:0 0 10px;text-transform:capitalize">${category || 'Place'}</p>
     <div class="poi-mode-row">
-      <a href="${driveUrl}" target="_blank" rel="noopener" class="poi-mode-btn">Drive</a>
-      <a href="${walkUrl}" target="_blank" rel="noopener" class="poi-mode-btn poi-mode-active">Walk</a>
-      <a href="${transitUrl}" target="_blank" rel="noopener" class="poi-mode-btn">Transit</a>
+      <button data-dir-mode="driving" class="poi-mode-btn">Drive</button>
+      <button data-dir-mode="walking" class="poi-mode-btn poi-mode-active">Walk</button>
+      <button data-dir-mode="cycling" class="poi-mode-btn">Bike</button>
       <a href="${uberUrl}" target="_blank" rel="noopener" class="poi-mode-btn">Uber</a>
     </div>
   </div>`;
 }
 
 export function LiveMap() {
-  const { selectedCity, theme } = useAppContext();
+  const { selectedCity, theme, mapRef, directions, flyoverActive, startDirections } = useAppContext();
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [flyoverWaypoint, setFlyoverWaypoint] = useState<{ name: string; index: number; total: number } | null>(null);
+  const cancelFlyoverRef = useRef<(() => void) | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const initThemeRef = useRef(theme);
 
@@ -226,8 +242,20 @@ export function LiveMap() {
     });
 
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Listen for POI popup direction requests
+    const onDirRequest = (e: Event) => {
+      const { name, lat, lng, mode } = (e as CustomEvent).detail;
+      startDirections({ coords: [lat, lng], name }, mode);
+    };
+    window.addEventListener('kg-directions', onDirRequest);
+
+    return () => {
+      window.removeEventListener('kg-directions', onDirRequest);
+      map.remove();
+      mapRef.current = null;
+    };
+  }, [mapRef, startDirections]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 2. Theme changes
   const prevThemeRef = useRef(theme);
@@ -346,12 +374,192 @@ export function LiveMap() {
     return () => { map.off('click', 'crowd-points', onClick); };
   }, [mapLoaded, filteredVenues, selectVenue]);
 
+  // 7. Route rendering — draw directions polyline on map
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded) return;
+
+    // Clean up previous route layers
+    const routeLayers = ['directions-route-outline', 'directions-route', 'directions-dest-dot', 'directions-origin-dot', 'directions-origin-pulse'];
+    const routeSources = ['directions-route', 'directions-dest', 'directions-origin'];
+    routeLayers.forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
+    routeSources.forEach(s => { if (map.getSource(s)) map.removeSource(s); });
+
+    if (!directions.route || !directions.active) return;
+
+    // Add route line
+    map.addSource('directions-route', {
+      type: 'geojson',
+      data: { type: 'Feature', properties: {}, geometry: directions.route.geometry },
+    });
+
+    // Outline (darker halo for depth)
+    map.addLayer({
+      id: 'directions-route-outline',
+      type: 'line',
+      source: 'directions-route',
+      paint: {
+        'line-color': '#0e7490',
+        'line-width': 10,
+        'line-opacity': 0.25,
+      },
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+    });
+
+    // Main route line — thick teal like reference
+    map.addLayer({
+      id: 'directions-route',
+      type: 'line',
+      source: 'directions-route',
+      paint: {
+        'line-color': '#22d3ee',
+        'line-width': 6,
+        'line-opacity': 0.95,
+      },
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+    });
+
+    // Origin marker (cyan pulsing dot)
+    if (directions.origin) {
+      map.addSource('directions-origin', {
+        type: 'geojson',
+        data: {
+          type: 'Feature', properties: {},
+          geometry: { type: 'Point', coordinates: directions.origin },
+        },
+      });
+      map.addLayer({
+        id: 'directions-origin-pulse',
+        type: 'circle',
+        source: 'directions-origin',
+        paint: {
+          'circle-radius': 14,
+          'circle-color': '#22d3ee',
+          'circle-opacity': 0.15,
+        },
+      });
+      map.addLayer({
+        id: 'directions-origin-dot',
+        type: 'circle',
+        source: 'directions-origin',
+        paint: {
+          'circle-radius': 7,
+          'circle-color': '#22d3ee',
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+    }
+
+    // Destination marker (coral dot)
+    if (directions.destination) {
+      map.addSource('directions-dest', {
+        type: 'geojson',
+        data: {
+          type: 'Feature', properties: {},
+          geometry: { type: 'Point', coordinates: directions.destination.coords },
+        },
+      });
+      map.addLayer({
+        id: 'directions-dest-dot',
+        type: 'circle',
+        source: 'directions-dest',
+        paint: {
+          'circle-radius': 8,
+          'circle-color': '#ff4d6a',
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+    }
+
+    // Fit bounds to show full route
+    const coords = directions.route.geometry.coordinates as [number, number][];
+    const bounds = coords.reduce(
+      (b, c) => b.extend(c as mapboxgl.LngLatLike),
+      new mapboxgl.LngLatBounds(coords[0], coords[0])
+    );
+    map.fitBounds(bounds, { padding: { top: 120, bottom: 320, left: 60, right: 60 }, duration: 800 });
+
+    return () => {
+      routeLayers.forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
+      routeSources.forEach(s => { if (map.getSource(s)) map.removeSource(s); });
+    };
+  }, [directions.route, directions.active, directions.destination, directions.origin, mapLoaded, mapRef]);
+
+  // 8. Flyover — start/stop cinematic tour
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !flyoverActive) {
+      setFlyoverWaypoint(null);
+      return;
+    }
+
+    const waypoints = venues.map(v => ({
+      center: [v.coordinates[1], v.coordinates[0]] as [number, number],
+      name: v.name,
+    }));
+
+    import('../../utils/flyover').then(({ startFlyover }) => {
+      const cancel = startFlyover(map, waypoints, {
+        onWaypointChange: (index, wp) => {
+          setFlyoverWaypoint({ name: wp.name, index, total: waypoints.length });
+        },
+        onComplete: () => {
+          setFlyoverWaypoint(null);
+          // Will be set to false by the parent
+        },
+      });
+      cancelFlyoverRef.current = cancel;
+    });
+
+    return () => {
+      if (cancelFlyoverRef.current) {
+        cancelFlyoverRef.current();
+        cancelFlyoverRef.current = null;
+      }
+      setFlyoverWaypoint(null);
+    };
+  }, [flyoverActive, venues, mapRef]);
+
+  const handleStopFlyover = useCallback(() => {
+    if (cancelFlyoverRef.current) {
+      cancelFlyoverRef.current();
+      cancelFlyoverRef.current = null;
+    }
+    setFlyoverWaypoint(null);
+  }, []);
+
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
       <MapSearchBar venues={venues} onVenueSelect={selectVenue} />
       <CategoryPills active={activeCategory} onChange={setActiveCategory} />
       <MapLegend />
+      {flyoverWaypoint && (
+        <FlyoverOverlay
+          waypointName={flyoverWaypoint.name}
+          currentIndex={flyoverWaypoint.index}
+          totalCount={flyoverWaypoint.total}
+          onStop={handleStopFlyover}
+        />
+      )}
+      {/* Floating step card — shows first direction step over map */}
+      {directions.active && directions.route && directions.route.steps.length > 0 && (
+        <div className="absolute bottom-[180px] left-4 right-4 z-[200]">
+          <div className="bg-[#1a1a2e]/95 backdrop-blur-md rounded-2xl px-4 py-3 flex items-center gap-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/[0.06]">
+            <div className="w-10 h-10 rounded-xl bg-[#22d3ee]/15 flex items-center justify-center flex-shrink-0">
+              <Navigation className="w-5 h-5 text-[#22d3ee]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-[#22d3ee] font-bold uppercase tracking-wider">
+                {formatDistance(directions.route.steps[0].distance)}
+              </p>
+              <p className="text-[14px] text-white font-semibold truncate">{directions.route.steps[0].instruction}</p>
+            </div>
+          </div>
+        </div>
+      )}
       <VenueDetailSheet venue={selectedVenue} onClose={closeVenueSheet} />
     </div>
   );

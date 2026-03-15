@@ -13,6 +13,7 @@ import { PredictView } from './components/ai/PredictView';
 import { AccountView } from './components/account/AccountView';
 import { AlertsDrawer } from './components/alerts/AlertsDrawer';
 import { CityGuideDrawer } from './components/map/CityGuideDrawer';
+import { DirectionsDrawer } from './components/map/DirectionsDrawer';
 
 type Stage = 'splash' | 'city' | 'intent' | 'app';
 
@@ -130,6 +131,9 @@ export default function MobileApp() {
 
         {/* City Guide Drawer — opened via Guide tab */}
         <CityGuideDrawer open={cityGuideOpen} onOpenChange={setCityGuideOpen} />
+
+        {/* Directions Drawer — opened via in-app direction requests */}
+        <DirectionsDrawer />
       </div>
     </AppProvider>
   );

@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { CrowdPill } from '../shared/CrowdPill';
-import { Navigation, Clock, Beer, X, Users, Star } from 'lucide-react';
-import { openDirections } from '../../utils/directions';
+import { Clock, Beer, X, Users, Star, Car, Footprints, Bike } from 'lucide-react';
+import { useAppContext } from '../../context';
 import type { Venue } from '../../types';
+import type { TravelMode } from '../../services/directionsService';
 
 /** Star rating component */
 function StarRating({ rating }: { rating: number }) {
@@ -76,6 +77,12 @@ function PopularTimesBar({ pct }: { pct: number }) {
   );
 }
 
+const DIR_MODES: { id: TravelMode; label: string; Icon: typeof Car }[] = [
+  { id: 'driving', label: 'Drive', Icon: Car },
+  { id: 'walking', label: 'Walk', Icon: Footprints },
+  { id: 'cycling', label: 'Bike', Icon: Bike },
+];
+
 export function VenueDetailSheet({
   venue,
   onClose,
@@ -83,6 +90,8 @@ export function VenueDetailSheet({
   venue: Venue | null;
   onClose: () => void;
 }) {
+  const { startDirections } = useAppContext();
+
   if (!venue) return null;
 
   const crowdColor = venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399';
@@ -205,17 +214,27 @@ export function VenueDetailSheet({
             </div>
           </div>
 
-          {/* Gradient CTA button — warm coral to amber */}
-          <button
-            onClick={() => openDirections(venue.coordinates[0], venue.coordinates[1], venue.name)}
-            className="w-full py-4 rounded-[20px] text-white font-bold text-[15px]
-                       flex items-center justify-center gap-2
-                       active:scale-[0.98] transition-transform
-                       shadow-[0_4px_20px_rgba(255,107,107,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
-            style={{ background: 'linear-gradient(135deg, #ff6b6b, #ffa726)' }}
-          >
-            <Navigation className="w-4.5 h-4.5" /> Explore Location
-          </button>
+          {/* Directions mode selector */}
+          <div className="flex gap-2">
+            {DIR_MODES.map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                onClick={() => {
+                  startDirections({ coords: venue.coordinates, name: venue.name }, id);
+                  onClose();
+                }}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-3.5 rounded-[16px]
+                           text-[13px] font-bold active:scale-[0.97] transition-all
+                           ${id === 'walking'
+                             ? 'text-white shadow-[0_4px_20px_rgba(255,77,106,0.3)]'
+                             : 'bg-[var(--k-surface)] border border-[var(--k-border)] text-[var(--k-text-2)]'
+                           }`}
+                style={id === 'walking' ? { background: 'linear-gradient(135deg, #ff6b6b, #ffa726)' } : undefined}
+              >
+                <Icon className="w-4 h-4" /> {label}
+              </button>
+            ))}
+          </div>
         </div>
       </DrawerContent>
     </Drawer>
