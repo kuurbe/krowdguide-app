@@ -50,11 +50,7 @@ export default function MobileApp() {
   const [cityGuideOpen, setCityGuideOpen] = useState(false);
 
   const handleTabChange = useCallback((tab: string) => {
-    if (tab === 'guide') {
-      setCityGuideOpen(true);
-    } else {
-      setActiveTab(tab);
-    }
+    setActiveTab(tab);
   }, []);
 
   const handleSplashComplete = useCallback((coords?: { lat: number; lng: number }) => {
@@ -115,7 +111,7 @@ export default function MobileApp() {
           <MobileHeader onBellClick={() => setAlertsOpen(true)} />
 
           <div className="flex-1 overflow-hidden">
-            {activeTab === 'map' && <LiveMap />}
+            {activeTab === 'map' && <LiveMap onKGClick={() => setCityGuideOpen(true)} />}
             {activeTab === 'ai' && <PredictView />}
             {activeTab === 'account' && <AccountView />}
           </div>
@@ -129,7 +125,7 @@ export default function MobileApp() {
         {/* Alerts Drawer */}
         <AlertsDrawer open={alertsOpen} onOpenChange={setAlertsOpen} />
 
-        {/* City Guide Drawer — opened via Guide tab */}
+        {/* City Guide Drawer — opened via KG button in search bar */}
         <CityGuideDrawer open={cityGuideOpen} onOpenChange={setCityGuideOpen} />
 
         {/* Directions Drawer — opened via in-app direction requests */}

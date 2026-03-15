@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Compass } from 'lucide-react';
 import { useAppContext } from '../../context';
 import { CrowdPill } from '../shared/CrowdPill';
 import type { Venue } from '../../types';
@@ -7,9 +7,11 @@ import type { Venue } from '../../types';
 export function MapSearchBar({
   venues = [],
   onVenueSelect,
+  onKGClick,
 }: {
   venues?: Venue[];
   onVenueSelect?: (venue: Venue) => void;
+  onKGClick?: () => void;
 }) {
   const { selectedCity } = useAppContext();
   const [query, setQuery] = useState('');
@@ -52,12 +54,12 @@ export function MapSearchBar({
   return (
     <div ref={containerRef} className="absolute top-4 left-4 right-4 z-[1010]">
       <div
-        className="flex items-center gap-2.5 py-[12px] pl-4 pr-4 rounded-[20px]
+        className="flex items-center gap-2 py-[10px] pl-3.5 pr-2.5 rounded-[16px]
                     bg-[var(--k-elevated)] ios-blur-thick
                     border border-[var(--k-border)]
                     shadow-[var(--k-search-shadow)]"
       >
-        <Search className="w-[17px] h-[17px] text-[var(--k-text-m)] flex-shrink-0" />
+        <Search className="w-[16px] h-[16px] text-[var(--k-text-m)] flex-shrink-0" />
         <input
           ref={inputRef}
           type="text"
@@ -65,17 +67,32 @@ export function MapSearchBar({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
           placeholder={`Search ${selectedCity.name}...`}
+          aria-label={`Search venues in ${selectedCity.name}`}
           className="flex-1 bg-transparent text-[15px] text-[var(--k-text)] placeholder:text-[var(--k-text-f)] outline-none
                      tracking-[-0.01em]"
         />
         {query && (
           <button
             onClick={handleClear}
-            className="w-6 h-6 rounded-full bg-[var(--k-fill)] flex items-center justify-center flex-shrink-0"
+            aria-label="Clear search"
+            className="w-6 h-6 rounded-full bg-[var(--k-fill)] flex items-center justify-center flex-shrink-0 ios-press"
           >
             <X className="w-3 h-3 text-[var(--k-text-m)]" />
           </button>
         )}
+        {/* KG Guide module button */}
+        <button
+          onClick={onKGClick}
+          aria-label="Open City Guide"
+          className="flex items-center gap-1.5 h-[32px] px-3 rounded-[10px]
+                     bg-gradient-to-r from-[var(--k-accent)] to-[var(--k-accent-3)]
+                     text-white text-[11px] font-bold tracking-wide uppercase
+                     shadow-[0_2px_8px_rgba(255,77,106,0.25)]
+                     ios-press flex-shrink-0"
+        >
+          <Compass className="w-3.5 h-3.5 stroke-[2.2]" />
+          <span>KG</span>
+        </button>
       </div>
 
       {/* Search results dropdown */}

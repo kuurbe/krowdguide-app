@@ -177,7 +177,7 @@ function poiPopupHTML(name: string, category: string, coords: [number, number]):
   </div>`;
 }
 
-export function LiveMap() {
+export function LiveMap({ onKGClick }: { onKGClick?: () => void }) {
   const { selectedCity, theme, mapRef, directions, flyoverActive, startDirections } = useAppContext();
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
@@ -533,7 +533,7 @@ export function LiveMap() {
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
-      <MapSearchBar venues={venues} onVenueSelect={selectVenue} />
+      <MapSearchBar venues={venues} onVenueSelect={selectVenue} onKGClick={onKGClick} />
       <CategoryPills active={activeCategory} onChange={setActiveCategory} />
       <MapLegend />
       {flyoverWaypoint && (
