@@ -1,21 +1,34 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import './mobile.css';
 import type { City } from './types';
 import { CITIES } from './data/cities';
-import { AppProvider } from './context';
+import { AppProvider, useAppContext } from './context';
+import { ErrorBoundary } from './components/shared/ErrorBoundary';
 import { SplashScreen } from './components/onboarding/SplashScreen';
 import { CitySelector } from './components/onboarding/CitySelector';
 import { IntentScreen } from './components/onboarding/IntentScreen';
 import { MobileHeader } from './components/layout/MobileHeader';
 import { BottomNav } from './components/layout/BottomNav';
-import { LiveMap } from './components/map/LiveMap';
-import { PredictView } from './components/ai/PredictView';
-import { AccountView } from './components/account/AccountView';
-import { AlertsDrawer } from './components/alerts/AlertsDrawer';
-import { CityGuideDrawer } from './components/map/CityGuideDrawer';
-import { DirectionsDrawer } from './components/map/DirectionsDrawer';
+
+// ── Code-split heavy views — only loaded when tab activates ──
+const LiveMap = lazy(() => import('./components/map/LiveMap').then(m => ({ default: m.LiveMap })));
+const PredictView = lazy(() => import('./components/ai/PredictView').then(m => ({ default: m.PredictView })));
+const AccountView = lazy(() => import('./components/account/AccountView').then(m => ({ default: m.AccountView })));
+const AlertsDrawer = lazy(() => import('./components/alerts/AlertsDrawer').then(m => ({ default: m.AlertsDrawer })));
+const CityGuideDrawer = lazy(() => import('./components/map/CityGuideDrawer').then(m => ({ default: m.CityGuideDrawer })));
+const DirectionsDrawer = lazy(() => import('./components/map/DirectionsDrawer').then(m => ({ default: m.DirectionsDrawer })));
+const VenueDetailSheet = lazy(() => import('./components/map/VenueDetailSheet').then(m => ({ default: m.VenueDetailSheet })));
 
 type Stage = 'splash' | 'city' | 'intent' | 'app';
+
+/** Skeleton placeholder shown while lazy chunks load */
+function ViewSkeleton() {
+  return (
+    <div className="h-full flex items-center justify-center bg-[var(--k-bg)]">
+      <div className="w-12 h-12 rounded-2xl skeleton-shimmer" />
+    </div>
+  );
+}
 
 // Match user coords to nearest supported city
 function matchCityByCoords(lat: number, lng: number): City | null {
@@ -97,40 +110,104 @@ export default function MobileApp() {
   }
 
   return (
-    <AppProvider city={selectedCity}>
-      <div className="relative w-full h-dvh max-w-md mx-auto bg-[var(--k-bg)] overflow-hidden shadow-2xl">
-        {/* Ambient orbs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="orb orb-1" />
-          <div className="orb orb-2" />
-          <div className="orb orb-3" />
-        </div>
+    <ErrorBoundary name="KrowdGuide">
+      <AppProvider city={selectedCity}>
+        <AppShell
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          alertsOpen={alertsOpen}
+          setAlertsOpen={setAlertsOpen}
+          cityGuideOpen={cityGuideOpen}
+          setCityGuideOpen={setCityGuideOpen}
+        />
+      </AppProvider>
+    </ErrorBoundary>
+  );
+}
 
-        {/* Main content */}
-        <div className="relative h-full flex flex-col z-[1]">
-          <MobileHeader onBellClick={() => setAlertsOpen(true)} />
+/** Inner shell — lives inside AppProvider so it can access context */
+function AppShell({
+  activeTab, onTabChange, alertsOpen, setAlertsOpen, cityGuideOpen, setCityGuideOpen,
+}: {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+  alertsOpen: boolean;
+  setAlertsOpen: (v: boolean) => void;
+  cityGuideOpen: boolean;
+  setCityGuideOpen: (v: boolean) => void;
+}) {
+  const { selectedVenue, closeVenueSheet } = useAppContext();
 
-          <div className="flex-1 overflow-hidden">
-            {activeTab === 'map' && <LiveMap onKGClick={() => setCityGuideOpen(true)} />}
-            {activeTab === 'ai' && <PredictView />}
-            {activeTab === 'account' && <AccountView />}
-          </div>
-
-          {/* Floating Bottom Nav */}
-          <div className="absolute bottom-4 left-5 right-5 z-[1100]">
-            <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-          </div>
-        </div>
-
-        {/* Alerts Drawer */}
-        <AlertsDrawer open={alertsOpen} onOpenChange={setAlertsOpen} />
-
-        {/* City Guide Drawer — opened via KG button in search bar */}
-        <CityGuideDrawer open={cityGuideOpen} onOpenChange={setCityGuideOpen} />
-
-        {/* Directions Drawer — opened via in-app direction requests */}
-        <DirectionsDrawer />
+  return (
+    <div className="relative w-full h-dvh bg-[var(--k-bg)] overflow-hidden">
+      {/* Ambient orbs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
       </div>
-    </AppProvider>
+
+      {/* Main content */}
+      <div className="relative h-full flex flex-col z-[1]">
+        <MobileHeader onBellClick={() => setAlertsOpen(true)} />
+
+        <div className="flex-1 overflow-hidden">
+          {/* LiveMap stays mounted (hidden) to preserve Mapbox instance */}
+          <div className={activeTab === 'map' ? 'h-full' : 'hidden'}>
+            <ErrorBoundary name="Map">
+              <Suspense fallback={<ViewSkeleton />}>
+                <LiveMap onKGClick={() => setCityGuideOpen(true)} />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+
+          {activeTab === 'ai' && (
+            <ErrorBoundary name="Predict">
+              <Suspense fallback={<ViewSkeleton />}>
+                <PredictView />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+
+          {activeTab === 'account' && (
+            <ErrorBoundary name="Account">
+              <Suspense fallback={<ViewSkeleton />}>
+                <AccountView />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+        </div>
+
+        {/* Floating Bottom Nav */}
+        <div className="absolute bottom-4 left-5 right-5 z-[1100] max-w-lg mx-auto safe-bottom">
+          <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
+        </div>
+      </div>
+
+      {/* Drawers & sheets — lazy loaded, wrapped in error boundaries */}
+      <Suspense fallback={null}>
+        <ErrorBoundary name="Alerts">
+          <AlertsDrawer open={alertsOpen} onOpenChange={setAlertsOpen} />
+        </ErrorBoundary>
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ErrorBoundary name="City Guide">
+          <CityGuideDrawer open={cityGuideOpen} onOpenChange={setCityGuideOpen} />
+        </ErrorBoundary>
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ErrorBoundary name="Directions">
+          <DirectionsDrawer />
+        </ErrorBoundary>
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ErrorBoundary name="Venue Detail">
+          <VenueDetailSheet venue={selectedVenue} onClose={closeVenueSheet} />
+        </ErrorBoundary>
+      </Suspense>
+    </div>
   );
 }

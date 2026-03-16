@@ -1,9 +1,11 @@
-import { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react';
 import type { Map } from 'mapbox-gl';
-import type { City } from './types';
+import type { City, Venue, OraclePulse } from './types';
 import type { TravelMode, DirectionsRoute } from './services/directionsService';
 import { fetchDirections } from './services/directionsService';
 import { getUserLocation } from './utils/userLocation';
+import { getVenuesForCity } from './data/venues';
+import { usePulseData } from './hooks/usePulseData';
 
 export interface DirectionsState {
   active: boolean;
@@ -13,6 +15,8 @@ export interface DirectionsState {
   route: DirectionsRoute | null;
   loading: boolean;
   error: string | null;
+  navigating: boolean;
+  currentStepIndex: number;
 }
 
 const INITIAL_DIRECTIONS: DirectionsState = {
@@ -23,6 +27,8 @@ const INITIAL_DIRECTIONS: DirectionsState = {
   route: null,
   loading: false,
   error: null,
+  navigating: false,
+  currentStepIndex: 0,
 };
 
 interface AppContextType {
@@ -41,9 +47,29 @@ interface AppContextType {
   startDirections: (dest: { coords: [number, number]; name: string }, mode?: TravelMode) => void;
   setDirectionsMode: (mode: TravelMode) => void;
   clearDirections: () => void;
+  startNavigation: () => void;
+  advanceStep: () => void;
+  endNavigation: () => void;
   // Flyover
   flyoverActive: boolean;
   setFlyoverActive: (v: boolean) => void;
+  // Venues — single source of truth, pre-fetched for instant card opens
+  venues: Venue[];
+  venueById: Map<string, Venue>;
+  pulse: OraclePulse | null;
+  isLive: boolean;
+  // Map↔List sync — highlighted venue ID for bidirectional coordination
+  highlightedVenueId: string | null;
+  setHighlightedVenueId: (id: string | null) => void;
+  flyToVenue: (venue: Venue) => void;
+  // Venue detail sheet — shared so both map and city guide can open it
+  selectedVenue: Venue | null;
+  selectVenue: (venue: Venue) => void;
+  closeVenueSheet: () => void;
+  // Favorites — persisted in localStorage
+  favorites: Set<string>;
+  toggleFavorite: (venueId: string) => void;
+  isFavorite: (venueId: string) => boolean;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -63,6 +89,75 @@ export function AppProvider({ city, children }: { city: City; children: ReactNod
   const mapRef = useRef<Map | null>(null);
   const [directions, setDirections] = useState<DirectionsState>(INITIAL_DIRECTIONS);
   const [flyoverActive, setFlyoverActive] = useState(false);
+  const [highlightedVenueId, setHighlightedVenueId] = useState<string | null>(null);
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('krowd-favorites');
+      return saved ? new Set(JSON.parse(saved) as string[]) : new Set();
+    } catch { return new Set(); }
+  });
+
+  const toggleFavorite = useCallback((venueId: string) => {
+    setFavorites(prev => {
+      const next = new Set(prev);
+      if (next.has(venueId)) next.delete(venueId);
+      else next.add(venueId);
+      localStorage.setItem('krowd-favorites', JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
+
+  const isFavorite = useCallback((venueId: string) => favorites.has(venueId), [favorites]);
+
+  /** Select a venue to open its detail sheet + fly map to it */
+  const selectVenue = useCallback((venue: Venue) => {
+    setSelectedVenue(venue);
+    setHighlightedVenueId(venue.id);
+    const map = mapRef.current;
+    if (map) {
+      map.flyTo({
+        center: [venue.coordinates[1], venue.coordinates[0]],
+        zoom: 16,
+        pitch: 45,
+        duration: 1200,
+      });
+    }
+    setTimeout(() => setHighlightedVenueId(null), 5000);
+  }, []);
+
+  const closeVenueSheet = useCallback(() => { setSelectedVenue(null); }, []);
+
+  /** Fly the map camera to a venue and highlight it */
+  const flyToVenue = useCallback((venue: Venue) => {
+    setHighlightedVenueId(venue.id);
+    const map = mapRef.current;
+    if (map) {
+      map.flyTo({
+        center: [venue.coordinates[1], venue.coordinates[0]],
+        zoom: 16,
+        pitch: 45,
+        duration: 1200,
+      });
+    }
+    // Auto-clear highlight after 5 seconds
+    setTimeout(() => setHighlightedVenueId(null), 5000);
+  }, []);
+
+  // Venue data — single source of truth with Oracle live-feed merge
+  const { pulse, liveVenue, isLive } = usePulseData();
+  const venues = useMemo(() => {
+    const base = getVenuesForCity(selectedCity.id);
+    if (isLive && liveVenue && selectedCity.id === 'reno') {
+      return [liveVenue, ...base.filter(v => v.name !== liveVenue.name)];
+    }
+    return base;
+  }, [selectedCity.id, isLive, liveVenue]);
+  const venueById = useMemo(() => {
+    const m = new globalThis.Map<string, Venue>();
+    venues.forEach(v => m.set(v.id, v));
+    return m;
+  }, [venues]);
 
   useEffect(() => {
     localStorage.setItem('krowd-theme', theme);
@@ -137,6 +232,25 @@ export function AppProvider({ city, children }: { city: City; children: ReactNod
     setDirections(INITIAL_DIRECTIONS);
   }, []);
 
+  const startNavigation = useCallback(() => {
+    setDirections(prev => ({ ...prev, navigating: true, currentStepIndex: 0 }));
+  }, []);
+
+  const advanceStep = useCallback(() => {
+    setDirections(prev => {
+      const totalSteps = prev.route?.steps.length ?? 0;
+      if (prev.currentStepIndex >= totalSteps - 1) {
+        // Past last step — arrival
+        return { ...prev, currentStepIndex: totalSteps };
+      }
+      return { ...prev, currentStepIndex: prev.currentStepIndex + 1 };
+    });
+  }, []);
+
+  const endNavigation = useCallback(() => {
+    setDirections(prev => ({ ...prev, navigating: false, currentStepIndex: 0 }));
+  }, []);
+
   return (
     <AppContext.Provider value={{
       selectedCity, setSelectedCity,
@@ -144,8 +258,12 @@ export function AppProvider({ city, children }: { city: City; children: ReactNod
       walkingMode, setWalkingMode,
       smartNotifs, setSmartNotifs,
       mapRef,
-      directions, startDirections, setDirectionsMode, clearDirections,
+      directions, startDirections, setDirectionsMode, clearDirections, startNavigation, advanceStep, endNavigation,
       flyoverActive, setFlyoverActive,
+      venues, venueById, pulse, isLive,
+      highlightedVenueId, setHighlightedVenueId, flyToVenue,
+      selectedVenue, selectVenue, closeVenueSheet,
+      favorites, toggleFavorite, isFavorite,
     }}>
       {children}
     </AppContext.Provider>

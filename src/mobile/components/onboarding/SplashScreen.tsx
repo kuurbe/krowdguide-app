@@ -1,15 +1,79 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Navigation, Locate } from 'lucide-react';
+import gsap from 'gsap';
 
 export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: number; lng: number }) => void }) {
   const [phase, setPhase] = useState<'splash' | 'location'>('splash');
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState('');
 
+  // GSAP refs
+  const splashRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const krowdRef = useRef<HTMLSpanElement>(null);
+  const guideRef = useRef<HTMLSpanElement>(null);
+  const taglineRef = useRef<HTMLParagraphElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // GSAP splash animation sequence
   useEffect(() => {
-    const timer = setTimeout(() => setPhase('location'), 2800);
-    return () => clearTimeout(timer);
-  }, []);
+    if (phase !== 'splash') return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        onComplete: () => setPhase('location'),
+      });
+
+      // 0-400ms: Logo icon fades in with elastic bounce
+      tl.from(logoRef.current, {
+        scale: 0.5,
+        opacity: 0,
+        duration: 0.5,
+        ease: 'elastic.out(1, 0.5)',
+      });
+
+      // 400-800ms: "KROWD" text animates in letter-by-letter
+      tl.from(krowdRef.current, {
+        opacity: 0,
+        x: -20,
+        duration: 0.4,
+        ease: 'power3.out',
+      }, 0.4);
+
+      // 800-1200ms: "GUIDE" slides up with reveal
+      tl.from(guideRef.current, {
+        opacity: 0,
+        y: 15,
+        duration: 0.4,
+        ease: 'power3.out',
+      }, 0.8);
+
+      // 1200-1600ms: Tagline fades up
+      tl.from(taglineRef.current, {
+        opacity: 0,
+        y: 10,
+        duration: 0.4,
+        ease: 'power2.out',
+      }, 1.2);
+
+      // Progress bar animates across full width
+      tl.to(progressRef.current, {
+        width: '100%',
+        duration: 1.6,
+        ease: 'power1.inOut',
+      }, 1.0);
+
+      // 2400-2800ms: Entire splash scales up slightly and fades
+      tl.to(containerRef.current, {
+        scale: 1.05,
+        opacity: 0,
+        duration: 0.4,
+        ease: 'power2.in',
+      }, 2.6);
+    }, splashRef);
+
+    return () => ctx.revert();
+  }, [phase]);
 
   const handleEnableLocation = () => {
     setLocating(true);
@@ -33,7 +97,7 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
 
   if (phase === 'splash') {
     return (
-      <div className="h-dvh w-full max-w-md mx-auto bg-[#050508] flex flex-col items-center justify-center relative overflow-hidden">
+      <div ref={splashRef} className="h-dvh w-full bg-[#050508] flex flex-col items-center justify-center relative overflow-hidden">
         {/* Aurora mesh background */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="orb orb-1" />
@@ -41,28 +105,29 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050508]/80" />
         </div>
 
-        <div className="animate-splash relative z-10 flex flex-col items-center">
+        <div ref={containerRef} className="relative z-10 flex flex-col items-center">
           {/* Logo mark */}
-          <div className="w-28 h-28 rounded-[32px] bg-gradient-to-br from-[#ff4d6a]/20 via-[#a855f7]/15 to-[#22d3ee]/10
-                          flex items-center justify-center mb-10 border border-white/[0.06]
-                          shadow-[0_0_60px_rgba(255,77,106,0.15)]">
+          <div
+            ref={logoRef}
+            className="w-28 h-28 rounded-[32px] bg-gradient-to-br from-[#ff4d6a]/20 via-[#a855f7]/15 to-[#22d3ee]/10
+                        flex items-center justify-center mb-10 border border-white/[0.06]
+                        shadow-[0_0_60px_rgba(255,77,106,0.15)]"
+          >
             <span className="font-syne font-extrabold text-3xl tracking-tight gradient-text-warm">KG</span>
           </div>
 
           <h1 className="font-syne font-extrabold text-[42px] leading-[1] tracking-[-0.03em] text-center">
-            <span className="text-white">KROWD</span>
-            <span className="gradient-text-warm">GUIDE</span>
+            <span ref={krowdRef} className="text-white inline-block">KROWD</span>
+            <span ref={guideRef} className="gradient-text-warm inline-block">GUIDE</span>
           </h1>
 
-          <p className="text-white/35 text-[13px] mt-4 tracking-[0.12em] uppercase font-medium">
+          <p ref={taglineRef} className="text-white/35 text-[13px] mt-4 tracking-[0.12em] uppercase font-medium">
             Real-time crowd intelligence
           </p>
 
-          {/* Loading indicator */}
-          <div className="mt-14 flex items-center gap-2">
-            <div className="w-8 h-[3px] rounded-full bg-gradient-to-r from-[#ff4d6a] to-[#a855f7] animate-pulse" />
-            <div className="w-5 h-[3px] rounded-full bg-white/10 animate-pulse" style={{ animationDelay: '200ms' }} />
-            <div className="w-3 h-[3px] rounded-full bg-white/10 animate-pulse" style={{ animationDelay: '400ms' }} />
+          {/* GSAP progress bar */}
+          <div className="mt-14 w-32 h-[3px] rounded-full bg-white/10 overflow-hidden">
+            <div ref={progressRef} className="h-full w-0 rounded-full bg-gradient-to-r from-[#ff4d6a] to-[#a855f7]" />
           </div>
         </div>
       </div>
@@ -70,7 +135,7 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
   }
 
   return (
-    <div className="h-dvh w-full max-w-md mx-auto bg-[#050508] flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <div className="h-dvh w-full bg-[#050508] flex flex-col items-center justify-center px-6 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="orb orb-1" />
         <div className="orb orb-2" />

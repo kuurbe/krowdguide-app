@@ -3,7 +3,8 @@ import { useAppContext } from '../../context';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { formatDistance, formatDuration } from '../../services/directionsService';
 import type { TravelMode } from '../../services/directionsService';
-import { X, Car, Footprints, Bike, Loader2, CornerDownLeft, CornerDownRight, MoveUp, MapPin, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, Car, Footprints, Bike, Loader2, Navigation, ChevronUp, ChevronDown } from 'lucide-react';
+import { ManeuverIcon } from './ManeuverIcon';
 
 const MODES: { id: TravelMode; label: string; Icon: typeof Car }[] = [
   { id: 'driving', label: 'Drive', Icon: Car },
@@ -11,22 +12,21 @@ const MODES: { id: TravelMode; label: string; Icon: typeof Car }[] = [
   { id: 'cycling', label: 'Bike', Icon: Bike },
 ];
 
-function stepIcon(type: string, modifier?: string) {
-  if (type === 'arrive' || type === 'depart') return <MapPin className="w-4 h-4 text-[#ff4d6a]" />;
-  if (modifier?.includes('left')) return <CornerDownLeft className="w-4 h-4 text-[var(--k-text-2)]" />;
-  if (modifier?.includes('right')) return <CornerDownRight className="w-4 h-4 text-[var(--k-text-2)]" />;
-  return <MoveUp className="w-4 h-4 text-[var(--k-text-2)]" />;
-}
-
 export function DirectionsDrawer() {
-  const { directions, setDirectionsMode, clearDirections } = useAppContext();
+  const { directions, setDirectionsMode, clearDirections, startNavigation } = useAppContext();
   const [stepsExpanded, setStepsExpanded] = useState(false);
 
-  if (!directions.active) return null;
+  // Only show in preview mode (not during active navigation)
+  if (!directions.active || directions.navigating) return null;
+
+  // Extract "via" road from first meaningful step
+  const viaRoad = directions.route?.steps
+    .find(s => s.maneuver.type !== 'depart')
+    ?.instruction.match(/on (.+?)(?:$|,| for)/)?.[1];
 
   return (
-    <Drawer open={directions.active} onOpenChange={(open) => { if (!open) clearDirections(); }}>
-      <DrawerContent className="max-h-[65vh] max-w-md mx-auto bg-[var(--k-bg)] border-[var(--k-border)] rounded-t-[24px]">
+    <Drawer open={directions.active && !directions.navigating} onOpenChange={(open) => { if (!open) clearDirections(); }}>
+      <DrawerContent className="max-h-[70vh] liquid-glass glass-border-glow rounded-t-[24px]">
         <DrawerTitle className="sr-only">
           Directions to {directions.destination?.name}
         </DrawerTitle>
@@ -68,12 +68,17 @@ export function DirectionsDrawer() {
             {/* Duration / Distance badge */}
             {directions.route && !directions.loading && (
               <div className="flex flex-col items-end justify-center gap-0.5 flex-shrink-0">
-                <p className="text-[22px] font-black text-[var(--k-text)] tracking-[-0.04em] leading-none">
+                <p className="font-syne text-[26px] font-extrabold text-[var(--k-text)] tracking-[-0.04em] leading-none">
                   {formatDuration(directions.route.duration)}
                 </p>
                 <p className="text-[12px] text-[var(--k-text-m)] font-medium">
                   {formatDistance(directions.route.distance)}
                 </p>
+                {viaRoad && (
+                  <p className="text-[10px] text-[var(--k-text-f)] truncate max-w-[120px]">
+                    via {viaRoad}
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -109,15 +114,27 @@ export function DirectionsDrawer() {
             )}
           </div>
 
-          {/* GO button */}
+          {/* Start Navigation button */}
+          {directions.route && !directions.loading && (
+            <button
+              onClick={startNavigation}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white font-black text-[16px] tracking-wide
+                         shadow-[0_4px_20px_rgba(34,211,238,0.3)] active:scale-[0.97] transition-transform flex items-center justify-center gap-2 mb-3 ios-press"
+            >
+              <Navigation className="w-5 h-5" />
+              Start Navigation
+            </button>
+          )}
+
+          {/* View Steps toggle */}
           {directions.route && !directions.loading && (
             <button
               onClick={() => setStepsExpanded(prev => !prev)}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#22d3ee] to-[#22d3ee]/80 text-white font-black text-[16px] tracking-wide
-                         shadow-[0_4px_20px_rgba(34,211,238,0.3)] active:scale-[0.97] transition-transform flex items-center justify-center gap-2 mb-3"
+              className="w-full flex items-center justify-center gap-1.5 py-2 text-[12px] font-bold text-[var(--k-text-m)]
+                         hover:text-[var(--k-text)] transition-colors"
             >
-              {stepsExpanded ? 'HIDE STEPS' : 'GO'}
-              {stepsExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              {stepsExpanded ? 'Hide Steps' : `View ${directions.route.steps.length} Steps`}
+              {stepsExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
             </button>
           )}
 
@@ -138,17 +155,20 @@ export function DirectionsDrawer() {
 
           {/* Turn-by-turn steps (collapsible) */}
           {stepsExpanded && directions.route && !directions.loading && (
-            <div className="max-h-[22vh] overflow-y-auto space-y-0 border-t border-[var(--k-border-s)] pt-2">
+            <div className="max-h-[22vh] overflow-y-auto space-y-0 border-t border-[var(--k-border-s)] pt-2 no-scrollbar">
               {directions.route.steps.map((step, i) => (
                 <div
                   key={i}
                   className="flex items-start gap-3 py-2.5 border-b border-[var(--k-border-s)] last:border-0"
                 >
                   <div className="w-8 h-8 rounded-lg bg-[var(--k-surface)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    {stepIcon(step.maneuver.type, step.maneuver.modifier)}
+                    <ManeuverIcon type={step.maneuver.type} modifier={step.maneuver.modifier} size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] text-[var(--k-text)] leading-[1.35]">{step.instruction}</p>
+                    <p className="text-[13px] text-[var(--k-text)] leading-[1.35]">
+                      <span className="text-[var(--k-text-f)] font-bold mr-1.5">{i + 1}.</span>
+                      {step.instruction}
+                    </p>
                     <p className="text-[11px] text-[var(--k-text-f)] mt-0.5">
                       {formatDistance(step.distance)} · {formatDuration(step.duration)}
                     </p>

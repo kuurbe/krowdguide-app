@@ -18,23 +18,33 @@ export function CategoryPills({
   onChange: (cat: string) => void;
 }) {
   return (
-    <div className="absolute top-[92px] left-4 right-4 z-[1000] flex gap-2 overflow-x-auto no-scrollbar">
-      {CATEGORIES.map((cat) => (
-        <button
-          key={cat.id}
-          onClick={() => onChange(cat.id)}
-          aria-pressed={active === cat.id}
-          className={cn(
-            'flex items-center gap-1.5 px-4 py-[10px] text-[12px] font-bold rounded-full whitespace-nowrap transition-all ios-press tracking-[-0.01em]',
-            active === cat.id
-              ? 'bg-[#ff4d6a] text-white shadow-[0_2px_16px_rgba(255,77,106,0.35)]'
-              : 'bg-[var(--k-elevated)] ios-blur text-[var(--k-text-2)] border border-[var(--k-border)] shadow-[var(--k-card-shadow)]'
-          )}
-        >
-          <cat.Icon className={cn('w-3.5 h-3.5', active === cat.id ? 'stroke-[2.2]' : 'stroke-[1.8]')} />
-          {cat.label}
-        </button>
-      ))}
+    <div
+      className="absolute top-[88px] left-4 right-4 z-[1000] flex gap-2 overflow-x-auto no-scrollbar pill-scroll-fade"
+      style={{ scrollSnapType: 'x mandatory' }}
+    >
+      {CATEGORIES.map((cat) => {
+        const isActive = active === cat.id;
+        return (
+          <button
+            key={cat.id}
+            onClick={() => onChange(cat.id)}
+            aria-pressed={isActive}
+            style={{
+              scrollSnapAlign: 'start',
+              ...(isActive ? { boxShadow: 'var(--k-glow-coral)' } : {}),
+            }}
+            className={cn(
+              'flex items-center gap-1.5 px-4 py-[9px] text-[12px] font-bold rounded-full whitespace-nowrap transition-all ios-press tracking-[-0.01em]',
+              isActive
+                ? 'liquid-glass text-[var(--k-accent)] border-[var(--k-accent)]/25'
+                : 'glass-chip text-[var(--k-text-2)] border border-transparent'
+            )}
+          >
+            <cat.Icon className={cn('w-3.5 h-3.5', isActive ? 'stroke-[2.2]' : 'stroke-[1.8]')} />
+            {cat.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

@@ -1,8 +1,9 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
-import { Search, X, Compass } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Search, Compass } from 'lucide-react';
 import { useAppContext } from '../../context';
-import { CrowdPill } from '../shared/CrowdPill';
+import { CommandPalette } from '../search/CommandPalette';
 import type { Venue } from '../../types';
+import type { QuickAction } from '../search/CommandPalette';
 
 export function MapSearchBar({
   venues = [],
@@ -14,72 +15,60 @@ export function MapSearchBar({
   onKGClick?: () => void;
 }) {
   const { selectedCity } = useAppContext();
-  const [query, setQuery] = useState('');
-  const [focused, setFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
-  const results = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    return venues
-      .filter(v => v.name.toLowerCase().includes(q) || v.type.toLowerCase().includes(q))
-      .slice(0, 5);
-  }, [query, venues]);
-
-  const showDropdown = focused && results.length > 0;
-
-  // Close dropdown on outside click
+  // Cmd+K / Ctrl+K keyboard shortcut
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setFocused(false);
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setPaletteOpen(true);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, []);
 
-  const handleSelect = (venue: Venue) => {
-    setQuery('');
-    setFocused(false);
+  const handleVenueSelect = useCallback((venue: Venue) => {
     onVenueSelect?.(venue);
-  };
+  }, [onVenueSelect]);
 
-  const handleClear = () => {
-    setQuery('');
-    inputRef.current?.focus();
-  };
+  const handleQuickAction = useCallback((action: QuickAction) => {
+    // Quick actions — filter or select venues based on action type
+    if (action === 'busy') {
+      const busiest = venues.filter(v => v.crowd === 'busy').sort((a, b) => b.pct - a.pct)[0];
+      if (busiest) onVenueSelect?.(busiest);
+    } else if (action === 'quiet') {
+      const quietest = venues.filter(v => v.crowd === 'quiet').sort((a, b) => a.pct - b.pct)[0];
+      if (quietest) onVenueSelect?.(quietest);
+    } else if (action === 'hh') {
+      const hh = venues.find(v => v.hasHH);
+      if (hh) onVenueSelect?.(hh);
+    } else if (action === 'nearest') {
+      const nearest = venues.sort((a, b) => {
+        const distA = parseFloat(a.dist) || 99;
+        const distB = parseFloat(b.dist) || 99;
+        return distA - distB;
+      })[0];
+      if (nearest) onVenueSelect?.(nearest);
+    }
+  }, [venues, onVenueSelect]);
 
   return (
-    <div ref={containerRef} className="absolute top-4 left-4 right-4 z-[1010]">
+    <div className="absolute top-4 left-4 right-4 z-[1010]">
       <div
-        className="flex items-center gap-2 py-[10px] pl-3.5 pr-2.5 rounded-[16px]
-                    bg-[var(--k-elevated)] ios-blur-thick
-                    border border-[var(--k-border)]
-                    shadow-[var(--k-search-shadow)]"
+        className="flex items-center gap-2 py-[10px] pl-3.5 pr-2.5 rounded-[20px]
+                    liquid-glass
+                    shadow-[var(--k-shadow-md)]"
       >
-        <Search className="w-[16px] h-[16px] text-[var(--k-text-m)] flex-shrink-0" />
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setFocused(true)}
-          placeholder={`Search ${selectedCity.name}...`}
-          aria-label={`Search venues in ${selectedCity.name}`}
-          className="flex-1 bg-transparent text-[15px] text-[var(--k-text)] placeholder:text-[var(--k-text-f)] outline-none
-                     tracking-[-0.01em]"
-        />
-        {query && (
-          <button
-            onClick={handleClear}
-            aria-label="Clear search"
-            className="w-6 h-6 rounded-full bg-[var(--k-fill)] flex items-center justify-center flex-shrink-0 ios-press"
-          >
-            <X className="w-3 h-3 text-[var(--k-text-m)]" />
-          </button>
-        )}
+        <Search className="w-[16px] h-[16px] text-[var(--k-text-m)] flex-shrink-0 opacity-60" />
+        {/* Tap target — opens command palette */}
+        <button
+          onClick={() => setPaletteOpen(true)}
+          className="flex-1 text-left text-[15px] text-[var(--k-text-f)] tracking-[-0.01em]"
+        >
+          Search {selectedCity.name}...
+        </button>
         {/* KG Guide module button */}
         <button
           onClick={onKGClick}
@@ -95,28 +84,14 @@ export function MapSearchBar({
         </button>
       </div>
 
-      {/* Search results dropdown */}
-      {showDropdown && (
-        <div className="mt-2 rounded-2xl bg-[var(--k-elevated)] ios-blur-thick border border-[var(--k-border)]
-                        shadow-[var(--k-modal-shadow)] overflow-hidden search-dropdown">
-          {results.map((venue) => (
-            <button
-              key={venue.id}
-              onClick={() => handleSelect(venue)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left
-                         hover:bg-[var(--k-surface-h)] active:bg-[var(--k-surface-h)] transition-colors
-                         border-b border-[var(--k-border-s)] last:border-b-0"
-            >
-              <span className="text-[18px] flex-shrink-0">{venue.icon}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold text-[var(--k-text)] truncate tracking-[-0.01em]">{venue.name}</p>
-                <p className="text-[11px] text-[var(--k-text-m)] truncate">{venue.type} · {venue.dist}</p>
-              </div>
-              <CrowdPill crowd={venue.crowd} pct={venue.pct} />
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Command Palette */}
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        venues={venues}
+        onVenueSelect={handleVenueSelect}
+        onQuickAction={handleQuickAction}
+      />
     </div>
   );
 }

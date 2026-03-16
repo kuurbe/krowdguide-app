@@ -6,7 +6,8 @@ export interface DirectionsStep {
   instruction: string;
   distance: number;   // meters
   duration: number;   // seconds
-  maneuver: { type: string; modifier?: string };
+  maneuver: { type: string; modifier?: string; bearing_after?: number };
+  geometry: GeoJSON.LineString;
 }
 
 export interface DirectionsRoute {
@@ -44,7 +45,9 @@ export async function fetchDirections(
       maneuver: {
         type: s.maneuver?.type || 'turn',
         modifier: s.maneuver?.modifier,
+        bearing_after: s.maneuver?.bearing_after,
       },
+      geometry: s.geometry as GeoJSON.LineString,
     })),
   };
 }

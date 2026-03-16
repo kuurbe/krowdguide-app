@@ -40,7 +40,7 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
   }, [transcript, isListening]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="h-dvh w-full max-w-md mx-auto bg-[#050508] flex flex-col px-5 relative overflow-hidden">
+    <div className="h-dvh w-full bg-[#050508] flex flex-col px-5 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="orb orb-1" />
         <div className="orb orb-2" />

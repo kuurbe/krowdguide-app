@@ -1,1 +1,7 @@
-export const MAPBOX_TOKEN = 'pk.eyJ1IjoiamNvbGJ5eTIiLCJhIjoiY21pcWV5dTBmMGw1MzNlcHdrbnBxZGlxNSJ9.ltCqt3qSjsuUsP_Q3D0F7g';
+/** Mapbox GL token — loaded from environment variable (VITE_MAPBOX_TOKEN) */
+export const MAPBOX_TOKEN: string =
+  import.meta.env.VITE_MAPBOX_TOKEN ??
+  (() => {
+    console.error('[Mapbox] VITE_MAPBOX_TOKEN not set — map will not load');
+    return '';
+  })();

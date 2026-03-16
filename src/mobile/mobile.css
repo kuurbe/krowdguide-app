@@ -3,6 +3,9 @@
    Inspired by Dallas.Live, Apple Maps, Google Local Vibe
    ═══════════════════════════════════════════════════════════ */
 
+/* ── Layer Order — eliminates specificity wars ───────────── */
+@layer base, tokens, components, utilities;
+
 /* ── 1. DESIGN TOKENS ──────────────────────────────────── */
 
 :root,
@@ -47,12 +50,38 @@
   /* Ambient */
   --k-orb-opacity: 0.15;
 
-  /* Elevation (shadows) */
-  --k-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255,255,255,0.05);
+  /* Glass material tokens — iOS 26 Liquid Glass */
+  --k-glass-bg: rgba(20, 22, 32, 0.45);
+  --k-glass-blur: blur(48px) saturate(220%);
+  --k-glass-border: rgba(255, 255, 255, 0.10);
+  --k-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+  --k-glass-refraction: 0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.2);
+
+  /* Mesh gradient system — ambient lighting */
+  --k-mesh-1: radial-gradient(ellipse at 20% 20%, rgba(255, 77, 106, 0.08), transparent 60%);
+  --k-mesh-2: radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.06), transparent 60%);
+  --k-mesh-3: radial-gradient(ellipse at 50% 50%, rgba(34, 211, 238, 0.04), transparent 50%);
+
+  /* Neon glow tokens — controlled micro-glow accents */
+  --k-glow-coral: 0 0 12px rgba(255, 77, 106, 0.25);
+  --k-glow-cyan: 0 0 12px rgba(34, 211, 238, 0.20);
+  --k-glow-purple: 0 0 12px rgba(168, 85, 247, 0.20);
+  --k-neon-coral: drop-shadow(0 0 8px rgba(255, 77, 106, 0.3));
+  --k-neon-cyan: drop-shadow(0 0 8px rgba(34, 211, 238, 0.25));
+
+  /* 5-tier elevation shadow scale */
+  --k-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --k-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25), 0 0 1px rgba(255, 255, 255, 0.04);
+  --k-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 1px rgba(255, 255, 255, 0.05);
+  --k-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.06);
+  --k-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 255, 255, 0.06);
+
+  /* Backward-compatible aliases */
+  --k-card-shadow: var(--k-shadow-sm);
   --k-bar-shadow: 0 -0.5px 0 rgba(255, 255, 255, 0.06);
-  --k-search-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  --k-float-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --k-modal-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  --k-search-shadow: var(--k-shadow-md);
+  --k-float-shadow: var(--k-shadow-lg);
+  --k-modal-shadow: var(--k-shadow-xl);
 }
 
 [data-theme="light"] {
@@ -96,12 +125,46 @@
   /* Ambient */
   --k-orb-opacity: 0.04;
 
-  /* Elevation */
-  --k-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0,0,0,0.04);
+  /* Glass material tokens — light mode */
+  --k-glass-bg: rgba(255, 255, 255, 0.52);
+  --k-glass-blur: blur(48px) saturate(220%);
+  --k-glass-border: rgba(0, 0, 0, 0.08);
+  --k-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+  --k-glass-refraction: 0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
+
+  /* Mesh gradients — light mode (subtler) */
+  --k-mesh-1: radial-gradient(ellipse at 20% 20%, rgba(230, 62, 88, 0.04), transparent 60%);
+  --k-mesh-2: radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.03), transparent 60%);
+  --k-mesh-3: radial-gradient(ellipse at 50% 50%, rgba(8, 145, 178, 0.03), transparent 50%);
+
+  /* Neon glow tokens — light mode (subtler) */
+  --k-glow-coral: 0 0 12px rgba(230, 62, 88, 0.15);
+  --k-glow-cyan: 0 0 12px rgba(8, 145, 178, 0.12);
+  --k-glow-purple: 0 0 12px rgba(147, 51, 234, 0.12);
+  --k-neon-coral: drop-shadow(0 0 6px rgba(230, 62, 88, 0.2));
+  --k-neon-cyan: drop-shadow(0 0 6px rgba(8, 145, 178, 0.18));
+
+  /* 5-tier elevation — light mode */
+  --k-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --k-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+  --k-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --k-shadow-lg: 0 6px 24px rgba(0, 0, 0, 0.08);
+  --k-shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.15);
+
+  /* Backward-compatible aliases */
+  --k-card-shadow: var(--k-shadow-sm);
   --k-bar-shadow: 0 -0.5px 0 rgba(0, 0, 0, 0.10);
-  --k-search-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
-  --k-float-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-  --k-modal-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  --k-search-shadow: var(--k-shadow-md);
+  --k-float-shadow: var(--k-shadow-lg);
+  --k-modal-shadow: var(--k-shadow-xl);
+}
+
+
+/* ── 1b. ROOT OVERSCROLL ─────────────────────────────── */
+
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 
@@ -112,17 +175,17 @@
 }
 
 .mapboxgl-ctrl-bottom-right {
-  bottom: 80px !important;
+  bottom: 100px !important;
   right: 12px !important;
 }
 
 .mapboxgl-ctrl-group {
-  background: var(--k-elevated) !important;
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border: 1px solid var(--k-border) !important;
-  border-radius: 12px !important;
-  box-shadow: var(--k-card-shadow) !important;
+  background: var(--k-glass-bg) !important;
+  backdrop-filter: saturate(220%) blur(30px);
+  -webkit-backdrop-filter: saturate(220%) blur(30px);
+  border: 1px solid var(--k-glass-border) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--k-shadow-sm), var(--k-glass-highlight) !important;
   overflow: hidden;
 }
 
@@ -317,6 +380,160 @@
   box-shadow: var(--k-card-shadow);
 }
 
+/* ── LIQUID GLASS MATERIAL (iOS 26 / visionOS-inspired) ── */
+.liquid-glass {
+  background: var(--k-glass-bg);
+  backdrop-filter: var(--k-glass-blur);
+  -webkit-backdrop-filter: var(--k-glass-blur);
+  border: 1px solid var(--k-glass-border);
+  box-shadow: var(--k-glass-refraction), var(--k-glass-highlight);
+}
+
+/* Animated gradient border — slow-shifting accent glow */
+/* NOTE: Use position only when NOT inside a Vaul drawer (which sets position:fixed).
+   The ::before pseudo needs a positioned ancestor — fixed/absolute/relative all work. */
+.glass-border-glow:not([data-vaul-drawer]) {
+  position: relative;
+}
+.glass-border-glow {
+  overflow: visible;
+}
+.glass-border-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 77, 106, 0.3),
+    rgba(168, 85, 247, 0.2),
+    rgba(34, 211, 238, 0.3),
+    rgba(255, 77, 106, 0.3)
+  );
+  background-size: 300% 300%;
+  animation: glass-border-shift 8s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes glass-border-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Subtle top highlight — mimics glass refraction */
+.glass-inner-light:not([data-vaul-drawer]) {
+  position: relative;
+}
+.glass-inner-light::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Glass chip — for info sections inside glass drawers */
+.glass-chip {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-theme="light"] .glass-chip {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Fallback for older browsers */
+@supports not (backdrop-filter: blur(40px)) {
+  .liquid-glass {
+    background: rgba(20, 22, 32, 0.92);
+  }
+  [data-theme="light"] .liquid-glass {
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+
+
+/* ── TYPE SCALE — 2026 Editorial Hierarchy ────────────── */
+
+.type-display { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -0.03em; line-height: 1.0; }
+.type-title-1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.025em; line-height: 1.1; }
+.type-title-2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; line-height: 1.15; }
+.type-title-3 { font-weight: 700; font-size: 15px; letter-spacing: -0.02em; line-height: 1.2; }
+.type-body { font-weight: 400; font-size: 14px; letter-spacing: -0.01em; line-height: 1.45; }
+.type-caption { font-weight: 600; font-size: 12px; letter-spacing: -0.005em; line-height: 1.3; }
+.type-micro { font-weight: 700; font-size: 10px; letter-spacing: 0.02em; line-height: 1.2; }
+.type-overline { font-weight: 800; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.3; }
+
+
+/* ── SKELETON LOADING — 2026 shimmer system ───────────── */
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--k-fill-3) 25%, var(--k-fill-2) 37%, var(--k-fill-3) 63%);
+  background-size: 400% 100%;
+  animation: skeletonWave 1.8s ease-in-out infinite;
+}
+@keyframes skeletonWave {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.skeleton-card {
+  background: var(--k-surface);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.skeleton-card .skeleton-img {
+  aspect-ratio: 3 / 2.5;
+}
+.skeleton-card .skeleton-text {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--k-fill-3);
+  margin: 8px 12px;
+}
+.skeleton-card .skeleton-text-sm {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--k-fill-3);
+  margin: 4px 12px 12px;
+  width: 60%;
+}
+
+
+/* ── SCROLL-TRIGGERED REVEAL ──────────────────────────── */
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.reveal-up {
+  animation: revealUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Glow pulse for active elements */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: var(--k-glow-coral); }
+  50% { box-shadow: 0 0 20px rgba(255, 77, 106, 0.35); }
+}
+.glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
+.glow-pulse-cyan {
+  animation: glowPulseCyan 2s ease-in-out infinite;
+}
+@keyframes glowPulseCyan {
+  0%, 100% { box-shadow: var(--k-glow-cyan); }
+  50% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); }
+}
+
 
 /* ── LIVE PULSE DOT ─────────────────────────────────────── */
 .live-dot {
@@ -459,16 +676,16 @@
 
 /* ── 11. iOS INTERACTION PATTERNS ──────────────────────── */
 
-/* Pressed state — Apple's UIKit press spring */
+/* Pressed state — 2026 spring physics bounce */
 .ios-press {
-  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
               opacity 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .ios-press:active {
-  transform: scale(0.97);
-  opacity: 0.7;
+  transform: scale(0.96);
+  opacity: 0.75;
 }
 
 /* Material blur — Apple's vibrancy */
@@ -500,6 +717,49 @@
   letter-spacing: 0.06em;
   color: var(--k-text-m);
   padding: 0 0 8px 0;
+}
+
+
+/* ── 13b. INP & PAINT CONTAINMENT ─────────────────────── */
+
+/* CSS containment — prevents layout/paint thrashing across siblings */
+.contain-layout {
+  contain: layout style;
+}
+.contain-strict {
+  contain: layout style paint;
+}
+
+/* content-visibility: auto — skip layout/paint for off-screen sections */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+.cv-auto-sm {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 200px;
+}
+
+/* GPU-promoted layers for animated elements */
+.promote-layer {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Reduce motion — respect user preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .orb { display: none; }
+  .animate-float { animation: none; }
+  .animate-fadeUp { animation: none; opacity: 1; }
+  .reveal-up { animation: none; opacity: 1; }
+  .glow-pulse, .glow-pulse-cyan { animation: none; }
+  .skeleton-shimmer { animation: none; }
+  .ios-press { transition: none; }
 }
 
 
@@ -694,4 +954,207 @@
 
 .nav-icon-glow {
   filter: drop-shadow(0 0 6px rgba(255, 77, 106, 0.35));
+}
+
+
+/* ── 21. SCROLL CONTAINERS — iOS-native feel ─────────── */
+
+.overflow-y-auto,
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* ── 22. DRAWER CONSISTENT ROUNDING ──────────────────── */
+
+[vaul-drawer] [data-vaul-drawer] {
+  border-radius: 20px 20px 0 0 !important;
+}
+
+
+/* ── 23. CATEGORY PILLS — Gradient fade edges ─────────── */
+
+.pill-scroll-fade {
+  mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+}
+
+
+/* ── 24. CITY GUIDE HERO ─────────────────────────────── */
+
+.guide-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+
+/* ── 25. FLYOVER LETTERBOX ───────────────────────────── */
+
+@keyframes letterbox-in {
+  from { height: 0; }
+  to { height: 28px; }
+}
+
+.flyover-letterbox {
+  animation: letterbox-in 0.4s ease-out both;
+}
+
+
+/* ── 26. VENUE HIGHLIGHT RING — Map→List sync glow ──── */
+
+@keyframes highlight-ring-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 77, 106, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(255, 77, 106, 0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 77, 106, 0); }
+}
+
+.venue-highlight-ring {
+  animation: highlight-ring-pulse 1s ease-in-out 3;
+  border-color: rgba(255, 77, 106, 0.4) !important;
+}
+
+
+/* ── 27. VENUE GRID CARDS — 2-Column Image-Forward Layout ── */
+
+.venue-grid-card {
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.venue-grid-card:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+/* Show more button for venue grid */
+.venue-grid-show-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0;
+  border-radius: 14px;
+  background: var(--k-surface);
+  border: 1px solid var(--k-border);
+  color: var(--k-text-m);
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.venue-grid-show-more:active {
+  transform: scale(0.98);
+}
+
+.venue-grid-show-more:hover {
+  color: var(--k-text);
+}
+
+/* ── NAVIGATION MODE ANIMATIONS ──────────────────────── */
+
+@keyframes step-slide {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-step-change {
+  animation: step-slide 0.3s ease-out both;
+}
+
+@keyframes nav-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.nav-step-active {
+  animation: nav-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes arrive-bounce {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-arrive {
+  animation: arrive-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* 3D car marker for driving navigation — Google Maps style */
+.nav-car-marker {
+  width: 130px;
+  height: 140px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Ground shadow — soft ellipse beneath car */
+.nav-car-shadow {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 45%, transparent 70%);
+  filter: blur(5px);
+}
+
+/* 3D car body — SVG with metallic shading */
+.nav-car-body {
+  position: relative;
+  z-index: 1;
+  width: 88px;
+  height: 102px;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4))
+         drop-shadow(0 6px 14px rgba(0,0,0,0.2))
+         drop-shadow(0 0 20px rgba(34,211,238,0.3));
+  animation: car-hover 2.5s ease-in-out infinite;
+}
+
+@keyframes car-hover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+
+/* Pulsing ground ring */
+.nav-car-ring {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 76px;
+  height: 76px;
+  transform: translateX(-50%) rotateX(60deg);
+  border-radius: 50%;
+  border: 2px solid rgba(34,211,238,0.35);
+  animation: car-ring-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes car-ring-pulse {
+  0%, 100% { transform: translateX(-50%) rotateX(60deg) scale(0.85); opacity: 0.5; }
+  50% { transform: translateX(-50%) rotateX(60deg) scale(1.3); opacity: 0; }
+}
+
+/* Heading beam — soft headlight glow projected forward */
+.nav-car-beam {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 30px;
+  background: radial-gradient(ellipse at center bottom, rgba(254,240,138,0.2) 0%, rgba(254,240,138,0.06) 50%, transparent 70%);
+  clip-path: polygon(28% 100%, 0% 0%, 100% 0%, 72% 100%);
+  filter: blur(3px);
+  z-index: 0;
+  animation: beam-pulse 3s ease-in-out infinite;
+}
+
+@keyframes beam-pulse {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
 }

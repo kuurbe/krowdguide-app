@@ -1,8 +1,22 @@
+// ── Branded Types — prevent mixing IDs across domains ───
+
+declare const __brand: unique symbol;
+type Brand<T, B extends string> = T & { readonly [__brand]: B };
+
+export type CityId = Brand<string, 'CityId'>;
+export type VenueId = Brand<string, 'VenueId'>;
+
+/** Type-safe coordinate tuple — [lat, lng] */
+export type LatLng = [lat: number, lng: number];
+
+
+// ── Core Models ─────────────────────────────────────────
+
 export interface City {
   id: string;
   name: string;
   state: string;
-  coordinates: [number, number];
+  coordinates: LatLng;
   zoom: number;
 }
 
@@ -19,7 +33,7 @@ export interface Venue {
   hhDeal?: string;
   image?: string;
   rating?: number;
-  coordinates: [number, number];
+  coordinates: LatLng;
 }
 
 export interface KrowdEvent {
@@ -71,13 +85,35 @@ export interface Alert {
   trusted?: boolean;
 }
 
-export interface ChatMessage {
+// ── Chat Message — discriminated union by type ──────────
+
+/** AI response categories for type-safe data handling */
+export type AIResponseType = 'crowd' | 'restaurants' | 'hh' | 'quiet' | 'timing' | 'recommendation';
+
+export interface AIResponseData {
+  type: AIResponseType;
+  venues?: Venue[];
+  chart?: number[];
+}
+
+interface ChatMessageBase {
   id: string;
-  type: 'user' | 'ai';
   text: string;
-  data?: any;
   timestamp: Date;
 }
+
+export interface UserMessage extends ChatMessageBase {
+  type: 'user';
+  data?: never;
+}
+
+export interface AIMessage extends ChatMessageBase {
+  type: 'ai';
+  data?: AIResponseData;
+}
+
+/** Discriminated union — narrows `data` based on `type` field */
+export type ChatMessage = UserMessage | AIMessage;
 
 export interface ThingToDo {
   id: string;
@@ -86,7 +122,7 @@ export interface ThingToDo {
   desc: string;
   crowd: 'quiet' | 'moderate' | 'busy';
   image: string;
-  coordinates: [number, number];
+  coordinates: LatLng;
 }
 
 /** B2B Oracle server JSON schema */
