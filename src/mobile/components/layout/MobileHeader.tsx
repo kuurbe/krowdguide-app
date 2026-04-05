@@ -17,8 +17,9 @@ export function MobileHeader({ onBellClick }: { onBellClick: () => void }) {
     <header className="h-[48px] px-4 flex items-center justify-between bg-[var(--k-bg)]/80 ios-blur-thick border-b border-[var(--k-border-s)] z-10 flex-shrink-0">
       {/* Brand icon + name */}
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-lg bg-[#ff4d6a]/15 flex items-center justify-center">
-          <span className="text-[12px] font-black text-[#ff4d6a]">KG</span>
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+             style={{ background: 'linear-gradient(135deg, #ff4d6a, #ff8c42)' }}>
+          <span className="text-[11px] font-black text-white tracking-[0.02em]">KG</span>
         </div>
         <span className="font-syne font-black text-[14px] tracking-[0.06em] text-[var(--k-text)] uppercase">
           KrowdGuide

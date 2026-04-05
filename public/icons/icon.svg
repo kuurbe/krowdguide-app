@@ -1,5 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#050508" rx="80"/>
-  <circle cx="256" cy="256" r="160" fill="#ff4d6a"/>
-  <text x="256" y="275" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="bold" font-size="120">KG</text>
+  <rect width="512" height="512" fill="#0a0a0f" rx="0"/>
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4d6a"/>
+      <stop offset="100%" stop-color="#ff8c42"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="240" r="120" fill="url(#g)"/>
+  <text x="256" y="260" text-anchor="middle" fill="white" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="88" letter-spacing="4">KG</text>
+  <text x="256" y="420" text-anchor="middle" fill="#ffffff" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="42" letter-spacing="8" opacity="0.9">KROWDGUIDE</text>
 </svg>
