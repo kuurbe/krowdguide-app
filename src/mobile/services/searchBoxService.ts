@@ -89,6 +89,7 @@ export async function fetchSuggestions(
     limit: 8,
     language: 'en',
     country: 'US',
+    types: 'poi',
   });
 
   const data = await fetchJSON<SuggestResponse>(url);

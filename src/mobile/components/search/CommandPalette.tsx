@@ -67,7 +67,8 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
           sessionToken.current
         );
         setPoiResults(results);
-      } catch {
+      } catch (err) {
+        if (import.meta.env.DEV) console.error('[Search] POI search failed:', err);
         setPoiResults([]);
       }
       setPoiLoading(false);
