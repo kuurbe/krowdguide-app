@@ -190,7 +190,7 @@ export function NavigationOverlay() {
                   {Array.from({ length: Math.min(totalSteps, 5) }).map((_, i) => (
                     <div
                       key={i}
-                      className="flex-1 h-[4px] rounded-full transition-all duration-500"
+                      className="flex-1 h-[6px] rounded-full transition-all duration-500"
                       style={{
                         backgroundColor: i < currentStepIndex
                           ? 'rgba(255,255,255,0.2)'
@@ -204,8 +204,8 @@ export function NavigationOverlay() {
                 {/* Time display row */}
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="font-bold text-[32px] text-white leading-none tracking-[-0.03em]">
-                      {durationMin} min
+                    <p className="font-syne font-black text-[40px] text-white leading-none tracking-[-0.03em]">
+                      {durationMin}<span className="text-[18px] font-bold ml-1">min</span>
                     </p>
                     <p className="text-[13px] text-white/50 mt-1 font-medium">
                       {distKm} km &middot; Arriving {eta}

@@ -3,7 +3,7 @@ import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useAppContext } from '../../context';
 import { useTicketmasterEvents } from '../../hooks/useTicketmasterEvents';
 import { EventCard } from '../shared/EventCard';
-import { Search, MapPin, Zap, Calendar } from 'lucide-react';
+import { Search, MapPin, Zap, Calendar, Bookmark } from 'lucide-react';
 import type { Venue } from '../../types';
 
 const CATEGORIES = [
@@ -27,6 +27,36 @@ export function CityGuideDrawer({
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('discover');
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  const toggleFavorite = useCallback((e: React.MouseEvent, venueId: string) => {
+    e.stopPropagation();
+    setFavorites(prev => {
+      const next = new Set(prev);
+      next.has(venueId) ? next.delete(venueId) : next.add(venueId);
+      return next;
+    });
+  }, []);
+
+  const getAvatars = (name: string) => {
+    const words = name.split(/\s+/).filter(Boolean);
+    const initials: string[] = [];
+    if (words[0]) initials.push(words[0].slice(0, 1).toUpperCase() + (words[0][1] || '').toLowerCase());
+    if (words[1]) initials.push(words[1].slice(0, 1).toUpperCase() + (words[1][1] || '').toLowerCase());
+    if (initials.length < 2 && words[0]?.length > 1) initials.push(words[0].slice(1, 3));
+    return initials;
+  };
+
+  const getPullQuote = (venue: Venue) => {
+    if (venue.hhDeal) return venue.hhDeal;
+    if (venue.crowd === 'quiet') return 'Super chill vibes tonight';
+    return 'Pleasantly low-key right now';
+  };
+
+  const getDensityLabel = (crowd: string) => {
+    if (crowd === 'quiet') return 'Very Quiet';
+    return 'Moderate';
+  };
 
   const quietVenues = useMemo(() =>
     venues
@@ -135,46 +165,87 @@ export function CityGuideDrawer({
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  {quietVenues.map((venue) => (
-                    <button
-                      key={venue.id}
-                      onClick={() => handleVenueTap(venue)}
-                      className="w-full flex gap-3 p-2.5 rounded-2xl liquid-glass ios-press text-left"
-                    >
-                      <div className="w-[72px] h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-[var(--k-surface)]">
-                        {venue.image ? (
-                          <img src={venue.image} alt={venue.name} className="w-full h-full object-cover" loading="lazy" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl">{venue.icon}</div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-between">
-                        <div>
-                          <h4 className="text-[14px] font-bold text-[var(--k-text)] truncate">{venue.name}</h4>
-                          <p className="text-[11px] text-[var(--k-text-m)] mt-0.5 truncate">{venue.type} · {venue.dist}</p>
+                <div className="space-y-3">
+                  {quietVenues.map((venue) => {
+                    const avatars = getAvatars(venue.name);
+                    const isFav = favorites.has(venue.id);
+                    const densityColor = venue.crowd === 'quiet' ? '#34d399' : '#fbbf24';
+                    const extraCount = Math.max(0, Math.floor(venue.pct / 8));
+
+                    return (
+                      <button
+                        key={venue.id}
+                        onClick={() => handleVenueTap(venue)}
+                        className="w-full rounded-2xl liquid-glass ios-press text-left overflow-hidden"
+                      >
+                        {/* Full-width image */}
+                        <div className="w-full h-[160px] bg-[var(--k-surface)] relative">
+                          {venue.image ? (
+                            <img src={venue.image} alt={venue.name} className="w-full h-[160px] rounded-t-2xl object-cover" loading="lazy" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-4xl rounded-t-2xl bg-[var(--k-fill-3)]">{venue.icon}</div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex-1 h-[4px] rounded-full bg-[var(--k-fill-3)] overflow-hidden">
+
+                        {/* Content below image */}
+                        <div className="px-3.5 pt-3 pb-3">
+                          {/* Name + bookmark */}
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="text-[18px] font-bold text-[var(--k-text)] leading-tight truncate">{venue.name}</h4>
                             <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${venue.pct}%`,
-                                backgroundColor: venue.crowd === 'quiet' ? '#34d399' : venue.crowd === 'moderate' ? '#fbbf24' : '#ff4d6a',
-                              }}
-                            />
+                              onClick={(e) => toggleFavorite(e, venue.id)}
+                              className="flex-shrink-0 mt-0.5"
+                            >
+                              <Bookmark
+                                className="w-5 h-5"
+                                fill={isFav ? 'currentColor' : 'none'}
+                                stroke="currentColor"
+                                style={{ color: isFav ? '#ff6b6b' : 'var(--k-text-f)' }}
+                              />
+                            </div>
                           </div>
-                          <span className="text-[10px] font-bold text-[var(--k-text-f)] tabular-nums w-[28px] text-right">{venue.pct}%</span>
+
+                          {/* Type + distance */}
+                          <p className="text-[13px] text-[var(--k-text-m)] italic mt-0.5 truncate">
+                            {venue.type} &middot; {venue.dist}
+                          </p>
+
+                          {/* Density badges */}
+                          <div className="flex items-center gap-2 mt-2.5">
+                            <span className="glass-chip inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ color: densityColor }}>
+                              <span className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: densityColor }} />
+                              {venue.pct}% Density
+                            </span>
+                            <span className="glass-chip inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold text-[var(--k-text-m)]">
+                              {getDensityLabel(venue.crowd)}
+                            </span>
+                          </div>
+
+                          {/* Avatars + pull quote */}
+                          <div className="flex items-center gap-2 mt-2.5">
+                            <div className="flex -space-x-1.5 flex-shrink-0">
+                              {avatars.map((init, i) => (
+                                <div
+                                  key={i}
+                                  className="w-[20px] h-[20px] rounded-full bg-[var(--k-accent)]/20 border border-[var(--k-surface)] flex items-center justify-center"
+                                >
+                                  <span className="text-[8px] font-bold text-[var(--k-accent)]">{init}</span>
+                                </div>
+                              ))}
+                              {extraCount > 0 && (
+                                <div className="w-[20px] h-[20px] rounded-full bg-[var(--k-fill-3)] border border-[var(--k-surface)] flex items-center justify-center">
+                                  <span className="text-[7px] font-bold text-[var(--k-text-f)]">+{extraCount}</span>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-[var(--k-text-f)] italic truncate">
+                              &ldquo;{getPullQuote(venue)}&rdquo;
+                            </p>
+                          </div>
                         </div>
-                        {venue.hasHH && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <MapPin className="w-2.5 h-2.5 text-[var(--k-text-f)]" />
-                            <span className="text-[10px] text-[#ff8c42] font-semibold truncate">{venue.hhDeal}</span>
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
 
                   {quietVenues.length === 0 && (
                     <div className="text-center py-10">

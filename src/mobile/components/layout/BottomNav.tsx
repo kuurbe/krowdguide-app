@@ -5,11 +5,11 @@ import { cn } from '@/lib/utils';
 import { haptic } from '../../utils/haptics';
 
 const TABS = [
-  { id: 'map', icon: Map, label: 'Map' },
-  { id: 'ai', icon: Sparkles, label: 'Predict' },
-  { id: 'search', icon: Search, label: 'Search' },
-  { id: 'alerts', icon: Bell, label: 'Alerts' },
-  { id: 'account', icon: User, label: 'Account' },
+  { id: 'map', icon: Map, label: 'MAP' },
+  { id: 'ai', icon: Sparkles, label: 'PREDICT' },
+  { id: 'search', icon: Search, label: 'SEARCH' },
+  { id: 'alerts', icon: Bell, label: 'ALERTS' },
+  { id: 'account', icon: User, label: 'ACCOUNT' },
 ] as const;
 
 export function BottomNav({
@@ -24,7 +24,6 @@ export function BottomNav({
   const navRef = useRef<HTMLElement>(null);
   const isFirstRender = useRef(true);
 
-  // GSAP-powered pill slide with elastic spring + micro-glow
   useEffect(() => {
     if (!pillRef.current || !navRef.current) return;
     const idx = TABS.findIndex(t => t.id === activeTab);
@@ -34,29 +33,19 @@ export function BottomNav({
     if (!btn) return;
     const navRect = navRef.current.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
-    const x = btnRect.left - navRect.left + (btnRect.width - 40) / 2;
+    const pillW = 44;
+    const x = btnRect.left - navRect.left + (btnRect.width - pillW) / 2;
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (isFirstRender.current || prefersReduced) {
+    if (isFirstRender.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       gsap.set(pillRef.current, { x, opacity: 1 });
       isFirstRender.current = false;
       return;
     }
 
-    gsap.to(pillRef.current, {
-      x,
-      opacity: 1,
-      duration: 0.45,
-      ease: 'elastic.out(1, 0.55)',
-      overwrite: true,
-    });
+    gsap.to(pillRef.current, { x, opacity: 1, duration: 0.45, ease: 'elastic.out(1, 0.55)', overwrite: true });
 
     if (glowRef.current) {
-      gsap.fromTo(glowRef.current,
-        { x, opacity: 0.6, scale: 1.6 },
-        { opacity: 0, scale: 2.2, duration: 0.5, ease: 'power2.out' },
-      );
+      gsap.fromTo(glowRef.current, { x, opacity: 0.6, scale: 1.4 }, { opacity: 0, scale: 2, duration: 0.5, ease: 'power2.out' });
     }
   }, [activeTab]);
 
@@ -65,29 +54,24 @@ export function BottomNav({
       ref={navRef}
       role="tablist"
       aria-label="Main navigation"
-      className="h-[52px] flex items-center justify-around rounded-[26px]
+      className="h-[60px] flex items-center justify-around rounded-[30px]
                  liquid-glass glass-inner-light promote-layer relative
                  shadow-[var(--k-shadow-lg)]"
     >
       {/* Frosted pill indicator */}
       <div
         ref={pillRef}
-        className="absolute top-[6px] left-0 w-[40px] h-[40px] rounded-full
-                   nav-pill-indicator
-                   pointer-events-none z-0"
+        className="absolute top-[4px] left-0 w-[44px] h-[52px] rounded-[22px]
+                   nav-pill-indicator pointer-events-none z-0"
         style={{ opacity: 0 }}
       />
 
-      {/* Micro-glow flash */}
+      {/* Micro-glow */}
       <div
         ref={glowRef}
-        className="absolute top-[6px] left-0 w-[40px] h-[40px] rounded-full
+        className="absolute top-[4px] left-0 w-[44px] h-[52px] rounded-[22px]
                    pointer-events-none z-0"
-        style={{
-          opacity: 0,
-          background: 'radial-gradient(circle, rgba(255,255,255,0.25), transparent 70%)',
-          filter: 'blur(8px)',
-        }}
+        style={{ opacity: 0, background: 'radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%)', filter: 'blur(8px)' }}
       />
 
       {TABS.map((tab) => {
@@ -100,22 +84,27 @@ export function BottomNav({
             aria-label={tab.label}
             onClick={() => { haptic('light'); onTabChange(tab.id); }}
             className={cn(
-              'flex items-center justify-center w-[44px] h-[40px] rounded-full transition-all ios-press relative z-[1]',
+              'flex flex-col items-center justify-center w-[52px] h-[52px] rounded-[22px] transition-all ios-press relative z-[1] gap-[2px]',
             )}
           >
-            {/* Notification badge on Alerts */}
             {tab.id === 'alerts' && (
-              <span className="absolute top-0.5 right-1 w-[5px] h-[5px] rounded-full bg-[var(--k-accent)] ring-[1.5px] ring-[var(--k-glass-bg)]" />
+              <span className="absolute top-1 right-2 w-[5px] h-[5px] rounded-full bg-[var(--k-accent)] ring-[1.5px] ring-[var(--k-glass-bg)]" />
             )}
 
             <tab.icon
               className={cn(
                 'transition-all duration-200',
                 isActive
-                  ? 'w-[20px] h-[20px] stroke-[2.4] text-[var(--k-text)]'
-                  : 'w-[19px] h-[19px] stroke-[1.6] text-[var(--k-text-f)]'
+                  ? 'w-[18px] h-[18px] stroke-[2.4] text-[var(--k-text)]'
+                  : 'w-[17px] h-[17px] stroke-[1.6] text-[var(--k-text-f)]'
               )}
             />
+            <span className={cn(
+              'text-[8px] font-bold tracking-[0.04em] transition-colors duration-200',
+              isActive ? 'text-[#ff4d6a]' : 'text-[var(--k-text-f)]'
+            )}>
+              {tab.label}
+            </span>
           </button>
         );
       })}

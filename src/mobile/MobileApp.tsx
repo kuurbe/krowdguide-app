@@ -222,7 +222,7 @@ function AppShell({
 
         {/* Floating Bottom Nav — tight width to show liquid glass */}
         <div className="absolute bottom-4 z-[1100] safe-bottom"
-             style={{ left: '50%', transform: 'translateX(-50%)', width: 'min(300px, 80vw)' }}>
+             style={{ left: '50%', transform: 'translateX(-50%)', width: 'min(340px, 88vw)' }}>
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
       </div>

@@ -34,9 +34,8 @@ function StarRating({ rating }: { rating: number }) {
 function PriceLevel({ level }: { level?: number }) {
   if (!level) return null;
   return (
-    <span className="text-[13px] font-bold text-emerald-400 ml-2">
+    <span className="glass-chip rounded-full px-2.5 py-1 text-[13px] font-bold text-[var(--k-text-m)]">
       {'$'.repeat(level)}
-      <span className="text-[var(--k-fill)]">{'$'.repeat(4 - level)}</span>
     </span>
   );
 }
@@ -132,7 +131,7 @@ export function VenueDetailSheet({
 
           {/* Venue name + price */}
           <div className="flex items-start justify-between gap-3 mb-1">
-            <h2 className="font-syne text-[28px] font-black text-[var(--k-text)] tracking-[-0.03em] leading-[1.1]">
+            <h2 className="font-syne text-[28px] font-black text-[var(--k-text)] tracking-[-0.03em] leading-[1.0]">
               {venue.name}
             </h2>
             <PriceLevel level={enrichment?.price ?? (venue.type.includes('Bar') || venue.type.includes('Lounge') ? 3 : 2)} />

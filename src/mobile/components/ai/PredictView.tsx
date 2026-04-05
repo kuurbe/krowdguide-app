@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, AlertTriangle, Clock, Footprints, BarChart3, Zap } from 'lucide-react';
+import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, Clock, Zap, Brain, SlidersHorizontal, ChevronRight, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppContext } from '../../context';
 import { generateAIResponse, SUGGESTION_CHIPS } from '../../services/ai-responses';
@@ -19,9 +19,9 @@ const FOLLOW_UP_CHIPS: Record<string, string[]> = {
 
 // ── Forecast helpers ────────────────────────────────────────
 
-type TimeRange = 'LIVE' | '+2H' | '+4H' | 'FORECAST';
+type TimeRange = 'NOW' | '1H' | '3H' | '8H';
 
-const TIME_SLOTS = ['NOW', '2PM', '4PM', '6PM', '8PM'] as const;
+const TIME_SLOTS = ['18:00', '19:00', '20:00', '21:00', '22:00'] as const;
 
 /** Deterministic pseudo-random jitter from venue id + slot */
 function jitter(seed: string, slot: number): number {
@@ -32,10 +32,11 @@ function jitter(seed: string, slot: number): number {
 }
 
 function densityColor(pct: number): string {
-  if (pct < 40) return '#34d399';
-  if (pct < 60) return '#fbbf24';
-  if (pct < 80) return '#ff4d6a';
-  return '#92400e';
+  if (pct < 30) return '#34d399';   // green
+  if (pct < 50) return '#a3b18a';   // olive
+  if (pct < 70) return '#fbbf24';   // amber
+  if (pct < 85) return '#ff4d6a';   // red
+  return '#92400e';                  // brown
 }
 
 interface ForecastVenue {
@@ -51,7 +52,7 @@ function buildForecastData(venues: Venue[], range: TimeRange): {
   hotspots: ForecastVenue[];
   criticalVenue: ForecastVenue | null;
 } {
-  const multiplier = range === 'LIVE' ? 0 : range === '+2H' ? 1 : range === '+4H' ? 2 : 3;
+  const multiplier = range === 'NOW' ? 0 : range === '1H' ? 1 : range === '3H' ? 2 : 3;
 
   // Build density bars from aggregate venue data per time slot
   const bars = TIME_SLOTS.map((label, i) => {
@@ -86,184 +87,204 @@ function buildForecastData(venues: Venue[], range: TimeRange): {
 // ── Forecast Mode Component ─────────────────────────────────
 
 function ForecastMode({ venues }: { venues: Venue[] }) {
-  const [timeRange, setTimeRange] = useState<TimeRange>('+4H');
+  const [timeRange, setTimeRange] = useState<TimeRange>('NOW');
 
   const { bars, hotspots, criticalVenue } = useMemo(
     () => buildForecastData(venues, timeRange),
     [venues, timeRange]
   );
 
-  const ranges: TimeRange[] = ['LIVE', '+2H', '+4H', 'FORECAST'];
+  const ranges: TimeRange[] = ['NOW', '1H', '3H', '8H'];
+
+  // Find the "live" bar index (first bar)
+  const liveBarIdx = 0;
 
   return (
     <div className="flex-1 overflow-y-auto p-4 no-scrollbar scroll-smooth space-y-5">
-      {/* ── Headline ── */}
-      <div className="pt-2">
-        <h1 className="font-syne text-[24px] leading-tight text-[var(--k-text)]">
+      {/* ── Overline + Headline ── */}
+      <div className="pt-2 space-y-1">
+        <p className="text-[10px] font-bold text-[#ff4d6a] tracking-[0.1em] uppercase">
+          PREDICTIVE INTELLIGENCE
+        </p>
+        <h1 className="font-syne text-[28px] font-extrabold leading-tight text-[var(--k-text)]">
           Anticipate
         </h1>
         <h1
-          className="font-syne font-black text-[28px] leading-tight"
-          style={{
-            background: 'linear-gradient(135deg, #ff4d6a, #ff8a5c)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
+          className="font-syne font-black text-[32px] leading-tight bg-gradient-to-r from-[#ff4d6a] to-[#ff8a5c] bg-clip-text"
+          style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
         >
           The Pulse.
         </h1>
       </div>
 
-      {/* ── Density Trends ── */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="type-overline text-[var(--k-text-f)]">DENSITY TRENDS</span>
-          <div className="flex items-center gap-1">
-            {ranges.map(r => (
-              <button
-                key={r}
-                onClick={() => setTimeRange(r)}
-                className={cn(
-                  'px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide transition-all ios-press',
-                  timeRange === r
-                    ? 'glass-chip text-[#ff4d6a]'
-                    : 'text-[var(--k-text-f)] hover:text-[var(--k-text-m)]'
-                )}
-              >
-                {r}
-              </button>
-            ))}
+      {/* ── Density Trends Card ── */}
+      <div className="liquid-glass rounded-[20px] p-5 space-y-4">
+        {/* Card header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[15px] font-bold text-[var(--k-text)]">Density Trends</p>
+            <p className="text-[11px] text-[var(--k-text-f)] mt-0.5">Live vs. Predicted saturation levels</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--k-text-f)]">
+              <span className="w-[6px] h-[6px] rounded-full bg-[#34d399]" />
+              LIVE
+            </span>
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--k-text-f)]">
+              <span className="w-[6px] h-[6px] rounded-full bg-[#ff4d6a]" />
+              FORECAST
+            </span>
           </div>
         </div>
 
         {/* Bar chart */}
-        <div className="liquid-glass rounded-2xl p-4">
-          <div className="relative h-[140px] flex items-end justify-between gap-3 px-2">
-            {/* 80% threshold line */}
-            <div
-              className="absolute left-0 right-0 border-t border-dashed border-[#ff4d6a]/40"
-              style={{ bottom: '80%' }}
-            >
-              <span className="absolute -top-3 right-0 text-[8px] text-[#ff4d6a]/60 font-bold">80%</span>
+        <div className="relative h-[150px] flex items-end justify-between gap-3 px-1">
+          {bars.map((bar, i) => (
+            <div key={bar.label} className="flex flex-col items-center flex-1 gap-1.5 relative">
+              {/* LIVE floating label on first bar */}
+              {i === liveBarIdx && (
+                <span className="absolute -top-5 text-[8px] font-bold text-[#34d399] tracking-wider">LIVE</span>
+              )}
+              <div
+                className="w-[48px] rounded-t-[8px] transition-all duration-500"
+                style={{
+                  height: `${Math.max(20, (bar.pct / 100) * 140)}px`,
+                  background: `linear-gradient(to top, ${bar.color}cc, ${bar.color}88)`,
+                  boxShadow: `0 0 12px ${bar.color}33`,
+                  animationDelay: `${i * 0.08}s`,
+                }}
+              />
             </div>
+          ))}
+        </div>
 
-            {bars.map((bar, i) => (
-              <div key={bar.label} className="flex flex-col items-center flex-1 gap-1.5">
-                <div
-                  className="w-[48px] rounded-[8px] transition-all duration-500"
-                  style={{
-                    height: `${Math.max(20, (bar.pct / 100) * 140)}px`,
-                    background: `linear-gradient(to top, ${bar.color}cc, ${bar.color}88)`,
-                    boxShadow: `0 0 12px ${bar.color}33`,
-                    animationDelay: `${i * 0.08}s`,
-                  }}
-                />
-                <span className="text-[10px] font-bold text-[var(--k-text-f)]">{bar.label}</span>
-              </div>
-            ))}
-          </div>
+        {/* Labels below bars */}
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[9px] font-bold text-[var(--k-text-f)] tracking-wider">CURRENT</span>
+          <span className="text-[9px] font-bold text-[var(--k-text-f)] tracking-wider">PROJECTION WINDOW</span>
+        </div>
+
+        {/* Time range pills */}
+        <div className="flex items-center gap-2">
+          {ranges.map(r => (
+            <button
+              key={r}
+              onClick={() => setTimeRange(r)}
+              className={cn(
+                'px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wide transition-all ios-press',
+                timeRange === r
+                  ? 'bg-[var(--k-text)] text-[var(--k-bg)]'
+                  : 'glass-chip text-[var(--k-text-f)] hover:text-[var(--k-text-m)]'
+              )}
+            >
+              {r}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* ── Critical Capacity Alert ── */}
       {criticalVenue && (
-        <div
-          className="rounded-2xl p-4 space-y-3 animate-fadeUp"
-          style={{
-            border: '1px solid rgba(255, 77, 106, 0.35)',
-            background: 'rgba(255, 77, 106, 0.06)',
-          }}
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#ff4d6a]/15 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-5 h-5 text-[#ff4d6a]" />
+        <div className="space-y-3">
+          <div
+            className="rounded-[20px] p-5 space-y-4 animate-fadeUp text-center"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,77,106,0.18), rgba(255,138,92,0.10))',
+              border: '1px solid rgba(255, 77, 106, 0.25)',
+            }}
+          >
+            {/* Zap icon in coral circle */}
+            <div className="w-12 h-12 rounded-full bg-[#ff4d6a]/20 flex items-center justify-center mx-auto">
+              <Zap className="w-6 h-6 text-[#ff4d6a]" />
             </div>
-            <div className="flex-1">
-              <p className="text-[13px] font-semibold text-[var(--k-text)]">
-                {criticalVenue.venue.name} is predicted to reach {criticalVenue.forecastPct}% capacity by {criticalVenue.peakTime}
-              </p>
-              <p className="text-[10px] text-[var(--k-text-f)] mt-1">Based on historical patterns &amp; real-time flow</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <button className="px-3.5 py-2 rounded-full text-[11px] font-bold glass-chip text-[#ff4d6a] hover:bg-[#ff4d6a]/10 transition-colors ios-press">
+
+            <p className="text-[18px] font-bold text-white">
+              Critical Capacity Alert
+            </p>
+            <p className="text-[13px] text-white/80 leading-relaxed">
+              {criticalVenue.venue.name} is predicted to reach{' '}
+              <span className="font-bold text-white">{criticalVenue.forecastPct}% capacity</span>{' '}
+              by {criticalVenue.peakTime}.
+            </p>
+
+            <button className="px-5 py-2.5 rounded-full text-[11px] font-bold tracking-wider text-white border border-white/30 hover:bg-white/10 transition-colors ios-press">
               VIEW ALTERNATIVE ROUTES
             </button>
-            <span className="text-[10px] font-bold text-[#34d399]">PREDICTED ACCURACY: 94.8%</span>
+          </div>
+
+          {/* Predictive Accuracy sub-card */}
+          <div className="liquid-glass rounded-[20px] p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#a855f7]/15 flex items-center justify-center flex-shrink-0">
+              <Brain className="w-5 h-5 text-[#a855f7]" />
+            </div>
+            <span className="text-[13px] font-semibold text-[var(--k-text)]">Predictive Accuracy</span>
+            <span className="ml-auto text-[20px] font-black text-[#34d399] font-mono">94.8%</span>
           </div>
         </div>
       )}
 
       {/* ── Surge Hotspots ── */}
       <div className="space-y-3">
-        <span className="type-overline text-[var(--k-text-f)]">SURGE HOTSPOTS</span>
+        <div className="flex items-center justify-between">
+          <span className="type-overline text-[var(--k-text-f)]">SURGE HOTSPOTS</span>
+          <SlidersHorizontal className="w-4 h-4 text-[var(--k-text-f)]" />
+        </div>
         <div className="space-y-2">
-          {hotspots.map((h, i) => (
-            <div
-              key={h.venue.id}
-              className="liquid-glass rounded-2xl p-3.5 space-y-2.5 animate-fadeUp ios-press"
-              style={{ animationDelay: `${i * 0.06}s` }}
-            >
-              {/* Top row: icon + name + change badge */}
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: h.change >= 0
-                      ? 'linear-gradient(135deg, rgba(255,77,106,0.15), rgba(255,138,92,0.1))'
-                      : 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.08))',
-                  }}
-                >
-                  <span className="text-[18px]">{h.venue.icon}</span>
+          {hotspots.map((h, i) => {
+            const surgePct = Math.max(0, h.forecastPct - h.venue.pct);
+            return (
+              <div
+                key={h.venue.id}
+                className="liquid-glass rounded-[20px] p-4 space-y-3 animate-fadeUp ios-press"
+                style={{ animationDelay: `${i * 0.06}s` }}
+              >
+                {/* Top row: MapPin icon + venue name + surge badge */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#ff4d6a]/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-[#ff4d6a]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-[var(--k-text)] truncate">{h.venue.name}</p>
+                  </div>
+                  <div className="px-2.5 py-1 rounded-full text-[10px] font-black bg-[#ff4d6a]/12 text-[#ff4d6a] tracking-wide">
+                    +{surgePct > 0 ? surgePct : Math.abs(h.change)}% SURGE
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-[var(--k-text)] truncate">{h.venue.name}</p>
-                  <p className="text-[10px] text-[var(--k-text-f)]">{h.venue.type}</p>
-                </div>
-                <div
-                  className={cn(
-                    'px-2.5 py-1 rounded-full text-[13px] font-black',
-                    h.change >= 0
-                      ? 'bg-[#ff4d6a]/12 text-[#ff4d6a]'
-                      : 'bg-[#34d399]/12 text-[#34d399]'
-                  )}
-                >
-                  {h.change >= 0 ? '+' : ''}{h.change}%
-                </div>
-              </div>
 
-              {/* Stats row */}
-              <div className="flex items-center gap-4 text-[10px] font-medium text-[var(--k-text-m)]">
-                <span className="flex items-center gap-1">
-                  <BarChart3 className="w-3 h-3" />
-                  CURRENT: {h.venue.pct}%
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  PEAK AT: {h.peakTime}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Footprints className="w-3 h-3" />
-                  {h.footTraffic}/min
-                </span>
-              </div>
+                {/* Location line */}
+                <div className="flex items-center gap-1.5 text-[11px] text-[var(--k-text-f)]">
+                  <MapPin className="w-3 h-3" />
+                  <span>{h.venue.type}</span>
+                </div>
 
-              {/* Progress bar */}
-              <div className="h-[5px] rounded-full bg-[var(--k-border-s)] overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{
-                    width: `${Math.min(100, h.forecastPct)}%`,
-                    background: h.forecastPct >= 80
-                      ? 'linear-gradient(90deg, #ff4d6a, #ff8a5c)'
-                      : h.forecastPct >= 50
-                        ? 'linear-gradient(90deg, #fbbf24, #ff8a5c)'
-                        : 'linear-gradient(90deg, #34d399, #22d3ee)',
-                  }}
-                />
+                {/* Stats row */}
+                <div className="flex items-center justify-between text-[10px] font-bold font-mono text-[var(--k-text-m)] tracking-wide">
+                  <span>CURRENT: {h.venue.pct}%</span>
+                  <span>PEAK: {h.forecastPct}%</span>
+                </div>
+
+                {/* Progress bar — coral gradient */}
+                <div className="h-[5px] rounded-full bg-[var(--k-border-s)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${Math.min(100, h.forecastPct)}%`,
+                      background: 'linear-gradient(90deg, #ff4d6a, #ff8a5c)',
+                    }}
+                  />
+                </div>
+
+                {/* Peak time footer */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--k-text-m)]">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Peak at {h.peakTime}</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--k-text-f)]" />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
