@@ -4,7 +4,6 @@
  */
 
 import { MAPBOX_TOKEN } from '../config/mapbox';
-import { fetchJSON, buildURL } from './fetchUtil';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -81,18 +80,20 @@ export async function fetchSuggestions(
 
   const [lat, lng] = proximity;
 
-  const url = buildURL(SUGGEST_BASE, {
+  const params = new URLSearchParams({
     q: query,
     access_token: MAPBOX_TOKEN,
     session_token: sessionToken,
     proximity: `${lng},${lat}`,
-    limit: 8,
+    limit: '8',
     language: 'en',
     country: 'US',
     types: 'poi',
   });
 
-  const data = await fetchJSON<SuggestResponse>(url);
+  const res = await fetch(`${SUGGEST_BASE}?${params}`);
+  if (!res.ok) throw new Error(`Search API error: ${res.status}`);
+  const data: SuggestResponse = await res.json();
 
   return (data.suggestions ?? []).map((s) => ({
     name: s.name,
@@ -116,12 +117,14 @@ export async function fetchSearchResult(
   mapboxId: string,
   sessionToken: string,
 ): Promise<SearchResult | null> {
-  const url = buildURL(`${RETRIEVE_BASE}/${mapboxId}`, {
+  const params = new URLSearchParams({
     access_token: MAPBOX_TOKEN,
     session_token: sessionToken,
   });
 
-  const data = await fetchJSON<RetrieveResponse>(url);
+  const res = await fetch(`${RETRIEVE_BASE}/${mapboxId}?${params}`);
+  if (!res.ok) throw new Error(`Retrieve API error: ${res.status}`);
+  const data: RetrieveResponse = await res.json();
 
   const feature = data.features?.[0];
   if (!feature) return null;
