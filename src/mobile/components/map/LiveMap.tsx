@@ -408,88 +408,72 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
 
     if (!directions.route || !directions.active) return;
 
-    // Add route line source
+    // Route line — Google Maps style: blue with darker casing
     map.addSource('directions-route', {
       type: 'geojson',
       data: { type: 'Feature', properties: {}, geometry: directions.route.geometry },
     });
 
-    // Single cased route line
+    // Outer casing (dark blue shadow)
     map.addLayer({
       id: 'directions-route',
       type: 'line',
       source: 'directions-route',
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
-        'line-color': '#ff4d6a',
-        'line-width': 6,
-        'line-border-width': 2,
-        'line-border-color': '#cc3d55',
+        'line-color': '#4285F4',
+        'line-width': 7,
+        'line-border-width': 1.5,
+        'line-border-color': '#1a56c4',
         'line-opacity': 0.95,
       },
     });
 
-    // Origin marker (coral pulsing dot)
+    // Origin marker — Google style green circle
     if (directions.origin) {
       map.addSource('directions-origin', {
         type: 'geojson',
-        data: {
-          type: 'Feature', properties: {},
-          geometry: { type: 'Point', coordinates: directions.origin },
-        },
+        data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: directions.origin } },
       });
       map.addLayer({
         id: 'directions-origin-pulse',
         type: 'circle',
         source: 'directions-origin',
-        paint: {
-          'circle-radius': 14,
-          'circle-color': '#ff4d6a',
-          'circle-opacity': 0.15,
-        },
+        paint: { 'circle-radius': 12, 'circle-color': '#34d399', 'circle-opacity': 0.2 },
       });
       map.addLayer({
         id: 'directions-origin-dot',
         type: 'circle',
         source: 'directions-origin',
-        paint: {
-          'circle-radius': 7,
-          'circle-color': '#ff4d6a',
-          'circle-stroke-width': 3,
-          'circle-stroke-color': '#ffffff',
-        },
+        paint: { 'circle-radius': 6, 'circle-color': '#34d399', 'circle-stroke-width': 2.5, 'circle-stroke-color': '#ffffff' },
       });
     }
 
-    // Destination marker (cyan dot)
+    // Destination marker — red pin style
     if (directions.destination) {
       map.addSource('directions-dest', {
         type: 'geojson',
-        data: {
-          type: 'Feature', properties: {},
-          geometry: { type: 'Point', coordinates: directions.destination.coords },
-        },
+        data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: directions.destination.coords } },
       });
       map.addLayer({
         id: 'directions-dest-dot',
         type: 'circle',
         source: 'directions-dest',
-        paint: {
-          'circle-radius': 8,
-          'circle-color': '#22d3ee',
-          'circle-stroke-width': 3,
-          'circle-stroke-color': '#ffffff',
-        },
+        paint: { 'circle-radius': 7, 'circle-color': '#ff4d6a', 'circle-stroke-width': 2.5, 'circle-stroke-color': '#ffffff' },
       });
     }
 
-    // Fit bounds to show full route
+    // Fit bounds — Apple/Google style padding (more top for header, more bottom for drawer)
     const coords = directions.route.geometry.coordinates as [number, number][];
     const bounds = coords.reduce(
       (b, c) => b.extend(c as mapboxgl.LngLatLike),
       new mapboxgl.LngLatBounds(coords[0], coords[0])
     );
-    map.fitBounds(bounds, { padding: { top: 120, bottom: 320, left: 60, right: 60 }, duration: 800 });
+    map.fitBounds(bounds, {
+      padding: { top: 100, bottom: 350, left: 50, right: 50 },
+      duration: 1000,
+      maxZoom: 16,
+    });
 
     return () => {
       routeLayers.forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
@@ -573,7 +557,7 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
       map.addSource('directions-current-segment', { type: 'geojson', data: currentData });
       map.addLayer({
         id: 'directions-active-step', type: 'line', source: 'directions-current-segment',
-        paint: { 'line-color': '#22d3ee', 'line-width': 6, 'line-opacity': 1, 'line-border-width': 2, 'line-border-color': '#0e7490' },
+        paint: { 'line-color': '#4285F4', 'line-width': 7, 'line-opacity': 1, 'line-border-width': 1.5, 'line-border-color': '#1a56c4' },
         layout: { 'line-cap': 'round', 'line-join': 'round' },
       });
     }
@@ -662,11 +646,11 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
       {directions.active && !directions.navigating && directions.route && directions.route.steps.length > 0 && (
         <div className="absolute bottom-[180px] left-4 right-4 z-[200]">
           <div className="liquid-glass rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#22d3ee]/15 flex items-center justify-center flex-shrink-0">
-              <Navigation className="w-5 h-5 text-[#22d3ee]" />
+            <div className="w-10 h-10 rounded-xl bg-[#4285F4]/15 flex items-center justify-center flex-shrink-0">
+              <Navigation className="w-5 h-5 text-[#4285F4]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-[#22d3ee] font-bold uppercase tracking-wider">
+              <p className="text-[11px] text-[#4285F4] font-bold uppercase tracking-wider">
                 {formatDistance(directions.route.steps[0].distance)}
               </p>
               <p className="text-[14px] text-white font-semibold truncate">{directions.route.steps[0].instruction}</p>
