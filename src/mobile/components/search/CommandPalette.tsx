@@ -3,7 +3,7 @@ import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { CrowdPill } from '../shared/CrowdPill';
 import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees, Map, Navigation, Loader2, Search } from 'lucide-react';
 import { useAppContext } from '../../context';
-import { fetchSuggestions, fetchSearchResult, generateSessionToken } from '../../services/searchBoxService';
+import { fetchSearchResult, generateSessionToken } from '../../services/searchBoxService';
 import type { SearchSuggestion } from '../../services/searchBoxService';
 import type { Venue } from '../../types';
 
@@ -59,8 +59,29 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
     setPoiLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const coords: [number, number] = [selectedCity.coordinates[0], selectedCity.coordinates[1]];
-        const results = await fetchSuggestions(query, coords, sessionToken.current);
+        // Direct fetch to avoid any abstraction issues
+        const [lat, lng] = selectedCity.coordinates;
+        const params = new URLSearchParams({
+          q: query,
+          access_token: (await import('../../config/mapbox')).MAPBOX_TOKEN,
+          session_token: sessionToken.current,
+          proximity: `${lng},${lat}`,
+          limit: '5',
+          language: 'en',
+          country: 'US',
+          types: 'poi',
+        });
+        const res = await fetch(`https://api.mapbox.com/search/searchbox/v1/suggest?${params}`);
+        const data = await res.json();
+        const results = (data.suggestions ?? []).map((s: any) => ({
+          name: s.name,
+          mapboxId: s.mapbox_id,
+          address: s.address,
+          fullAddress: s.full_address,
+          placeFormatted: s.place_formatted,
+          category: s.poi_category?.[0],
+          maki: s.maki,
+        }));
         setPoiResults(results);
       } catch (err) {
         console.error('[KG Search] Failed:', err);
