@@ -421,10 +421,10 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
       source: 'directions-route',
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
-        'line-color': '#4285F4',
+        'line-color': '#ff4d6a',
         'line-width': 7,
         'line-border-width': 1.5,
-        'line-border-color': '#1a56c4',
+        'line-border-color': '#cc3d55',
         'line-opacity': 0.95,
       },
     });
@@ -557,7 +557,7 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
       map.addSource('directions-current-segment', { type: 'geojson', data: currentData });
       map.addLayer({
         id: 'directions-active-step', type: 'line', source: 'directions-current-segment',
-        paint: { 'line-color': '#4285F4', 'line-width': 7, 'line-opacity': 1, 'line-border-width': 1.5, 'line-border-color': '#1a56c4' },
+        paint: { 'line-color': '#ff4d6a', 'line-width': 7, 'line-opacity': 1, 'line-border-width': 1.5, 'line-border-color': '#cc3d55' },
         layout: { 'line-cap': 'round', 'line-join': 'round' },
       });
     }
@@ -646,11 +646,11 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
       {directions.active && !directions.navigating && directions.route && directions.route.steps.length > 0 && (
         <div className="absolute bottom-[180px] left-4 right-4 z-[200]">
           <div className="liquid-glass rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#4285F4]/15 flex items-center justify-center flex-shrink-0">
-              <Navigation className="w-5 h-5 text-[#4285F4]" />
+            <div className="w-10 h-10 rounded-xl bg-[#ff4d6a]/15 flex items-center justify-center flex-shrink-0">
+              <Navigation className="w-5 h-5 text-[#ff4d6a]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-[#4285F4] font-bold uppercase tracking-wider">
+              <p className="text-[11px] text-[#ff4d6a] font-bold uppercase tracking-wider">
                 {formatDistance(directions.route.steps[0].distance)}
               </p>
               <p className="text-[14px] text-white font-semibold truncate">{directions.route.steps[0].instruction}</p>
