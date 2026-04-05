@@ -47,11 +47,10 @@ function matchCityByCoords(lat: number, lng: number): City | null {
 
 export default function MobileApp() {
   const [stage, setStage] = useState<Stage>(() => {
-    const completed = localStorage.getItem('krowd-onboarded');
     const savedCity = localStorage.getItem('krowd-city');
-    if (completed && savedCity) return 'app';
-    // Skip onboarding — go straight to app with default city
-    return 'app';
+    if (savedCity) return 'app';
+    // Show city selector only — skip splash and intent
+    return 'city';
   });
 
   const [selectedCity, setSelectedCity] = useState<City | null>(() => {
@@ -59,8 +58,7 @@ export default function MobileApp() {
     if (saved) {
       try { return JSON.parse(saved); } catch { /* fall through */ }
     }
-    // Default to first city (Dallas)
-    return CITIES[0];
+    return null;
   });
 
   const [activeTab, setActiveTab] = useState('map');
@@ -87,7 +85,8 @@ export default function MobileApp() {
   const handleCitySelect = useCallback((city: City) => {
     setSelectedCity(city);
     localStorage.setItem('krowd-city', JSON.stringify(city));
-    setStage('intent');
+    localStorage.setItem('krowd-onboarded', 'true');
+    setStage('app');
   }, []);
 
   const handleIntentComplete = useCallback(() => {
