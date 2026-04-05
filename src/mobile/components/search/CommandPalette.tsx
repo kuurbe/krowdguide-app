@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { CrowdPill } from '../shared/CrowdPill';
 import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees, Map, Navigation, Loader2, Search } from 'lucide-react';
 import { useAppContext } from '../../context';
+import { MAPBOX_TOKEN } from '../../config/mapbox';
 import { fetchSearchResult, generateSessionToken } from '../../services/searchBoxService';
 import type { SearchSuggestion } from '../../services/searchBoxService';
 import type { Venue } from '../../types';
@@ -37,6 +38,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
   const [query, setQuery] = useState('');
   const [poiResults, setPoiResults] = useState<SearchSuggestion[]>([]);
   const [poiLoading, setPoiLoading] = useState(false);
+  const [debugStatus, setDebugStatus] = useState('');
   const sessionToken = useRef(generateSessionToken());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,22 +59,17 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
     if (!query || query.length < 2) { setPoiResults([]); setPoiLoading(false); return; }
 
     setPoiLoading(true);
+    setDebugStatus(`Searching "${query}"...`);
     debounceRef.current = setTimeout(async () => {
       try {
-        // Direct fetch to avoid any abstraction issues
         const [lat, lng] = selectedCity.coordinates;
-        const params = new URLSearchParams({
-          q: query,
-          access_token: (await import('../../config/mapbox')).MAPBOX_TOKEN,
-          session_token: sessionToken.current,
-          proximity: `${lng},${lat}`,
-          limit: '5',
-          language: 'en',
-          country: 'US',
-          types: 'poi',
-        });
-        const res = await fetch(`https://api.mapbox.com/search/searchbox/v1/suggest?${params}`);
+        const token = MAPBOX_TOKEN;
+        if (!token) { setDebugStatus('No Mapbox token!'); setPoiLoading(false); return; }
+        const url = `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(query)}&access_token=${token}&proximity=${lng},${lat}&limit=5&language=en&country=US&types=poi&session_token=${sessionToken.current}`;
+        setDebugStatus(`Fetching...`);
+        const res = await fetch(url);
         const data = await res.json();
+        setDebugStatus(`Status ${res.status}, ${data.suggestions?.length ?? 0} results`);
         const results = (data.suggestions ?? []).map((s: any) => ({
           name: s.name,
           mapboxId: s.mapbox_id,
@@ -83,8 +80,8 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
           maki: s.maki,
         }));
         setPoiResults(results);
-      } catch (err) {
-        console.error('[KG Search] Failed:', err);
+      } catch (err: any) {
+        setDebugStatus(`Error: ${err?.message || err}`);
         setPoiResults([]);
       }
       setPoiLoading(false);
@@ -170,6 +167,11 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto px-4 pb-6">
+
+          {/* Debug status */}
+          {debugStatus && (
+            <p className="text-[10px] text-[#22d3ee] font-mono px-1 py-1 mb-1">{debugStatus}</p>
+          )}
 
           {/* POI results from Mapbox */}
           {isSearching && (
