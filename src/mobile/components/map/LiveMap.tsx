@@ -114,7 +114,7 @@ function buildGeoJSON(venues: Venue[], favorites?: Set<string>) {
 }
 
 export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void; onSearchResults?: (venues: import('../../types').Venue[]) => void }) {
-  const { selectedCity, theme, mapRef, directions, startDirections, venues, venueById, highlightedVenueId, setHighlightedVenueId, selectVenue: ctxSelectVenue, selectPOI, favorites } = useAppContext();
+  const { selectedCity, theme, mapRef, directions, startDirections, advanceStep, venues, venueById, highlightedVenueId, setHighlightedVenueId, selectVenue: ctxSelectVenue, selectPOI, favorites } = useAppContext();
   const [activeCategory, setActiveCategory] = useState('All');
   const [mapLoaded, setMapLoaded] = useState(false);
   // pulseFrameRef removed — no more pulse animation
@@ -578,22 +578,71 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
       });
     }
 
-    // Camera — smooth ease to current step midpoint
-    if (currentStep.geometry?.coordinates) {
+    // Camera — fit the full remaining route in view (overview), then track via GPS
+    if (idx === 0 && currentStep.geometry?.coordinates) {
+      // On first step, show overview of entire route
+      const allCoords = steps.flatMap(s => s.geometry?.coordinates || []);
+      if (allCoords.length > 1) {
+        const lngs = allCoords.map(c => c[0]);
+        const lats = allCoords.map(c => c[1]);
+        map.fitBounds(
+          [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+          { padding: { top: 120, bottom: 200, left: 40, right: 40 }, duration: 1000 }
+        );
+      }
+    } else if (currentStep.geometry?.coordinates) {
+      // On subsequent steps, ease to maneuver point with bearing
       const coords = currentStep.geometry.coordinates;
-      const midpoint = coords[Math.floor(coords.length / 2)] || coords[0];
+      const maneuverPoint = coords[0];
       map.easeTo({
-        center: midpoint as [number, number],
+        center: maneuverPoint as [number, number],
         bearing: currentStep.maneuver.bearing_after ?? map.getBearing(),
-        pitch: 0, zoom: 17, duration: 1200,
+        zoom: 16.5, duration: 1200,
       });
     }
 
+    // GPS tracking — watch position and auto-advance steps
+    let watchId: number | null = null;
+    if (directions.navigating && navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const userLng = pos.coords.longitude;
+          const userLat = pos.coords.latitude;
+
+          // Smooth camera follow user position with heading
+          const heading = pos.coords.heading;
+          map.easeTo({
+            center: [userLng, userLat],
+            ...(heading != null && !isNaN(heading) ? { bearing: heading } : {}),
+            zoom: 16.5,
+            duration: 800,
+          });
+
+          // Auto-advance: check distance to end of current step geometry
+          if (idx < steps.length) {
+            const stepCoords = steps[idx]?.geometry?.coordinates;
+            if (stepCoords && stepCoords.length > 0) {
+              const endPoint = stepCoords[stepCoords.length - 1];
+              const dLat = endPoint[1] - userLat;
+              const dLng = endPoint[0] - userLng;
+              const distMeters = Math.sqrt(dLat * dLat + dLng * dLng) * 111320;
+              if (distMeters < 30) {
+                advanceStep();
+              }
+            }
+          }
+        },
+        () => { /* GPS error — continue without tracking */ },
+        { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
+      );
+    }
+
     return () => {
+      if (watchId != null) navigator.geolocation.clearWatch(watchId);
       navLayers.forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
       navSources.forEach(s => { if (map.getSource(s)) map.removeSource(s); });
     };
-  }, [directions.navigating, directions.currentStepIndex, directions.route, mapLoaded, mapRef]);
+  }, [directions.navigating, directions.currentStepIndex, directions.route, mapLoaded, mapRef, advanceStep]);
 
   return (
     <div className="relative h-full w-full">
