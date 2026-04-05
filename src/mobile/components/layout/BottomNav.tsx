@@ -20,33 +20,55 @@ export function BottomNav({
   onTabChange: (tab: string) => void;
 }) {
   const pillRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const isFirstRender = useRef(true);
+  const prevIdx = useRef(0);
 
   useEffect(() => {
     if (!pillRef.current || !navRef.current) return;
     const idx = TABS.findIndex(t => t.id === activeTab);
     if (idx < 0) return;
+
     const buttons = navRef.current.querySelectorAll<HTMLButtonElement>('[role="tab"]');
     const btn = buttons[idx];
     if (!btn) return;
+
     const navRect = navRef.current.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
-    const pillW = 44;
-    const x = btnRect.left - navRect.left + (btnRect.width - pillW) / 2;
+    // Center pill under button — pill matches button width
+    const x = btnRect.left - navRect.left + 2;
+    const w = btnRect.width - 4;
 
-    if (isFirstRender.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.set(pillRef.current, { x, opacity: 1 });
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (isFirstRender.current || prefersReduced) {
+      gsap.set(pillRef.current, { x, width: w, opacity: 1 });
       isFirstRender.current = false;
+      prevIdx.current = idx;
       return;
     }
 
-    gsap.to(pillRef.current, { x, opacity: 1, duration: 0.45, ease: 'elastic.out(1, 0.55)', overwrite: true });
+    // Calculate travel distance for adaptive duration
+    const distance = Math.abs(idx - prevIdx.current);
+    const duration = 0.3 + distance * 0.06; // Longer for bigger jumps
 
-    if (glowRef.current) {
-      gsap.fromTo(glowRef.current, { x, opacity: 0.6, scale: 1.4 }, { opacity: 0, scale: 2, duration: 0.5, ease: 'power2.out' });
+    // Smooth spring slide — no bounce, just fluid
+    gsap.to(pillRef.current, {
+      x,
+      width: w,
+      opacity: 1,
+      duration,
+      ease: 'power3.out',
+      overwrite: true,
+    });
+
+    // Scale bump on the active icon
+    const iconEl = btn.querySelector('svg');
+    if (iconEl) {
+      gsap.fromTo(iconEl, { scale: 0.8 }, { scale: 1, duration: 0.25, ease: 'back.out(2)' });
     }
+
+    prevIdx.current = idx;
   }, [activeTab]);
 
   return (
@@ -54,24 +76,23 @@ export function BottomNav({
       ref={navRef}
       role="tablist"
       aria-label="Main navigation"
-      className="h-[60px] flex items-center justify-around rounded-[30px]
+      className="h-[58px] flex items-center justify-around rounded-[29px]
                  liquid-glass glass-inner-light promote-layer relative
                  shadow-[var(--k-shadow-lg)]"
     >
-      {/* Frosted pill indicator */}
+      {/* Sliding pill indicator — fluid width matches button */}
       <div
         ref={pillRef}
-        className="absolute top-[4px] left-0 w-[44px] h-[52px] rounded-[22px]
-                   nav-pill-indicator pointer-events-none z-0"
-        style={{ opacity: 0 }}
-      />
-
-      {/* Micro-glow */}
-      <div
-        ref={glowRef}
-        className="absolute top-[4px] left-0 w-[44px] h-[52px] rounded-[22px]
+        className="absolute top-[3px] left-0 h-[52px] rounded-[24px]
                    pointer-events-none z-0"
-        style={{ opacity: 0, background: 'radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%)', filter: 'blur(8px)' }}
+        style={{
+          opacity: 0,
+          background: 'radial-gradient(ellipse at 50% 30%, rgba(255,77,106,0.18), rgba(255,255,255,0.08) 70%)',
+          backdropFilter: 'blur(24px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(200%)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), 0 0 20px rgba(255,77,106,0.06), 0 4px 12px rgba(0,0,0,0.15)',
+        }}
       />
 
       {TABS.map((tab) => {
@@ -84,24 +105,25 @@ export function BottomNav({
             aria-label={tab.label}
             onClick={() => { haptic('light'); onTabChange(tab.id); }}
             className={cn(
-              'flex flex-col items-center justify-center w-[52px] h-[52px] rounded-[22px] transition-all ios-press relative z-[1] gap-[2px]',
+              'flex flex-col items-center justify-center w-[56px] h-[52px] rounded-[24px] transition-all relative z-[1] gap-[2px]',
+              isActive ? 'active:scale-[0.92]' : 'active:scale-[0.88] ios-press',
             )}
           >
             {tab.id === 'alerts' && (
-              <span className="absolute top-1 right-2 w-[5px] h-[5px] rounded-full bg-[var(--k-accent)] ring-[1.5px] ring-[var(--k-glass-bg)]" />
+              <span className="absolute top-1.5 right-2.5 w-[5px] h-[5px] rounded-full bg-[var(--k-accent)] ring-[1.5px] ring-[var(--k-glass-bg)]" />
             )}
 
             <tab.icon
               className={cn(
                 'transition-all duration-200',
                 isActive
-                  ? 'w-[18px] h-[18px] stroke-[2.4] text-[var(--k-text)]'
-                  : 'w-[17px] h-[17px] stroke-[1.6] text-[var(--k-text-f)]'
+                  ? 'w-[19px] h-[19px] stroke-[2.4] text-white'
+                  : 'w-[17px] h-[17px] stroke-[1.5] text-[var(--k-text-f)]'
               )}
             />
             <span className={cn(
-              'text-[8px] font-bold tracking-[0.04em] transition-colors duration-200',
-              isActive ? 'text-[#ff4d6a]' : 'text-[var(--k-text-f)]'
+              'text-[8px] font-bold tracking-[0.03em] transition-all duration-200',
+              isActive ? 'text-[#ff4d6a] opacity-100' : 'text-[var(--k-text-f)] opacity-70'
             )}>
               {tab.label}
             </span>
