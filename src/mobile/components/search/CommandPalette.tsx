@@ -63,7 +63,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
       try {
         const results = await fetchSuggestions(
           query,
-          [selectedCity.coordinates[1], selectedCity.coordinates[0]], // [lng, lat]
+          selectedCity.coordinates, // [lat, lng] — fetchSuggestions flips internally
           sessionToken.current
         );
         setPoiResults(results);
