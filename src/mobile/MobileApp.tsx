@@ -50,15 +50,17 @@ export default function MobileApp() {
     const completed = localStorage.getItem('krowd-onboarded');
     const savedCity = localStorage.getItem('krowd-city');
     if (completed && savedCity) return 'app';
-    return 'splash';
+    // Skip onboarding — go straight to app with default city
+    return 'app';
   });
 
   const [selectedCity, setSelectedCity] = useState<City | null>(() => {
     const saved = localStorage.getItem('krowd-city');
     if (saved) {
-      try { return JSON.parse(saved); } catch { return null; }
+      try { return JSON.parse(saved); } catch { /* fall through */ }
     }
-    return null;
+    // Default to first city (Dallas)
+    return CITIES[0];
   });
 
   const [activeTab, setActiveTab] = useState('map');
