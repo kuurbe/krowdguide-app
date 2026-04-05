@@ -91,194 +91,12 @@ function getTimePreset(): 'dawn' | 'day' | 'dusk' | 'night' {
   return 'night';
 }
 
-/** Enable 3D terrain + sky atmosphere */
-function setup3DTerrain(map: mapboxgl.Map) {
-  try {
-    if (!map.getSource('mapbox-dem')) {
-      map.addSource('mapbox-dem', {
-        type: 'raster-dem',
-        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-        tileSize: 512,
-        maxzoom: 14,
-      });
-    }
-    map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-
-    if (!map.getLayer('sky')) {
-      map.addLayer({
-        id: 'sky',
-        type: 'sky',
-        paint: {
-          'sky-type': 'atmosphere',
-          'sky-atmosphere-sun': [0, 0],
-          'sky-atmosphere-sun-intensity': 15,
-        },
-      });
-    }
-  } catch (err) {
-    if (import.meta.env.DEV) console.error('[KG] 3D terrain setup error:', err);
-  }
-}
-
-/** Get time-adaptive building colors — warm dusk, deep night, cool day */
-function getTimeAdaptiveBuildingColors(): { colors: mapboxgl.ExpressionSpecification; glowColor: string; glowOpacity: number } {
-  const hour = new Date().getHours();
-  const isNight = hour >= 21 || hour < 5;
-  const isDusk = hour >= 17 && hour < 21;
-  const isDawn = hour >= 5 && hour < 8;
-
-  if (isNight) {
-    return {
-      colors: ['interpolate', ['linear'], ['get', 'height'],
-        0, '#0f1218', 20, '#141a28', 50, '#111825', 100, '#0d1420', 200, '#0a1018'],
-      glowColor: '#22d3ee',
-      glowOpacity: 0.10,
-    };
-  }
-  if (isDusk) {
-    return {
-      colors: ['interpolate', ['linear'], ['get', 'height'],
-        0, '#1a1d2e', 20, '#1e2540', 50, '#1c2238', 100, '#181e30', 200, '#141828'],
-      glowColor: '#ff8c42',
-      glowOpacity: 0.08,
-    };
-  }
-  if (isDawn) {
-    return {
-      colors: ['interpolate', ['linear'], ['get', 'height'],
-        0, '#1e2030', 20, '#252840', 50, '#1e2438', 100, '#1a2030', 200, '#151a28'],
-      glowColor: '#fbbf24',
-      glowOpacity: 0.06,
-    };
-  }
-  // Day
-  return {
-    colors: ['interpolate', ['linear'], ['get', 'height'],
-      0, '#1a2332', 20, '#1e3a5f', 50, '#1a365d', 100, '#1e293b', 200, '#0f172a'],
-    glowColor: '#22d3ee',
-    glowOpacity: 0.06,
-  };
-}
-
-/** Enhanced 3D buildings with ambient lighting and time-adaptive colors */
-function setup3DBuildings(map: mapboxgl.Map, isDark: boolean) {
-  try {
-    // Add custom 3D building layer from composite source
-    if (!map.getSource('composite')) {
-      if (!map.getSource('kg-buildings')) {
-        map.addSource('kg-buildings', {
-          type: 'vector',
-          url: 'mapbox://mapbox.mapbox-streets-v8',
-        });
-      }
-    }
-
-    const buildingSrc = map.getSource('composite') ? 'composite' : 'kg-buildings';
-
-    // Remove existing custom building layers
-    ['kg-buildings-3d', 'kg-buildings-glow'].forEach(l => {
-      if (map.getLayer(l)) map.removeLayer(l);
-    });
-
-    // Get time-adaptive colors for dark mode
-    const timeColors = getTimeAdaptiveBuildingColors();
-
-    // 3D building extrusions — glass/steel aesthetic with time adaptation
-    map.addLayer({
-      id: 'kg-buildings-3d',
-      type: 'fill-extrusion',
-      source: buildingSrc,
-      'source-layer': 'building',
-      minzoom: 14,
-      filter: ['==', ['get', 'extrude'], 'true'],
-      paint: {
-        'fill-extrusion-color': isDark
-          ? timeColors.colors
-          : [
-            'interpolate', ['linear'], ['get', 'height'],
-            0, '#e2e8f0', 20, '#cbd5e1', 50, '#94a3b8', 100, '#64748b', 200, '#475569',
-          ],
-        'fill-extrusion-height': ['get', 'height'],
-        'fill-extrusion-base': ['get', 'min_height'],
-        'fill-extrusion-opacity': isDark ? 0.88 : 0.75,
-        'fill-extrusion-vertical-gradient': true,
-      },
-    } as mapboxgl.LayerSpecification);
-
-    // Time-adaptive ambient glow on building tops (dark mode only)
-    if (isDark) {
-      map.addLayer({
-        id: 'kg-buildings-glow',
-        type: 'fill-extrusion',
-        source: buildingSrc,
-        'source-layer': 'building',
-        minzoom: 15,
-        filter: ['all', ['==', ['get', 'extrude'], 'true'], ['>', ['get', 'height'], 15]],
-        paint: {
-          'fill-extrusion-color': timeColors.glowColor,
-          'fill-extrusion-height': ['+', ['get', 'height'], 0.5],
-          'fill-extrusion-base': ['get', 'height'],
-          'fill-extrusion-opacity': timeColors.glowOpacity,
-        },
-      } as mapboxgl.LayerSpecification);
-    }
-  } catch (err) {
-    if (import.meta.env.DEV) console.error('[KG] 3D buildings setup error:', err);
-  }
-}
-
-/** Switch buildings to navigation-mode styling — darker, more cinematic */
-function setNavigationBuildingStyle(map: mapboxgl.Map, navigating: boolean) {
-  try {
-    if (!map.getLayer('kg-buildings-3d')) return;
-    if (navigating) {
-      // Cinematic dark blue buildings during navigation
-      map.setPaintProperty('kg-buildings-3d', 'fill-extrusion-color', [
-        'interpolate', ['linear'], ['get', 'height'],
-        0, '#0c1220',
-        20, '#111d2e',
-        50, '#162033',
-        100, '#0d1b2a',
-        200, '#0a1628',
-      ]);
-      map.setPaintProperty('kg-buildings-3d', 'fill-extrusion-opacity', 0.92);
-      // Brighter cyan glow on taller buildings
-      if (map.getLayer('kg-buildings-glow')) {
-        map.setPaintProperty('kg-buildings-glow', 'fill-extrusion-opacity', 0.12);
-        map.setPaintProperty('kg-buildings-glow', 'fill-extrusion-color', '#22d3ee');
-      }
-    } else {
-      // Reset to normal dark-mode style
-      map.setPaintProperty('kg-buildings-3d', 'fill-extrusion-color', [
-        'interpolate', ['linear'], ['get', 'height'],
-        0, '#1a2332',
-        20, '#1e3a5f',
-        50, '#1a365d',
-        100, '#1e293b',
-        200, '#0f172a',
-      ]);
-      map.setPaintProperty('kg-buildings-3d', 'fill-extrusion-opacity', 0.85);
-      if (map.getLayer('kg-buildings-glow')) {
-        map.setPaintProperty('kg-buildings-glow', 'fill-extrusion-opacity', 0.06);
-      }
-    }
-  } catch { /* no-op */ }
-}
-
 const CATEGORY_MAP: Record<string, string[]> = {
   'All': [],
   '\u{1F374} Food': ['Restaurant', 'BBQ', 'Japanese', 'American'],
   '\u2615 Coffee': ['Coffee'],
   '\u{1F37A} Bars': ['Brewery', 'Bar', 'Brewpub'],
   '\u{1F33F} Parks': ['Park'],
-};
-
-const POI_CLASS_MAP: Record<string, string[]> = {
-  'All': [],
-  '\u{1F374} Food': ['food_and_drink', 'restaurant', 'food_and_drink_stores', 'cafe'],
-  '\u2615 Coffee': ['cafe'],
-  '\u{1F37A} Bars': ['bar', 'nightlife'],
-  '\u{1F33F} Parks': ['park_like', 'sport_and_leisure'],
 };
 
 function buildGeoJSON(venues: Venue[], favorites?: Set<string>) {
@@ -296,7 +114,7 @@ function buildGeoJSON(venues: Venue[], favorites?: Set<string>) {
 }
 
 export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void; onSearchResults?: (venues: import('../../types').Venue[]) => void }) {
-  const { selectedCity, theme, mapRef, directions, startDirections, venues, venueById, highlightedVenueId, setHighlightedVenueId, selectedVenue, selectVenue: ctxSelectVenue, closeVenueSheet, selectPOI, favorites } = useAppContext();
+  const { selectedCity, theme, mapRef, directions, startDirections, venues, venueById, highlightedVenueId, setHighlightedVenueId, selectVenue: ctxSelectVenue, selectPOI, favorites } = useAppContext();
   const [activeCategory, setActiveCategory] = useState('All');
   const [mapLoaded, setMapLoaded] = useState(false);
   // pulseFrameRef removed — no more pulse animation
@@ -413,7 +231,7 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
     let clickHandler: ((e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => void) | null = null;
 
     function addLayers() {
-      if (cancelled) return;
+      if (cancelled || !map) return;
       const geojson = buildGeoJSON(filteredVenues, favorites);
 
       // Clean up previous layers including pulse rings, icons, and fav hearts
@@ -541,7 +359,7 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
     return () => {
       cancelled = true;
       clearInterval((map as any)?._kgPulseTimer);
-      if (clickHandler) map.off('click', 'crowd-points', clickHandler);
+      if (clickHandler && map) map.off('click', 'crowd-points', clickHandler);
     };
   }, [mapLoaded, filteredVenues, selectVenue, venueById, favorites]);
 

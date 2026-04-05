@@ -4,7 +4,7 @@
  */
 import type { BandsintownEvent } from '../types';
 import { BANDSINTOWN_APP_ID } from '../config/apiKeys';
-import { fetchWithRetry, errorMessage } from './fetchUtil';
+import { fetchWithRetry } from './fetchUtil';
 
 const BASE_URL = 'https://rest.bandsintown.com/artists';
 

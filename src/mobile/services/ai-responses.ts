@@ -74,7 +74,7 @@ const CATEGORIES: { type: string; keywords: [string, number][]; handler: (venues
   {
     type: 'timing',
     keywords: [['time', 2], ['when', 2], ['compare', 2], ['vs', 2], ['best time', 4], ['peak', 2], ['off-peak', 3]],
-    handler: (venues, cityName) => ({
+    handler: (_venues, cityName) => ({
       text: `Based on historical data, the best time to visit ${cityName} venues is between 2-4 PM (pre-dinner lull). For nightlife areas, 3-5 PM offers the best balance of atmosphere and crowd levels.`,
       data: { type: 'timing', chart: [45, 38, 32, 35, 48, 62, 78, 85, 82, 70, 55, 42] },
     }),

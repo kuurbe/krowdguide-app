@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
-import { Plus, MapPin, Moon, Vibrate, Trash2, ChevronRight, Bell } from 'lucide-react';
+import { Plus, MapPin, Moon, Vibrate, Trash2, ChevronRight } from 'lucide-react';
 
 type TimeGranularity = 'immediate' | '30m' | '1h';
 

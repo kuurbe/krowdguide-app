@@ -52,7 +52,7 @@ interface AppContextType {
   endNavigation: () => void;
   // Venues — single source of truth, pre-fetched for instant card opens
   venues: Venue[];
-  venueById: Map<string, Venue>;
+  venueById: globalThis.Map<string, Venue>;
   pulse: OraclePulse | null;
   isLive: boolean;
   // Map↔List sync — highlighted venue ID for bidirectional coordination
@@ -208,6 +208,8 @@ export function AppProvider({ city, children }: { city: City; children: ReactNod
       route: null,
       loading: true,
       error: null,
+      navigating: false,
+      currentStepIndex: 0,
     });
 
     try {

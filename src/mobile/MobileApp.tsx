@@ -139,7 +139,7 @@ function AppShell({
   cityGuideOpen: boolean;
   setCityGuideOpen: (v: boolean) => void;
 }) {
-  const { selectedVenue, closeVenueSheet, selectVenue, venues, selectedPOI, closePOISheet } = useAppContext();
+  const { selectedVenue, closeVenueSheet, selectVenue, venues } = useAppContext();
   const [searchResults, setSearchResults] = useState<typeof venues>([]);
 
   // Clear search results on tab change or venue selection

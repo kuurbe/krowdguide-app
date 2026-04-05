@@ -32,7 +32,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 }
 
 export function AccountView() {
-  const { theme, toggleTheme, walkingMode, setWalkingMode, smartNotifs, setSmartNotifs, favorites, toggleFavorite, venues } = useAppContext();
+  const { theme, toggleTheme, smartNotifs, setSmartNotifs, favorites, toggleFavorite, venues } = useAppContext();
   const [tab, setTab] = useState<'settings' | 'favorites'>('settings');
   const [quietMode, setQuietMode] = useState(false);
   const [capacityWarning, setCapacityWarning] = useState(true);

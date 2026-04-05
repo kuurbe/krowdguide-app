@@ -9,7 +9,7 @@
 import { MAPBOX_TOKEN } from '../config/mapbox';
 import { HAS_FOURSQUARE } from '../config/apiKeys';
 import { searchFoursquarePlaces, getFoursquareDetails } from './foursquareService';
-import { fetchJSON, buildURL, errorMessage } from './fetchUtil';
+import { fetchJSON, buildURL } from './fetchUtil';
 
 // ── Enriched POI type ───────────────────────────────────────
 

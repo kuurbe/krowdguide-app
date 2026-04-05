@@ -3,7 +3,7 @@ import { useAppContext } from '../../context';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { formatDistance, formatDuration } from '../../services/directionsService';
 import type { TravelMode } from '../../services/directionsService';
-import { X, Footprints, Bike, Loader2, Navigation, ChevronUp, ChevronDown, Bus, Clock, Route } from 'lucide-react';
+import { X, Footprints, Bike, Loader2, Navigation, ChevronUp, ChevronDown, Clock, Route } from 'lucide-react';
 import { ManeuverIcon } from './ManeuverIcon';
 
 const MODES: { id: TravelMode; label: string; Icon: typeof Route }[] = [

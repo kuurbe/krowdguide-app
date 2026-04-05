@@ -85,7 +85,7 @@ export async function searchFoursquarePlaces(
     const data = (await res.json()) as { results?: RawFSQPlace[] };
 
     if (!Array.isArray(data.results)) return [];
-    return data.results.map(mapPlace);
+    return data.results.map(r => mapPlace(r));
   } catch (err) {
     if (import.meta.env.DEV) console.error('[Foursquare]', errorMessage(err));
     return [];

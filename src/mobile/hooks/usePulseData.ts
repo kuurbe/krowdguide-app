@@ -3,7 +3,6 @@ import type { OraclePulse, Venue } from '../types';
 
 const ORACLE_URL = 'http://149.28.196.99:8001/pulse_data.json';
 const POLL_INTERVAL = 30_000; // 30s
-const REQUEST_TIMEOUT = 5_000; // 5s
 const MAX_RETRIES = 2;
 
 /** Map Oracle vibe_score → app crowd level */

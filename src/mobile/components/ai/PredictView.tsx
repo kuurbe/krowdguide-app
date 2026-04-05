@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, AlertTriangle, TrendingUp, TrendingDown, MapPin, Clock, Footprints, BarChart3, Zap } from 'lucide-react';
+import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, AlertTriangle, Clock, Footprints, BarChart3, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppContext } from '../../context';
 import { generateAIResponse, SUGGESTION_CHIPS } from '../../services/ai-responses';

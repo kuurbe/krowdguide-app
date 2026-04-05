@@ -1,35 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  ArrowUp, ArrowUpRight, ArrowUpLeft, MapPin,
-  CornerUpRight, CornerUpLeft, RotateCw, GitMerge, Undo2,
+  MapPin,
   Volume2, VolumeX, ArrowLeft, Mic, Footprints, Flag, Users, X,
 } from 'lucide-react';
 import { useAppContext } from '../../context';
-import { formatDistance, formatDuration } from '../../services/directionsService';
+import { formatDistance } from '../../services/directionsService';
 import { speak, cancelSpeech, isVoiceSupported } from '../../utils/voiceGuidance';
 
 /* ── Maneuver icon mapper ─────────────────────────────────────────── */
-
-function ManeuverIcon({ type, modifier, size = 32 }: { type: string; modifier?: string; size?: number }) {
-  const style = { width: size, height: size };
-  const cls = 'text-white';
-
-  if (type === 'arrive') return <MapPin className={cls} style={style} />;
-  if (type === 'roundabout' || type === 'rotary') return <RotateCw className={cls} style={style} />;
-  if (type === 'merge') return <GitMerge className={cls} style={style} />;
-  if (type === 'turn' && modifier?.includes('uturn')) return <Undo2 className={cls} style={style} />;
-  if (modifier?.includes('sharp left')) return <CornerUpLeft className={cls} style={style} />;
-  if (modifier?.includes('sharp right')) return <CornerUpRight className={cls} style={style} />;
-  if (modifier?.includes('slight left')) return <ArrowUpLeft className={cls} style={style} />;
-  if (modifier?.includes('slight right')) return <ArrowUpRight className={cls} style={style} />;
-  if (modifier?.includes('left')) return <CornerUpLeft className={cls} style={style} />;
-  if (modifier?.includes('right')) return <CornerUpRight className={cls} style={style} />;
-  if (type === 'end of road') {
-    if (modifier?.includes('left')) return <CornerUpLeft className={cls} style={style} />;
-    return <CornerUpRight className={cls} style={style} />;
-  }
-  return <ArrowUp className={cls} style={style} />;
-}
 
 /* ── Tab definitions ──────────────────────────────────────────────── */
 

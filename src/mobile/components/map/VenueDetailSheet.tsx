@@ -3,7 +3,7 @@ import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { CrowdMomentum } from '../shared/CrowdMomentum';
 import { CrowdPredictionChart } from '../charts/CrowdPredictionChart';
 import { CrowdPill as MiniCrowdPill } from '../shared/CrowdPill';
-import { Clock, Beer, X, Users, Star, Zap, MapPin, Heart, Share2, DollarSign, Footprints } from 'lucide-react';
+import { X, Star, Zap, Heart, Share2, Footprints } from 'lucide-react';
 import { useAppContext } from '../../context';
 import { useFoursquareEnrichment } from '../../hooks/useFoursquareEnrichment';
 import type { Venue } from '../../types';

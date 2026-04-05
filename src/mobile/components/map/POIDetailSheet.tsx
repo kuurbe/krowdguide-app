@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { X, Share2, Footprints, Phone, Globe, Route, Star, MapPin, Clock, Heart, ExternalLink } from 'lucide-react';
+import { X, Share2, Footprints, Phone, Globe, Route, Star, MapPin, Clock, Heart } from 'lucide-react';
 import { useAppContext } from '../../context';
 import { enrichPOI, type EnrichedPOI } from '../../services/poiEnrichmentService';
 import { fetchDirections, formatDuration, formatDistance } from '../../services/directionsService';

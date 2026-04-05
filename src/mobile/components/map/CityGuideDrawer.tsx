@@ -34,7 +34,7 @@ export function CityGuideDrawer({
   onOpenChange: (open: boolean) => void;
 }) {
   const {
-    selectedCity, venues, isLive, selectVenue,
+    venues, isLive, selectVenue,
   } = useAppContext();
 
   const [snap, setSnap] = useState<number | string | null>(SNAP_HALF);
