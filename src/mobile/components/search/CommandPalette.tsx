@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-// No Drawer — using fixed overlay to avoid Vaul input issues
+import { createPortal } from 'react-dom';
 import { CrowdPill } from '../shared/CrowdPill';
 import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees, Map, Navigation, Loader2, Search } from 'lucide-react';
 import { useAppContext } from '../../context';
@@ -124,7 +124,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[2000]">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60" onClick={() => onOpenChange(false)} />
@@ -273,6 +273,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
