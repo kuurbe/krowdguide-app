@@ -9,6 +9,8 @@ import { CitySelector } from './components/onboarding/CitySelector';
 import { IntentScreen } from './components/onboarding/IntentScreen';
 import { MobileHeader } from './components/layout/MobileHeader';
 import { BottomNav } from './components/layout/BottomNav';
+import { SearchResultsCarousel } from './components/map/SearchResultsCarousel';
+import { LayerSelector } from './components/map/LayerSelector';
 
 // ── Code-split heavy views — only loaded when tab activates ──
 const LiveMap = lazy(() => import('./components/map/LiveMap').then(m => ({ default: m.LiveMap })));
@@ -18,6 +20,7 @@ const AlertsDrawer = lazy(() => import('./components/alerts/AlertsDrawer').then(
 const CityGuideDrawer = lazy(() => import('./components/map/CityGuideDrawer').then(m => ({ default: m.CityGuideDrawer })));
 const DirectionsDrawer = lazy(() => import('./components/map/DirectionsDrawer').then(m => ({ default: m.DirectionsDrawer })));
 const VenueDetailSheet = lazy(() => import('./components/map/VenueDetailSheet').then(m => ({ default: m.VenueDetailSheet })));
+const POIDetailSheet = lazy(() => import('./components/map/POIDetailSheet').then(m => ({ default: m.POIDetailSheet })));
 
 type Stage = 'splash' | 'city' | 'intent' | 'app';
 
@@ -136,7 +139,30 @@ function AppShell({
   cityGuideOpen: boolean;
   setCityGuideOpen: (v: boolean) => void;
 }) {
-  const { selectedVenue, closeVenueSheet } = useAppContext();
+  const { selectedVenue, closeVenueSheet, selectVenue, venues, selectedPOI, closePOISheet } = useAppContext();
+  const [searchResults, setSearchResults] = useState<typeof venues>([]);
+
+  // Clear search results on tab change or venue selection
+  const handleTabChange = useCallback((tab: string) => {
+    setSearchResults([]);
+    // Search and Alerts are drawer tabs — open overlay, stay on map
+    if (tab === 'search') {
+      setCityGuideOpen(true);
+      if (activeTab !== 'map') onTabChange('map');
+      return;
+    }
+    if (tab === 'alerts') {
+      setAlertsOpen(true);
+      if (activeTab !== 'map') onTabChange('map');
+      return;
+    }
+    onTabChange(tab);
+  }, [onTabChange, activeTab, setCityGuideOpen, setAlertsOpen]);
+
+  const handleSearchVenueSelect = useCallback((venue: typeof venues[0]) => {
+    setSearchResults([]);
+    selectVenue(venue);
+  }, [selectVenue]);
 
   return (
     <div className="relative w-full h-dvh bg-[var(--k-bg)] overflow-hidden">
@@ -156,7 +182,7 @@ function AppShell({
           <div className={activeTab === 'map' ? 'h-full' : 'hidden'}>
             <ErrorBoundary name="Map">
               <Suspense fallback={<ViewSkeleton />}>
-                <LiveMap onKGClick={() => setCityGuideOpen(true)} />
+                <LiveMap onKGClick={() => setCityGuideOpen(true)} onSearchResults={setSearchResults} />
               </Suspense>
             </ErrorBoundary>
           </div>
@@ -178,9 +204,25 @@ function AppShell({
           )}
         </div>
 
-        {/* Floating Bottom Nav */}
-        <div className="absolute bottom-4 left-5 right-5 z-[1100] max-w-lg mx-auto safe-bottom">
-          <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
+        {/* Map overlays — only visible on map tab */}
+        {activeTab === 'map' && (
+          <>
+            {/* Layer selector FAB — bottom left */}
+            <LayerSelector />
+
+            {/* Search results carousel — above nav */}
+            <SearchResultsCarousel
+              venues={searchResults}
+              onSelect={handleSearchVenueSelect}
+              onClear={() => setSearchResults([])}
+            />
+          </>
+        )}
+
+        {/* Floating Bottom Nav — tight width to show liquid glass */}
+        <div className="absolute bottom-4 z-[1100] safe-bottom"
+             style={{ left: '50%', transform: 'translateX(-50%)', width: 'min(300px, 80vw)' }}>
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
       </div>
 
@@ -206,6 +248,12 @@ function AppShell({
       <Suspense fallback={null}>
         <ErrorBoundary name="Venue Detail">
           <VenueDetailSheet venue={selectedVenue} onClose={closeVenueSheet} />
+        </ErrorBoundary>
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ErrorBoundary name="POI Detail">
+          <POIDetailSheet />
         </ErrorBoundary>
       </Suspense>
     </div>

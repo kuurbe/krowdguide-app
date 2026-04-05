@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Command } from 'cmdk';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { CrowdPill } from '../shared/CrowdPill';
-import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees } from 'lucide-react';
+import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees, Map } from 'lucide-react';
 import type { Venue } from '../../types';
 
 const QUICK_ACTIONS = [
@@ -27,14 +27,21 @@ interface CommandPaletteProps {
   venues: Venue[];
   onVenueSelect: (venue: Venue) => void;
   onQuickAction?: (action: QuickAction) => void;
+  onSearchResults?: (venues: Venue[]) => void;
 }
 
-export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQuickAction }: CommandPaletteProps) {
+export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQuickAction, onSearchResults }: CommandPaletteProps) {
 
   const handleVenue = useCallback((venue: Venue) => {
     onVenueSelect(venue);
     onOpenChange(false);
   }, [onVenueSelect, onOpenChange]);
+
+  /** Show all venues on map as scrollable carousel */
+  const handleShowOnMap = useCallback(() => {
+    onSearchResults?.(venues);
+    onOpenChange(false);
+  }, [venues, onSearchResults, onOpenChange]);
 
   const handleAction = useCallback((action: QuickAction) => {
     onQuickAction?.(action);
@@ -87,6 +94,21 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
                 </Command.Item>
               ))}
             </Command.Group>
+
+            {/* Show on Map button */}
+            {onSearchResults && venues.length > 0 && (
+              <div className="px-1 pt-3 pb-1">
+                <button
+                  onClick={handleShowOnMap}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl
+                             glass-chip text-[12px] font-bold text-[var(--k-accent)] ios-press
+                             hover:bg-[var(--k-surface-h)] transition-colors"
+                >
+                  <Map className="w-3.5 h-3.5" />
+                  Show {venues.length} venues on map
+                </button>
+              </div>
+            )}
 
             {/* Venues */}
             <Command.Group heading="Venues"

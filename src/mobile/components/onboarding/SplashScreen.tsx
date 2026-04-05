@@ -2,6 +2,26 @@ import { useState, useEffect, useRef } from 'react';
 import { Navigation, Locate } from 'lucide-react';
 import gsap from 'gsap';
 
+/** Tiny floating particle dots for ambient depth */
+function Particles() {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-[2px] h-[2px] rounded-full bg-white/20"
+          style={{
+            top: `${15 + Math.random() * 70}%`,
+            left: `${10 + Math.random() * 80}%`,
+            animation: `float ${5 + i * 0.8}s ease-in-out infinite ${i * 0.6}s`,
+            opacity: 0.15 + Math.random() * 0.2,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: number; lng: number }) => void }) {
   const [phase, setPhase] = useState<'splash' | 'location'>('splash');
   const [locating, setLocating] = useState(false);
@@ -15,32 +35,55 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const orbsRef = useRef<HTMLDivElement>(null);
+
+  // Respect prefers-reduced-motion
+  const prefersReduced = typeof window !== 'undefined'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // GSAP splash animation sequence
   useEffect(() => {
     if (phase !== 'splash') return;
+
+    if (prefersReduced) {
+      // Skip animations, just show and advance
+      const timer = setTimeout(() => setPhase('location'), 1200);
+      return () => clearTimeout(timer);
+    }
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         onComplete: () => setPhase('location'),
       });
 
-      // 0-400ms: Logo icon fades in with elastic bounce
+      // Orbs scale in with stagger
+      if (orbsRef.current) {
+        tl.from(orbsRef.current.children, {
+          scale: 0,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: 'power3.out',
+        }, 0);
+      }
+
+      // Logo icon — elastic entrance
       tl.from(logoRef.current, {
         scale: 0.5,
         opacity: 0,
         duration: 0.5,
         ease: 'elastic.out(1, 0.5)',
-      });
+      }, 0.2);
 
-      // 400-800ms: "KROWD" text animates in letter-by-letter
+      // "KROWD" text slides in
       tl.from(krowdRef.current, {
         opacity: 0,
         x: -20,
         duration: 0.4,
         ease: 'power3.out',
-      }, 0.4);
+      }, 0.5);
 
-      // 800-1200ms: "GUIDE" slides up with reveal
+      // "GUIDE" slides up
       tl.from(guideRef.current, {
         opacity: 0,
         y: 15,
@@ -48,7 +91,7 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
         ease: 'power3.out',
       }, 0.8);
 
-      // 1200-1600ms: Tagline fades up
+      // Tagline fades up
       tl.from(taglineRef.current, {
         opacity: 0,
         y: 10,
@@ -56,14 +99,14 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
         ease: 'power2.out',
       }, 1.2);
 
-      // Progress bar animates across full width
+      // Progress bar sweeps
       tl.to(progressRef.current, {
         width: '100%',
         duration: 1.6,
         ease: 'power1.inOut',
       }, 1.0);
 
-      // 2400-2800ms: Entire splash scales up slightly and fades
+      // Exit — scale up and fade
       tl.to(containerRef.current, {
         scale: 1.05,
         opacity: 0,
@@ -73,7 +116,7 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
     }, splashRef);
 
     return () => ctx.revert();
-  }, [phase]);
+  }, [phase, prefersReduced]);
 
   const handleEnableLocation = () => {
     setLocating(true);
@@ -98,12 +141,16 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
   if (phase === 'splash') {
     return (
       <div ref={splashRef} className="h-dvh w-full bg-[#050508] flex flex-col items-center justify-center relative overflow-hidden">
-        {/* Aurora mesh background */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Mesh gradient orbs */}
+        <div ref={orbsRef} className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="orb orb-1" />
           <div className="orb orb-2" />
+          <div className="orb orb-3" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050508]/80" />
         </div>
+
+        {/* Floating particles */}
+        <Particles />
 
         <div ref={containerRef} className="relative z-10 flex flex-col items-center">
           {/* Logo mark */}
@@ -121,13 +168,14 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
             <span ref={guideRef} className="gradient-text-warm inline-block">GUIDE</span>
           </h1>
 
-          <p ref={taglineRef} className="text-white/35 text-[13px] mt-4 tracking-[0.12em] uppercase font-medium">
+          <p ref={taglineRef} className="text-white/35 text-[13px] mt-4 tracking-[0.12em] uppercase font-medium"
+             style={{ letterSpacing: '0.14em' }}>
             Real-time crowd intelligence
           </p>
 
-          {/* GSAP progress bar */}
+          {/* Shimmer progress bar */}
           <div className="mt-14 w-32 h-[3px] rounded-full bg-white/10 overflow-hidden">
-            <div ref={progressRef} className="h-full w-0 rounded-full bg-gradient-to-r from-[#ff4d6a] to-[#a855f7]" />
+            <div ref={progressRef} className="h-full w-0 rounded-full bg-gradient-to-r from-[#ff4d6a] via-[#a855f7] to-[#22d3ee]" />
           </div>
         </div>
       </div>
@@ -142,6 +190,8 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
         <div className="orb orb-3" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050508]/60" />
       </div>
+
+      <Particles />
 
       <div className="relative z-10 w-full max-w-[340px] animate-fadeUp">
         <div className="text-center mb-10">

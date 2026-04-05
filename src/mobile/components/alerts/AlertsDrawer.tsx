@@ -1,28 +1,41 @@
-import { useState, useMemo } from 'react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { cn } from '@/lib/utils';
-import { ThumbsUp, ThumbsDown, Clock, MapPin, CheckCircle2, Plus } from 'lucide-react';
-import { useAppContext } from '../../context';
-import { getAlertsForCity } from '../../data/alerts';
-import { ReportDrawer } from './ReportDrawer';
+import { useState } from 'react';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
+import { Plus, MapPin, Moon, Vibrate, Trash2, ChevronRight, Bell } from 'lucide-react';
 
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'hh', label: 'Happy Hour' },
-  { id: 'food', label: 'Food' },
-  { id: 'grocery', label: 'Grocery' },
-  { id: 'transit', label: 'Transit' },
-  { id: 'park', label: 'Parks' },
+type TimeGranularity = 'immediate' | '30m' | '1h';
+
+interface AlertConfig {
+  id: string;
+  name: string;
+  threshold: number;
+  enabled: boolean;
+  time: TimeGranularity;
+  snoozed?: string;
+  color: string;
+}
+
+const INITIAL_ALERTS: AlertConfig[] = [
+  { id: '1', name: 'Central Plaza', threshold: 95, enabled: true, time: 'immediate', color: '#ff4d6a' },
+  { id: '2', name: 'Main Station', threshold: 40, enabled: false, time: '30m', snoozed: 'Alerts paused until Monday 8:00 AM', color: '#fbbf24' },
+  { id: '3', name: 'Oxford District', threshold: 60, enabled: true, time: '1h', color: '#34d399' },
 ];
 
-const TAG_STYLES: Record<string, string> = {
-  hh: 'bg-amber-500/[0.12] text-amber-500',
-  spike: 'bg-red-500/[0.12] text-red-500',
-  park: 'bg-emerald-500/[0.12] text-emerald-500',
-  grocery: 'bg-cyan-500/[0.12] text-cyan-500',
-  food: 'bg-orange-500/[0.12] text-orange-500',
-  transit: 'bg-blue-500/[0.12] text-blue-500',
-};
+function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative w-[44px] h-[26px] rounded-full transition-colors duration-200 flex-shrink-0
+        ${checked ? 'bg-emerald-500' : 'bg-[var(--k-surface)]'}`}
+    >
+      <div
+        className={`absolute top-[3px] w-[20px] h-[20px] rounded-full bg-white shadow-md transition-transform duration-200
+          ${checked ? 'left-[21px]' : 'left-[3px]'}`}
+      />
+    </button>
+  );
+}
 
 export function AlertsDrawer({
   open,
@@ -31,162 +44,127 @@ export function AlertsDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { selectedCity } = useAppContext();
-  const [filter, setFilter] = useState('all');
-  const [votes, setVotes] = useState<Record<string, 'up' | 'down' | undefined>>({});
-  const [reportOpen, setReportOpen] = useState(false);
+  const [alerts, setAlerts] = useState(INITIAL_ALERTS);
+  const [hapticEnabled, setHapticEnabled] = useState(true);
 
-  const alerts = useMemo(() => getAlertsForCity(selectedCity.id), [selectedCity.id]);
+  const toggleAlert = (id: string) => {
+    setAlerts(prev => prev.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a));
+  };
 
-  const filteredAlerts = filter === 'all'
-    ? alerts
-    : alerts.filter(a => a.tag === filter);
-
-  const handleVote = (id: string, dir: 'up' | 'down') => {
-    setVotes(prev => ({ ...prev, [id]: prev[id] === dir ? undefined : dir }));
+  const setAlertTime = (id: string, time: TimeGranularity) => {
+    setAlerts(prev => prev.map(a => a.id === id ? { ...a, time } : a));
   };
 
   return (
-    <>
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[85vh] bg-[var(--k-bg)] border-[var(--k-border)]">
-          <DrawerHeader className="pb-3 relative overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, color-mix(in srgb, var(--k-accent) 6%, transparent), transparent)' }} />
-            <div className="flex items-center justify-between relative">
-              <div>
-                <DrawerTitle className="font-syne text-xl font-bold text-[var(--k-text)] tracking-tight">
-                  Live Alerts
-                </DrawerTitle>
-                <p className="text-[13px] text-[var(--k-text-m)] mt-0.5 tracking-[-0.01em]">
-                  {selectedCity.name} · Updated just now
-                </p>
-              </div>
-              <button
-                onClick={() => setReportOpen(true)}
-                aria-label="Report crowd level"
-                className="w-10 h-10 rounded-full bg-[var(--k-accent)]
-                           flex items-center justify-center
-                           active:scale-95 transition-transform
-                           shadow-lg shadow-[var(--k-accent)]/20"
-              >
-                <Plus className="w-5 h-5 text-white stroke-[2.5]" />
-              </button>
-            </div>
-          </DrawerHeader>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="liquid-glass glass-border-glow rounded-t-[20px] max-h-[85vh] flex flex-col">
+        <div className="overflow-y-auto no-scrollbar flex-1 px-5 pb-8 pt-2">
 
-          {/* Filter Chips */}
-          <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
-            {FILTERS.map(f => (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                aria-pressed={filter === f.id}
-                className={cn(
-                  'px-3.5 py-2 text-[13px] font-semibold rounded-full whitespace-nowrap transition-all ios-press',
-                  filter === f.id
-                    ? 'bg-[var(--k-accent)] text-white'
-                    : 'bg-[var(--k-surface)] text-[var(--k-text-m)] hover:bg-[var(--k-surface-h)]'
+          {/* Header */}
+          <h1 className="font-syne text-[24px] font-black text-[var(--k-text)] tracking-[-0.02em] mt-2">
+            Alerts
+          </h1>
+          <p className="text-[13px] text-[var(--k-text-m)] mt-1 mb-5">
+            Manage your crowd density notifications.
+          </p>
+
+          {/* New Alert button */}
+          <button className="w-full flex items-center justify-center gap-2 py-3 rounded-[18px]
+                             border border-[#ff4d6a] text-[#ff4d6a] text-[14px] font-bold
+                             ios-press hover:bg-[#ff4d6a]/10 transition-colors mb-6">
+            <Plus className="w-4 h-4" />
+            New Alert
+          </button>
+
+          {/* Active Notifications */}
+          <p className="type-overline text-[var(--k-text-m)] mb-3">ACTIVE NOTIFICATIONS</p>
+
+          <div className="space-y-3 mb-6">
+            {alerts.map((alert) => (
+              <div key={alert.id} className="liquid-glass rounded-[16px] p-4">
+                {/* Main row */}
+                <div className="flex items-center gap-3">
+                  {/* Icon circle */}
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                       style={{ border: `2px solid ${alert.color}`, background: `${alert.color}15` }}>
+                    <MapPin className="w-4 h-4" style={{ color: alert.color }} />
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-bold text-[var(--k-text)]">{alert.name}</p>
+                    <p className="text-[13px] text-[var(--k-text-m)]">
+                      Density: <span className="font-semibold" style={{ color: alert.color }}>{alert.threshold}%</span> threshold
+                    </p>
+                  </div>
+
+                  {/* Toggle */}
+                  <ToggleSwitch checked={alert.enabled} onChange={() => toggleAlert(alert.id)} />
+                </div>
+
+                {/* Time granularity pills */}
+                <div className="flex gap-2 mt-3">
+                  {(['immediate', '30m', '1h'] as TimeGranularity[]).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setAlertTime(alert.id, t)}
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-all ios-press
+                        ${alert.time === t
+                          ? 'bg-[#ff4d6a] text-white'
+                          : 'glass-chip text-[var(--k-text-m)]'
+                        }`}
+                    >
+                      {t === 'immediate' ? 'Immediate' : t.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Snoozed label */}
+                {alert.snoozed && (
+                  <p className="text-[11px] italic text-[var(--k-text-m)] mt-2 ml-[52px]">
+                    {alert.snoozed}
+                  </p>
                 )}
-              >
-                {f.label}
-              </button>
+              </div>
             ))}
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
-            <div className="space-y-2.5">
-              {filteredAlerts.map((alert, i) => (
-                <div
-                  key={alert.id}
-                  className="p-3.5 rounded-2xl bg-[var(--k-surface-solid)] border border-[var(--k-border)]
-                             shadow-[var(--k-card-shadow)] animate-fadeUp"
-                  style={{ animationDelay: `${i * 0.04}s` }}
-                >
-                  <div className="flex items-start gap-3">
-                    {/* Icon */}
-                    <div className="w-10 h-10 rounded-[12px] bg-[var(--k-surface)] flex items-center justify-center flex-shrink-0">
-                      <span className="text-[20px]">{alert.icon}</span>
-                    </div>
+          {/* Global Settings */}
+          <p className="type-overline text-[var(--k-text-m)] mb-3">GLOBAL SETTINGS</p>
 
-                    <div className="flex-1 min-w-0">
-                      {/* Title + Tag */}
-                      <div className="flex items-start justify-between gap-2">
-                        <h4 className="font-semibold text-[14px] text-[var(--k-text)] leading-snug tracking-[-0.02em]">
-                          {alert.title}
-                        </h4>
-                        <span className={cn(
-                          'text-[11px] font-semibold capitalize flex-shrink-0 px-2 py-[2px] rounded-full',
-                          TAG_STYLES[alert.tag] || 'bg-[var(--k-surface)] text-[var(--k-text-m)]'
-                        )}>
-                          {alert.tag}
-                        </span>
-                      </div>
+          <div className="liquid-glass rounded-[16px] divide-y divide-[var(--k-border)]">
+            {/* Quiet Hours */}
+            <button className="w-full flex items-center gap-3 px-4 py-3.5 ios-press">
+              <div className="w-8 h-8 rounded-full glass-chip flex items-center justify-center">
+                <Moon className="w-4 h-4 text-[var(--k-text-m)]" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-[14px] font-semibold text-[var(--k-text)]">Quiet Hours</p>
+              </div>
+              <span className="text-[13px] text-[var(--k-text-m)] mr-1">22:00 - 07:00</span>
+              <ChevronRight className="w-4 h-4 text-[var(--k-text-f)]" />
+            </button>
 
-                      {/* Description */}
-                      <p className="text-[12px] text-[var(--k-text-2)] mt-1 leading-[1.4] tracking-[-0.01em]">
-                        {alert.text}
-                      </p>
-
-                      {/* Trusted badge */}
-                      {alert.trusted && (
-                        <div className="flex items-center gap-1.5 mt-2">
-                          <span className="inline-flex items-center gap-1 px-2 py-[2px] rounded-full bg-emerald-500/[0.12] text-emerald-500 text-[10px] font-semibold">
-                            <CheckCircle2 className="w-2.5 h-2.5" /> Verified
-                          </span>
-                          <span className="text-[10px] text-[var(--k-text-f)]">8 confirmed</span>
-                        </div>
-                      )}
-
-                      {/* Meta row */}
-                      <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-[var(--k-border-s)]">
-                        <span className="flex items-center gap-1 text-[11px] text-[var(--k-text-f)]">
-                          <MapPin className="w-3 h-3" /> {alert.loc}
-                        </span>
-                        <span className="flex items-center gap-1 text-[11px] text-[var(--k-text-f)]">
-                          <Clock className="w-3 h-3" /> {alert.time}
-                        </span>
-                      </div>
-
-                      {/* Votes */}
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleVote(alert.id, 'up')}
-                            aria-label="Vote accurate"
-                            className={cn(
-                              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors ios-press',
-                              votes[alert.id] === 'up'
-                                ? 'bg-emerald-500/[0.15] text-emerald-500'
-                                : 'bg-[var(--k-surface)] text-[var(--k-text-m)] hover:bg-[var(--k-surface-h)]'
-                            )}
-                          >
-                            <ThumbsUp className="w-3.5 h-3.5" /> {alert.up + (votes[alert.id] === 'up' ? 1 : 0)}
-                          </button>
-                          <button
-                            onClick={() => handleVote(alert.id, 'down')}
-                            aria-label="Vote inaccurate"
-                            className={cn(
-                              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors ios-press',
-                              votes[alert.id] === 'down'
-                                ? 'bg-red-500/[0.15] text-red-500'
-                                : 'bg-[var(--k-surface)] text-[var(--k-text-m)] hover:bg-[var(--k-surface-h)]'
-                            )}
-                          >
-                            <ThumbsDown className="w-3.5 h-3.5" /> {alert.dn + (votes[alert.id] === 'down' ? 1 : 0)}
-                          </button>
-                        </div>
-                        <span className="text-[11px] text-[var(--k-accent)] font-medium">Accurate?</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            {/* Haptic Feedback */}
+            <div className="flex items-center gap-3 px-4 py-3.5">
+              <div className="w-8 h-8 rounded-full glass-chip flex items-center justify-center">
+                <Vibrate className="w-4 h-4 text-[var(--k-text-m)]" />
+              </div>
+              <p className="flex-1 text-[14px] font-semibold text-[var(--k-text)]">Haptic Feedback</p>
+              <ToggleSwitch checked={hapticEnabled} onChange={setHapticEnabled} />
             </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
 
-      <ReportDrawer open={reportOpen} onOpenChange={setReportOpen} />
-    </>
+            {/* Clear All History */}
+            <button className="w-full flex items-center gap-3 px-4 py-3.5 ios-press">
+              <div className="w-8 h-8 rounded-full glass-chip flex items-center justify-center">
+                <Trash2 className="w-4 h-4 text-red-400" />
+              </div>
+              <p className="flex-1 text-left text-[14px] font-semibold text-red-400">Clear All History</p>
+            </button>
+          </div>
+
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 }

@@ -1,7 +1,8 @@
-/* IntentScreen v3 — Premium nightlife design with category cards */
-import { useState, useEffect } from 'react';
+/* IntentScreen v4 — Polished with liquid glass cards + gradient CTA */
+import { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Send, Sparkles, Search, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import gsap from 'gsap';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import type { City } from '../../types';
 
@@ -18,6 +19,22 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
   const [input, setInput] = useState('');
   const [mode, setMode] = useState<'type' | 'talk'>('type');
   const { isListening, transcript, startListening, stopListening, isSupported } = useSpeechRecognition();
+  const cardsRef = useRef<HTMLDivElement>(null);
+
+  // GSAP stagger entrance for cards
+  useEffect(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced || !cardsRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from(cardsRef.current!.children, {
+        opacity: 0, y: 25, scale: 0.95,
+        duration: 0.4, stagger: 0.06,
+        ease: 'power3.out', delay: 0.3,
+      });
+    });
+    return () => ctx.revert();
+  }, []);
 
   const handleSubmit = (text: string) => {
     if (!text.trim()) return;
@@ -51,8 +68,8 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#ff4d6a]/20 to-[#a855f7]/15
-                            flex items-center justify-center border border-white/[0.06]">
+            <div className="w-11 h-11 rounded-2xl liquid-glass
+                            flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-[#ff4d6a]" />
             </div>
             <div>
@@ -77,7 +94,7 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
             className={cn(
               'px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all',
               mode === 'type'
-                ? 'bg-white/10 text-white border border-white/[0.08]'
+                ? 'glass-chip text-white border border-white/[0.08]'
                 : 'text-white/30 hover:text-white/50'
             )}
           >
@@ -100,8 +117,8 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
 
         {mode === 'type' ? (
           <div className="mb-5">
-            <div className="flex items-center gap-2 p-[6px] pl-4 rounded-2xl bg-white/[0.04] border border-white/[0.06]
-                            focus-within:border-[#ff4d6a]/30 focus-within:bg-white/[0.06] transition-all">
+            <div className="flex items-center gap-2 p-[6px] pl-4 rounded-2xl liquid-glass
+                            focus-within:border-[#ff4d6a]/30 transition-all">
               <input
                 type="text"
                 value={input}
@@ -114,8 +131,9 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
               <button
                 onClick={() => handleSubmit(input)}
                 disabled={!input.trim()}
-                className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#ff4d6a] to-[#a855f7] flex items-center justify-center
-                           disabled:opacity-20 transition-all flex-shrink-0"
+                className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#ff4d6a] to-[#ff8c42] flex items-center justify-center
+                           disabled:opacity-20 transition-all flex-shrink-0
+                           shadow-[0_0_20px_rgba(255,77,106,0.2)]"
               >
                 <Send className="w-4 h-4 text-white" />
               </button>
@@ -147,24 +165,26 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
           </div>
         )}
 
-        {/* Category cards — inspired by travel dark UI */}
+        {/* Category cards — liquid glass with accent glow on hover */}
         <div className="flex-1 overflow-y-auto no-scrollbar -mx-1">
-          <div className="grid grid-cols-2 gap-2.5 px-1">
+          <div ref={cardsRef} className="grid grid-cols-2 gap-2.5 px-1">
             {QUICK_INTENTS.map((intent, i) => (
               <button
                 key={i}
                 onClick={() => handleSubmit(intent.label)}
-                className="group relative p-4 rounded-2xl bg-white/[0.03] border border-white/[0.05]
-                           hover:border-white/[0.12] hover:bg-white/[0.06]
-                           transition-all text-left animate-fadeUp overflow-hidden"
-                style={{ animationDelay: `${i * 0.06}s` }}
+                className="group relative p-4 rounded-2xl liquid-glass ios-press
+                           hover:border-white/[0.12]
+                           transition-all text-left overflow-hidden"
               >
-                {/* Gradient accent bar */}
+                {/* Gradient accent bar on hover */}
                 <div className={cn(
                   'absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity',
                   intent.color
                 )} />
-                <span className="text-2xl block mb-2.5">{intent.icon}</span>
+                {/* Icon in glass circle */}
+                <div className="w-10 h-10 rounded-xl glass-chip flex items-center justify-center mb-2.5">
+                  <span className="text-2xl">{intent.icon}</span>
+                </div>
                 <span className="text-[14px] font-semibold text-white/90 block leading-tight">{intent.label}</span>
                 <span className="text-[11px] text-white/30 block mt-1">{intent.desc}</span>
                 <ArrowRight className="w-3.5 h-3.5 text-white/15 absolute bottom-4 right-4 group-hover:text-white/40 transition-colors" />

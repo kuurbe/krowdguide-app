@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react';
 import type { Map } from 'mapbox-gl';
-import type { City, Venue, OraclePulse } from './types';
+import type { City, Venue, OraclePulse, MapPOI } from './types';
 import type { TravelMode, DirectionsRoute } from './services/directionsService';
 import { fetchDirections } from './services/directionsService';
 import { getUserLocation } from './utils/userLocation';
@@ -40,7 +40,7 @@ interface AppContextType {
   setWalkingMode: (v: boolean) => void;
   smartNotifs: boolean;
   setSmartNotifs: (v: boolean) => void;
-  // Map ref — shared so directions/flyover can control the camera
+  // Map ref — shared so directions can control the camera
   mapRef: React.MutableRefObject<Map | null>;
   // Directions
   directions: DirectionsState;
@@ -50,9 +50,6 @@ interface AppContextType {
   startNavigation: () => void;
   advanceStep: () => void;
   endNavigation: () => void;
-  // Flyover
-  flyoverActive: boolean;
-  setFlyoverActive: (v: boolean) => void;
   // Venues — single source of truth, pre-fetched for instant card opens
   venues: Venue[];
   venueById: Map<string, Venue>;
@@ -70,6 +67,10 @@ interface AppContextType {
   favorites: Set<string>;
   toggleFavorite: (venueId: string) => void;
   isFavorite: (venueId: string) => boolean;
+  // Map POI — tapped business from Standard style (not a KrowdGuide venue)
+  selectedPOI: MapPOI | null;
+  selectPOI: (poi: MapPOI) => void;
+  closePOISheet: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -88,9 +89,9 @@ export function AppProvider({ city, children }: { city: City; children: ReactNod
 
   const mapRef = useRef<Map | null>(null);
   const [directions, setDirections] = useState<DirectionsState>(INITIAL_DIRECTIONS);
-  const [flyoverActive, setFlyoverActive] = useState(false);
   const [highlightedVenueId, setHighlightedVenueId] = useState<string | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [selectedPOI, setSelectedPOI] = useState<MapPOI | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem('krowd-favorites');
@@ -127,6 +128,22 @@ export function AppProvider({ city, children }: { city: City; children: ReactNod
   }, []);
 
   const closeVenueSheet = useCallback(() => { setSelectedVenue(null); }, []);
+
+  /** Open POI detail sheet for a tapped business from Mapbox Standard style */
+  const selectPOI = useCallback((poi: MapPOI) => {
+    setSelectedPOI(poi);
+    setSelectedVenue(null); // close venue sheet if open
+    const map = mapRef.current;
+    if (map) {
+      map.flyTo({
+        center: poi.coordinates,
+        zoom: 16,
+        pitch: 45,
+        duration: 800,
+      });
+    }
+  }, []);
+  const closePOISheet = useCallback(() => { setSelectedPOI(null); }, []);
 
   /** Fly the map camera to a venue and highlight it */
   const flyToVenue = useCallback((venue: Venue) => {
@@ -259,10 +276,10 @@ export function AppProvider({ city, children }: { city: City; children: ReactNod
       smartNotifs, setSmartNotifs,
       mapRef,
       directions, startDirections, setDirectionsMode, clearDirections, startNavigation, advanceStep, endNavigation,
-      flyoverActive, setFlyoverActive,
       venues, venueById, pulse, isLive,
       highlightedVenueId, setHighlightedVenueId, flyToVenue,
       selectedVenue, selectVenue, closeVenueSheet,
+      selectedPOI, selectPOI, closePOISheet,
       favorites, toggleFavorite, isFavorite,
     }}>
       {children}

@@ -3,11 +3,11 @@ import { useAppContext } from '../../context';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { formatDistance, formatDuration } from '../../services/directionsService';
 import type { TravelMode } from '../../services/directionsService';
-import { X, Car, Footprints, Bike, Loader2, Navigation, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, Footprints, Bike, Loader2, Navigation, ChevronUp, ChevronDown, Bus, Clock, Route } from 'lucide-react';
 import { ManeuverIcon } from './ManeuverIcon';
 
-const MODES: { id: TravelMode; label: string; Icon: typeof Car }[] = [
-  { id: 'driving', label: 'Drive', Icon: Car },
+const MODES: { id: TravelMode; label: string; Icon: typeof Route }[] = [
+  { id: 'driving', label: 'Route', Icon: Route },
   { id: 'walking', label: 'Walk', Icon: Footprints },
   { id: 'cycling', label: 'Bike', Icon: Bike },
 ];
@@ -114,16 +114,25 @@ export function DirectionsDrawer() {
             )}
           </div>
 
-          {/* Start Navigation button */}
+          {/* Start Navigation button + arrival estimate */}
           {directions.route && !directions.loading && (
-            <button
-              onClick={startNavigation}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white font-black text-[16px] tracking-wide
-                         shadow-[0_4px_20px_rgba(34,211,238,0.3)] active:scale-[0.97] transition-transform flex items-center justify-center gap-2 mb-3 ios-press"
-            >
-              <Navigation className="w-5 h-5" />
-              Start Navigation
-            </button>
+            <div className="mb-3">
+              <button
+                onClick={startNavigation}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white font-black text-[16px] tracking-wide
+                           shadow-[0_4px_20px_rgba(34,211,238,0.3)] active:scale-[0.97] transition-transform flex items-center justify-center gap-2 ios-press"
+              >
+                <Navigation className="w-5 h-5" />
+                Start Navigation
+              </button>
+              {/* Estimated arrival time */}
+              <div className="flex items-center justify-center gap-1.5 mt-2">
+                <Clock className="w-3 h-3 text-[var(--k-text-f)]" />
+                <span className="text-[11px] text-[var(--k-text-m)] font-medium">
+                  Arrive by {new Date(Date.now() + directions.route.duration * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
           )}
 
           {/* View Steps toggle */}

@@ -19,7 +19,7 @@ export function CategoryPills({
 }) {
   return (
     <div
-      className="absolute top-[88px] left-4 right-4 z-[1000] flex gap-2 overflow-x-auto no-scrollbar pill-scroll-fade"
+      className="flex gap-2 overflow-x-auto no-scrollbar pill-scroll-fade"
       style={{ scrollSnapType: 'x mandatory' }}
     >
       {CATEGORIES.map((cat) => {

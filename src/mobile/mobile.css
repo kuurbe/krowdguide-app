@@ -463,6 +463,50 @@ html, body {
 }
 
 
+/* ── NAV PILL INDICATOR — frosted glass active tab ───── */
+.nav-pill-indicator {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+  backdrop-filter: blur(32px) saturate(220%);
+  -webkit-backdrop-filter: blur(32px) saturate(220%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.05),
+    0 0 24px rgba(255, 255, 255, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.18);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.2s ease,
+              box-shadow 0.35s ease;
+  animation: liquid-morph 4s ease-in-out infinite;
+}
+
+/* Subtle breathing effect for liquid feel */
+@keyframes liquid-morph {
+  0%, 100% { border-radius: 50%; }
+  50% { border-radius: 46%; }
+}
+
+/* Glow chip for live-data indicators (weather, transit, AQI) */
+.glass-chip-glow {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+.glass-chip-glow:hover {
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.14);
+}
+[data-theme="light"] .nav-pill-indicator {
+  background: rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -0.5px 0 rgba(0, 0, 0, 0.03),
+    0 2px 10px rgba(0, 0, 0, 0.08),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+
+
 /* ── TYPE SCALE — 2026 Editorial Hierarchy ────────────── */
 
 .type-display { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -0.03em; line-height: 1.0; }
@@ -990,17 +1034,6 @@ html, body {
 }
 
 
-/* ── 25. FLYOVER LETTERBOX ───────────────────────────── */
-
-@keyframes letterbox-in {
-  from { height: 0; }
-  to { height: 28px; }
-}
-
-.flyover-letterbox {
-  animation: letterbox-in 0.4s ease-out both;
-}
-
 
 /* ── 26. VENUE HIGHLIGHT RING — Map→List sync glow ──── */
 
@@ -1080,81 +1113,5 @@ html, body {
   animation: arrive-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* 3D car marker for driving navigation — Google Maps style */
-.nav-car-marker {
-  width: 130px;
-  height: 140px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-/* Ground shadow — soft ellipse beneath car */
-.nav-car-shadow {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 20px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 45%, transparent 70%);
-  filter: blur(5px);
-}
-
-/* 3D car body — SVG with metallic shading */
-.nav-car-body {
-  position: relative;
-  z-index: 1;
-  width: 88px;
-  height: 102px;
-  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4))
-         drop-shadow(0 6px 14px rgba(0,0,0,0.2))
-         drop-shadow(0 0 20px rgba(34,211,238,0.3));
-  animation: car-hover 2.5s ease-in-out infinite;
-}
-
-@keyframes car-hover {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2.5px); }
-}
-
-/* Pulsing ground ring */
-.nav-car-ring {
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  width: 76px;
-  height: 76px;
-  transform: translateX(-50%) rotateX(60deg);
-  border-radius: 50%;
-  border: 2px solid rgba(34,211,238,0.35);
-  animation: car-ring-pulse 2.5s ease-in-out infinite;
-}
-
-@keyframes car-ring-pulse {
-  0%, 100% { transform: translateX(-50%) rotateX(60deg) scale(0.85); opacity: 0.5; }
-  50% { transform: translateX(-50%) rotateX(60deg) scale(1.3); opacity: 0; }
-}
-
-/* Heading beam — soft headlight glow projected forward */
-.nav-car-beam {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-  height: 30px;
-  background: radial-gradient(ellipse at center bottom, rgba(254,240,138,0.2) 0%, rgba(254,240,138,0.06) 50%, transparent 70%);
-  clip-path: polygon(28% 100%, 0% 0%, 100% 0%, 72% 100%);
-  filter: blur(3px);
-  z-index: 0;
-  animation: beam-pulse 3s ease-in-out infinite;
-}
-
-@keyframes beam-pulse {
-  0%, 100% { opacity: 0.65; }
-  50% { opacity: 1; }
-}
+/* ── Route glow layers ── */
+/* (Route visualization is handled via Mapbox GL layers in LiveMap.tsx) */

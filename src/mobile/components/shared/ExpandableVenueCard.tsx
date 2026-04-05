@@ -3,12 +3,12 @@ import gsap from 'gsap';
 import type { Venue } from '../../types';
 import { CrowdPill } from './CrowdPill';
 import { CrowdPredictionChart } from '../charts/CrowdPredictionChart';
-import { ShieldCheck, ChevronDown, Car, Footprints, Bike, Beer } from 'lucide-react';
+import { ShieldCheck, ChevronDown, Route, Footprints, Bike, Beer } from 'lucide-react';
 import { useAppContext } from '../../context';
 import type { TravelMode } from '../../services/directionsService';
 
-const DIR_MODES: { id: TravelMode; label: string; Icon: typeof Car }[] = [
-  { id: 'driving', label: 'Drive', Icon: Car },
+const DIR_MODES: { id: TravelMode; label: string; Icon: typeof Route }[] = [
+  { id: 'driving', label: 'Route', Icon: Route },
   { id: 'walking', label: 'Walk', Icon: Footprints },
   { id: 'cycling', label: 'Bike', Icon: Bike },
 ];
@@ -69,8 +69,8 @@ export function ExpandableVenueCard({ venue }: { venue: Venue }) {
       </button>
 
       {/* Expandable content */}
-      <div ref={contentRef} style={{ display: 'none', overflow: 'hidden' }}>
-        <div className="px-3.5 pb-3.5 space-y-3">
+      <div ref={contentRef} className="max-w-full overflow-hidden" style={{ display: 'none', overflow: 'hidden' }}>
+        <div className="px-3.5 pb-3.5 space-y-3 max-w-full">
           {/* Venue image — larger */}
           {venue.image && (
             <div className="relative h-[140px] rounded-xl overflow-hidden">
