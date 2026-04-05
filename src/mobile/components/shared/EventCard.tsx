@@ -1,8 +1,9 @@
 import type { TicketmasterEvent } from '../../types';
-import { Clock, Navigation, ExternalLink } from 'lucide-react';
-import { openDirections } from '../../utils/directions';
+import { Clock, ExternalLink, Footprints } from 'lucide-react';
+import { useAppContext } from '../../context';
 
 export function EventCard({ event }: { event: TicketmasterEvent }) {
+  const { startDirections } = useAppContext();
   const image = event.images?.[0]?.url;
   const venueName = event._embedded?.venues?.[0]?.name || 'TBA';
   const venueLocation = event._embedded?.venues?.[0]?.location;
@@ -21,7 +22,9 @@ export function EventCard({ event }: { event: TicketmasterEvent }) {
   const handleDirections = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (venueLocation?.latitude && venueLocation?.longitude) {
-      openDirections(parseFloat(venueLocation.latitude), parseFloat(venueLocation.longitude), venueName);
+      const lat = parseFloat(venueLocation.latitude);
+      const lng = parseFloat(venueLocation.longitude);
+      startDirections({ coords: [lat, lng], name: venueName }, 'walking');
     }
   };
 
@@ -33,14 +36,13 @@ export function EventCard({ event }: { event: TicketmasterEvent }) {
         const parsed = new URL(event.url);
         const realUrl = parsed.searchParams.get('u');
         if (realUrl) ticketUrl = realUrl;
-      } catch {}
+      } catch { /* use original */ }
       window.open(ticketUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
   return (
-    <div className="flex gap-3.5 p-3.5 rounded-2xl bg-[var(--k-surface-solid)] border border-[var(--k-border)]
-                     shadow-[var(--k-card-shadow)] ios-press transition-all">
+    <div className="flex gap-3.5 p-3.5 rounded-2xl liquid-glass ios-press transition-all">
       <div className="w-16 h-16 rounded-xl bg-[var(--k-surface)] overflow-hidden flex-shrink-0">
         {image && <img src={image} alt={event.name} className="w-full h-full object-cover" loading="lazy" />}
       </div>
@@ -63,22 +65,15 @@ export function EventCard({ event }: { event: TicketmasterEvent }) {
         </div>
         <div className="flex items-center gap-2 mt-2">
           {event.url && (
-            <button
-              onClick={handleTickets}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#a855f7]/12 text-[#a855f7] text-[11px] font-bold
-                         active:scale-95 transition-transform"
-            >
+            <button onClick={handleTickets}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#a855f7]/12 text-[#a855f7] text-[11px] font-bold active:scale-95 transition-transform">
               <ExternalLink className="w-3 h-3" /> Tickets
             </button>
           )}
           {venueLocation?.latitude && (
-            <button
-              onClick={handleDirections}
-              aria-label={`Directions to ${venueName}`}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#ff4d6a]/10 text-[#ff4d6a] text-[11px] font-bold
-                         active:scale-95 transition-transform"
-            >
-              <Navigation className="w-3 h-3" /> Directions
+            <button onClick={handleDirections} aria-label={`Directions to ${venueName}`}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#ff4d6a]/10 text-[#ff4d6a] text-[11px] font-bold active:scale-95 transition-transform">
+              <Footprints className="w-3 h-3" /> Walk Here
             </button>
           )}
         </div>

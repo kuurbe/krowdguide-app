@@ -11,6 +11,7 @@ import { MobileHeader } from './components/layout/MobileHeader';
 import { BottomNav } from './components/layout/BottomNav';
 import { SearchResultsCarousel } from './components/map/SearchResultsCarousel';
 import { LayerSelector } from './components/map/LayerSelector';
+import { InstallPrompt } from './components/shared/InstallPrompt';
 
 // ── Code-split heavy views — only loaded when tab activates ──
 const LiveMap = lazy(() => import('./components/map/LiveMap').then(m => ({ default: m.LiveMap })));
@@ -289,6 +290,9 @@ function AppShell({
           <POIDetailSheet />
         </ErrorBoundary>
       </Suspense>
+
+      {/* PWA install prompt */}
+      <InstallPrompt />
     </div>
   );
 }
