@@ -54,22 +54,23 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
   // Debounced POI search
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!query || query.length < 2) { setPoiResults([]); return; }
+    if (!query || query.length < 2) { setPoiResults([]); setPoiLoading(false); return; }
 
+    setPoiLoading(true);
     debounceRef.current = setTimeout(async () => {
-      setPoiLoading(true);
       try {
-        const results = await fetchSuggestions(query, selectedCity.coordinates, sessionToken.current);
+        const coords: [number, number] = [selectedCity.coordinates[0], selectedCity.coordinates[1]];
+        const results = await fetchSuggestions(query, coords, sessionToken.current);
         setPoiResults(results);
       } catch (err) {
-        if (import.meta.env.DEV) console.error('[Search]', err);
+        console.error('[KG Search] Failed:', err);
         setPoiResults([]);
       }
       setPoiLoading(false);
-    }, 300);
+    }, 250);
 
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [query, selectedCity.coordinates]);
+  }, [query, selectedCity]);
 
   // Filter KrowdGuide venues by query
   const filteredVenues = query.length >= 1
@@ -123,8 +124,13 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
               placeholder="Search places, venues..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onPointerDown={(e) => e.stopPropagation()}
+              data-vaul-no-drag
               className="flex-1 bg-transparent text-[15px] text-[var(--k-text)] placeholder:text-[var(--k-text-f)] outline-none"
               autoFocus
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
             />
             {query && (
               <button onClick={() => setQuery('')} className="text-[var(--k-text-f)] text-[12px] font-bold ios-press">Clear</button>
@@ -133,7 +139,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
         </div>
 
         {/* Results */}
-        <div className="flex-1 overflow-y-auto px-4 pb-6">
+        <div className="flex-1 overflow-y-auto px-4 pb-6" data-vaul-no-drag>
 
           {/* POI results from Mapbox */}
           {isSearching && (
