@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+// No Drawer — using fixed overlay to avoid Vaul input issues
 import { CrowdPill } from '../shared/CrowdPill';
 import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees, Map, Navigation, Loader2, Search } from 'lucide-react';
 import { useAppContext } from '../../context';
@@ -130,13 +130,24 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
   const isSearching = query.length >= 2;
   const hasResults = poiResults.length > 0 || filteredVenues.length > 0;
 
+  if (!open) return null;
+
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="liquid-glass glass-border-glow glass-inner-light rounded-t-[20px] overflow-hidden" style={{ height: '75vh' }}>
-        <DrawerTitle className="sr-only">Search</DrawerTitle>
+    <div className="fixed inset-0 z-[2000]">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60" onClick={() => onOpenChange(false)} />
+
+      {/* Panel */}
+      <div className="absolute bottom-0 left-0 right-0 h-[75vh] bg-[var(--k-bg)] rounded-t-[20px] flex flex-col overflow-hidden"
+           style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.5)' }}>
+
+        {/* Drag handle */}
+        <div className="flex justify-center pt-2 pb-1 flex-shrink-0">
+          <div className="w-8 h-1 rounded-full bg-[var(--k-text-f)]/30" />
+        </div>
 
         {/* Search input */}
-        <div className="px-4 pt-3 pb-2 flex-shrink-0">
+        <div className="px-4 pb-2 flex-shrink-0">
           <div className="flex items-center gap-2 bg-[var(--k-surface)] border border-[var(--k-border)] rounded-xl px-4 py-3">
             <Search className="w-4 h-4 text-[var(--k-text-f)] flex-shrink-0" />
             <input
@@ -145,8 +156,6 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
               placeholder="Search places, venues..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onPointerDown={(e) => e.stopPropagation()}
-              data-vaul-no-drag
               className="flex-1 bg-transparent text-[15px] text-[var(--k-text)] placeholder:text-[var(--k-text-f)] outline-none"
               autoFocus
               autoComplete="off"
@@ -154,13 +163,13 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
               spellCheck={false}
             />
             {query && (
-              <button onClick={() => setQuery('')} className="text-[var(--k-text-f)] text-[12px] font-bold ios-press">Clear</button>
+              <button onClick={() => setQuery('')} className="text-[var(--k-text-f)] text-[12px] font-bold">Clear</button>
             )}
           </div>
         </div>
 
         {/* Results */}
-        <div className="flex-1 overflow-y-auto px-4 pb-6" data-vaul-no-drag>
+        <div className="flex-1 overflow-y-auto px-4 pb-6">
 
           {/* POI results from Mapbox */}
           {isSearching && (
@@ -271,7 +280,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
             </div>
           )}
         </div>
-      </DrawerContent>
-    </Drawer>
+      </div>
+    </div>
   );
 }

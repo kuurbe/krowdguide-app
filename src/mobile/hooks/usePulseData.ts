@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { OraclePulse, Venue } from '../types';
 
-const ORACLE_URL = 'http://149.28.196.99:8001/pulse_data.json';
+// Use HTTPS or skip on production (mixed content blocked)
+const ORACLE_URL = typeof window !== 'undefined' && window.location.protocol === 'https:'
+  ? '' // Disabled on HTTPS — Oracle endpoint is HTTP only
+  : 'http://149.28.196.99:8001/pulse_data.json';
 const POLL_INTERVAL = 30_000; // 30s
 const MAX_RETRIES = 2;
 
@@ -38,6 +41,8 @@ export function usePulseData() {
   const retriesRef = useRef(0);
 
   const fetchPulse = useCallback(async () => {
+    // Skip if no URL (HTTPS deployment can't reach HTTP oracle)
+    if (!ORACLE_URL) return;
     // Cancel any in-flight request before starting a new one
     abortRef.current?.abort();
     const controller = new AbortController();
