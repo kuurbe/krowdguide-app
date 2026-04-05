@@ -12,6 +12,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { SearchResultsCarousel } from './components/map/SearchResultsCarousel';
 import { LayerSelector } from './components/map/LayerSelector';
 import { InstallPrompt } from './components/shared/InstallPrompt';
+import { CommandPalette } from './components/search/CommandPalette';
 
 // ── Code-split heavy views — only loaded when tab activates ──
 const LiveMap = lazy(() => import('./components/map/LiveMap').then(m => ({ default: m.LiveMap })));
@@ -101,6 +102,7 @@ export default function MobileApp() {
   const [activeTab, setActiveTab] = useState('map');
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [cityGuideOpen, setCityGuideOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
@@ -156,6 +158,8 @@ export default function MobileApp() {
           setAlertsOpen={setAlertsOpen}
           cityGuideOpen={cityGuideOpen}
           setCityGuideOpen={setCityGuideOpen}
+          searchOpen={searchOpen}
+          setSearchOpen={setSearchOpen}
         />
       </AppProvider>
     </ErrorBoundary>
@@ -164,7 +168,7 @@ export default function MobileApp() {
 
 /** Inner shell — lives inside AppProvider so it can access context */
 function AppShell({
-  activeTab, onTabChange, alertsOpen, setAlertsOpen, cityGuideOpen, setCityGuideOpen,
+  activeTab, onTabChange, alertsOpen, setAlertsOpen, cityGuideOpen, setCityGuideOpen, searchOpen, setSearchOpen,
 }: {
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -172,6 +176,8 @@ function AppShell({
   setAlertsOpen: (v: boolean) => void;
   cityGuideOpen: boolean;
   setCityGuideOpen: (v: boolean) => void;
+  searchOpen: boolean;
+  setSearchOpen: (v: boolean) => void;
 }) {
   const { selectedVenue, closeVenueSheet, selectVenue, venues } = useAppContext();
   const [searchResults, setSearchResults] = useState<typeof venues>([]);
@@ -181,7 +187,7 @@ function AppShell({
     setSearchResults([]);
     // Search and Alerts are drawer tabs — open overlay, stay on map
     if (tab === 'search') {
-      setCityGuideOpen(true);
+      setSearchOpen(true);
       if (activeTab !== 'map') onTabChange('map');
       return;
     }
@@ -290,6 +296,15 @@ function AppShell({
           <POIDetailSheet />
         </ErrorBoundary>
       </Suspense>
+
+      {/* Global search palette — rendered at root level to avoid overflow clipping */}
+      <CommandPalette
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        venues={venues}
+        onVenueSelect={(venue) => { selectVenue(venue); setSearchOpen(false); }}
+        onSearchResults={(results) => { setSearchResults(results); setSearchOpen(false); }}
+      />
 
       {/* PWA install prompt */}
       <InstallPrompt />
