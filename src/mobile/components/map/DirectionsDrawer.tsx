@@ -1,10 +1,10 @@
 import { useAppContext } from '../../context';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { formatDistance, formatDuration } from '../../services/directionsService';
+import { formatDistance } from '../../services/directionsService';
 import type { TravelMode } from '../../services/directionsService';
 import {
   Navigation, Footprints, Bike, ArrowUp, CornerUpRight, CornerUpLeft,
-  Users, ChevronDown, Compass,
+  Users, Compass,
 } from 'lucide-react';
 
 const MODES: { id: TravelMode; label: string; Icon: typeof Navigation }[] = [
@@ -143,7 +143,6 @@ export function DirectionsDrawer() {
 
                 <div className="space-y-0">
                   {steps.map((step, i) => {
-                    const stepMin = durationMinutes(step.duration);
                     const isTurn = step.maneuver.type.includes('turn') || !!step.maneuver.modifier?.match(/left|right/);
                     const timeBadge = i === 0 ? 'NOW' : `${durationMinutes(elapsed)} MIN`;
                     // Track elapsed AFTER reading it for this step

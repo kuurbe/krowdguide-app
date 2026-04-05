@@ -3,7 +3,7 @@ import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useAppContext } from '../../context';
 import { useTicketmasterEvents } from '../../hooks/useTicketmasterEvents';
 import { EventCard } from '../shared/EventCard';
-import { Search, MapPin, Zap, Calendar, Bookmark } from 'lucide-react';
+import { Search, Zap, Calendar, Bookmark } from 'lucide-react';
 import type { Venue } from '../../types';
 
 const CATEGORIES = [
