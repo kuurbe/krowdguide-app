@@ -398,93 +398,123 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
   // 7. Route rendering — draw directions polyline on map
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapLoaded || !map.isStyleLoaded()) return;
+    if (!map || !mapLoaded) return;
 
-    // Clean up previous route layers
-    const routeLayers = ['directions-route', 'directions-dest-dot', 'directions-origin-dot', 'directions-origin-pulse'];
-    const routeSources = ['directions-route', 'directions-dest', 'directions-origin'];
-    routeLayers.forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
-    routeSources.forEach(s => { if (map.getSource(s)) map.removeSource(s); });
+    let cancelled = false;
 
-    if (!directions.route || !directions.active) return;
+    function drawRoute() {
+      if (cancelled || !map) return;
 
-    // Route line — Google Maps style: blue with darker casing
-    map.addSource('directions-route', {
-      type: 'geojson',
-      data: { type: 'Feature', properties: {}, geometry: directions.route.geometry },
-    });
+      // Clean up previous route layers
+      const routeLayers = ['directions-route', 'directions-dest-dot', 'directions-origin-dot', 'directions-origin-pulse'];
+      const routeSources = ['directions-route', 'directions-dest', 'directions-origin'];
+      routeLayers.forEach(l => { try { if (map.getLayer(l)) map.removeLayer(l); } catch { /* no-op */ } });
+      routeSources.forEach(s => { try { if (map.getSource(s)) map.removeSource(s); } catch { /* no-op */ } });
 
-    // Outer casing (dark blue shadow)
-    map.addLayer({
-      id: 'directions-route',
-      type: 'line',
-      source: 'directions-route',
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: {
-        'line-color': '#ff4d6a',
-        'line-width': 7,
-        'line-border-width': 1.5,
-        'line-border-color': '#cc3d55',
-        'line-opacity': 0.95,
-      },
-    });
+      if (!directions.route || !directions.active) return;
 
-    // Origin marker — Google style green circle
-    if (directions.origin) {
-      map.addSource('directions-origin', {
+      // Route line — accent-colored with darker casing
+      map.addSource('directions-route', {
         type: 'geojson',
-        data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: directions.origin } },
+        data: { type: 'Feature', properties: {}, geometry: directions.route.geometry },
       });
+
       map.addLayer({
-        id: 'directions-origin-pulse',
-        type: 'circle',
-        source: 'directions-origin',
-        paint: { 'circle-radius': 12, 'circle-color': '#34d399', 'circle-opacity': 0.2 },
+        id: 'directions-route',
+        type: 'line',
+        source: 'directions-route',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#ff4d6a',
+          'line-width': 7,
+          'line-border-width': 1.5,
+          'line-border-color': '#cc3d55',
+          'line-opacity': 0.95,
+        },
       });
-      map.addLayer({
-        id: 'directions-origin-dot',
-        type: 'circle',
-        source: 'directions-origin',
-        paint: { 'circle-radius': 6, 'circle-color': '#34d399', 'circle-stroke-width': 2.5, 'circle-stroke-color': '#ffffff' },
-      });
+
+      // Origin marker — green circle
+      if (directions.origin) {
+        map.addSource('directions-origin', {
+          type: 'geojson',
+          data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: directions.origin } },
+        });
+        map.addLayer({
+          id: 'directions-origin-pulse',
+          type: 'circle',
+          source: 'directions-origin',
+          paint: { 'circle-radius': 12, 'circle-color': '#34d399', 'circle-opacity': 0.2 },
+        });
+        map.addLayer({
+          id: 'directions-origin-dot',
+          type: 'circle',
+          source: 'directions-origin',
+          paint: { 'circle-radius': 6, 'circle-color': '#34d399', 'circle-stroke-width': 2.5, 'circle-stroke-color': '#ffffff' },
+        });
+      }
+
+      // Destination marker — red pin style
+      if (directions.destination) {
+        map.addSource('directions-dest', {
+          type: 'geojson',
+          data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: directions.destination.coords } },
+        });
+        map.addLayer({
+          id: 'directions-dest-dot',
+          type: 'circle',
+          source: 'directions-dest',
+          paint: { 'circle-radius': 7, 'circle-color': '#ff4d6a', 'circle-stroke-width': 2.5, 'circle-stroke-color': '#ffffff' },
+        });
+      }
+
+      // Fit bounds — padding for header + drawer
+      const coords = directions.route.geometry.coordinates as [number, number][];
+      if (coords.length > 0) {
+        const bounds = coords.reduce(
+          (b, c) => b.extend(c as mapboxgl.LngLatLike),
+          new mapboxgl.LngLatBounds(coords[0], coords[0])
+        );
+        map.fitBounds(bounds, {
+          padding: { top: 100, bottom: 350, left: 50, right: 50 },
+          duration: 1000,
+          maxZoom: 16,
+        });
+      }
     }
 
-    // Destination marker — red pin style
-    if (directions.destination) {
-      map.addSource('directions-dest', {
-        type: 'geojson',
-        data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: directions.destination.coords } },
-      });
-      map.addLayer({
-        id: 'directions-dest-dot',
-        type: 'circle',
-        source: 'directions-dest',
-        paint: { 'circle-radius': 7, 'circle-color': '#ff4d6a', 'circle-stroke-width': 2.5, 'circle-stroke-color': '#ffffff' },
-      });
+    // Style may not be loaded yet (Mapbox Standard lazy-loads sub-resources).
+    // Retry with backoff instead of silently bailing out.
+    function tryDrawRoute(attempt = 0) {
+      if (cancelled || !map) return;
+      try {
+        if (map.isStyleLoaded()) {
+          drawRoute();
+        } else if (attempt < 10) {
+          setTimeout(() => tryDrawRoute(attempt + 1), 300 * (attempt + 1));
+        }
+      } catch {
+        if (attempt < 10) {
+          setTimeout(() => tryDrawRoute(attempt + 1), 300 * (attempt + 1));
+        }
+      }
     }
-
-    // Fit bounds — Apple/Google style padding (more top for header, more bottom for drawer)
-    const coords = directions.route.geometry.coordinates as [number, number][];
-    const bounds = coords.reduce(
-      (b, c) => b.extend(c as mapboxgl.LngLatLike),
-      new mapboxgl.LngLatBounds(coords[0], coords[0])
-    );
-    map.fitBounds(bounds, {
-      padding: { top: 100, bottom: 350, left: 50, right: 50 },
-      duration: 1000,
-      maxZoom: 16,
-    });
+    tryDrawRoute();
 
     return () => {
-      routeLayers.forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
-      routeSources.forEach(s => { if (map.getSource(s)) map.removeSource(s); });
+      cancelled = true;
+      const routeLayers = ['directions-route', 'directions-dest-dot', 'directions-origin-dot', 'directions-origin-pulse'];
+      const routeSources = ['directions-route', 'directions-dest', 'directions-origin'];
+      if (map) {
+        routeLayers.forEach(l => { try { if (map.getLayer(l)) map.removeLayer(l); } catch { /* no-op */ } });
+        routeSources.forEach(s => { try { if (map.getSource(s)) map.removeSource(s); } catch { /* no-op */ } });
+      }
     };
   }, [directions.route, directions.active, directions.destination, directions.origin, mapLoaded, mapRef]);
 
   // 7b. Navigation mode — highlight current/completed segments + camera control
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapLoaded || !map.isStyleLoaded()) return;
+    if (!map || !mapLoaded) return;
 
     // Layers for navigation mode
     const navLayers = ['directions-completed', 'directions-active-step'];
@@ -623,8 +653,8 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
 
     return () => {
       if (watchId != null) navigator.geolocation.clearWatch(watchId);
-      navLayers.forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
-      navSources.forEach(s => { if (map.getSource(s)) map.removeSource(s); });
+      navLayers.forEach(l => { try { if (map.getLayer(l)) map.removeLayer(l); } catch { /* no-op */ } });
+      navSources.forEach(s => { try { if (map.getSource(s)) map.removeSource(s); } catch { /* no-op */ } });
     };
   }, [directions.navigating, directions.currentStepIndex, directions.route, mapLoaded, mapRef, advanceStep]);
 

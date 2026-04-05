@@ -48,14 +48,14 @@ export function usePulseData() {
     const controller = new AbortController();
     abortRef.current = controller;
 
+    // Timeout via AbortController (Safari-compatible — no AbortSignal.timeout)
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     try {
       const res = await fetch(ORACLE_URL, {
         signal: controller.signal,
-        // Compose with timeout — whichever fires first
-        ...(typeof AbortSignal.timeout === 'function'
-          ? {} // timeout handled by controller
-          : {}),
       });
+      clearTimeout(timeoutId);
 
       // Double-check abort wasn't called during fetch
       if (controller.signal.aborted) return;
@@ -64,7 +64,7 @@ export function usePulseData() {
       const data: OraclePulse = await res.json();
 
       // Basic response validation
-      if (!data?.venue || !data?.metrics?.occupancy_pct === undefined) {
+      if (!data?.venue || data?.metrics?.occupancy_pct == null) {
         throw new Error('Invalid Oracle response schema');
       }
 

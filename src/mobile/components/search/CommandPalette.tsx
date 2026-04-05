@@ -59,17 +59,13 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
     if (!query || query.length < 2) { setPoiResults([]); setPoiLoading(false); return; }
 
     setPoiLoading(true);
-    // debug:`Searching "${query}"...`);
     debounceRef.current = setTimeout(async () => {
       try {
         const [lat, lng] = selectedCity.coordinates;
-        const token = MAPBOX_TOKEN;
-        if (!token) { // debug:'No Mapbox token!'); setPoiLoading(false); return; }
-        const url = `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(query)}&access_token=${token}&proximity=${lng},${lat}&limit=5&language=en&country=US&types=poi&session_token=${sessionToken.current}`;
-        // debug:`Fetching...`);
+        if (!MAPBOX_TOKEN) { setPoiLoading(false); return; }
+        const url = `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(query)}&access_token=${MAPBOX_TOKEN}&proximity=${lng},${lat}&limit=5&language=en&country=US&types=poi&session_token=${sessionToken.current}`;
         const res = await fetch(url);
         const data = await res.json();
-        // debug:`Status ${res.status}, ${data.suggestions?.length ?? 0} results`);
         const results = (data.suggestions ?? []).map((s: any) => ({
           name: s.name,
           mapboxId: s.mapbox_id,
@@ -80,8 +76,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
           maki: s.maki,
         }));
         setPoiResults(results);
-      } catch (err: any) {
-        // debug:`Error: ${err?.message || err}`);
+      } catch {
         setPoiResults([]);
       }
       setPoiLoading(false);

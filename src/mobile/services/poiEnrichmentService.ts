@@ -99,12 +99,15 @@ async function fetchOSMDetails(
 out body 3;`;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     const res = await fetch('https://overpass-api.de/api/interpreter', {
       method: 'POST',
       body: `data=${encodeURIComponent(query)}`,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      signal: AbortSignal.timeout(10000),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) return null;
     const data = (await res.json()) as { elements?: Array<{ tags?: Record<string, string> }> };

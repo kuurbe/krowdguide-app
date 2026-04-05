@@ -22,10 +22,20 @@ export async function fetchWithRetry(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      // Use AbortController + setTimeout for Safari compatibility
+      // (AbortSignal.timeout is unavailable on older Safari/WebKit)
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      let fetchSignal = signal;
+      const controller = new AbortController();
+      if (!signal) {
+        fetchSignal = controller.signal;
+        timeoutId = setTimeout(() => controller.abort(), timeout);
+      }
       const res = await fetch(url, {
-        signal: signal ?? AbortSignal.timeout(timeout),
+        signal: fetchSignal,
         headers,
       });
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
       if (res.ok) return res;
       // Don't retry client errors (4xx)
       if (res.status >= 400 && res.status < 500) {

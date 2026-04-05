@@ -7,7 +7,10 @@ const MAX_RETRIES = 2;
 async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<Response> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(tid);
       if (res.ok) return res;
       // Don't retry client errors (4xx)
       if (res.status >= 400 && res.status < 500) throw new Error(`API error: ${res.status}`);
