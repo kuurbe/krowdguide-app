@@ -1,10 +1,10 @@
-import { useState, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import './mobile.css';
 import type { City } from './types';
 import { CITIES } from './data/cities';
 import { AppProvider, useAppContext } from './context';
 import { ErrorBoundary } from './components/shared/ErrorBoundary';
-import { SplashScreen } from './components/onboarding/SplashScreen';
+// SplashScreen replaced by inline geo-detect loading
 import { CitySelector } from './components/onboarding/CitySelector';
 import { IntentScreen } from './components/onboarding/IntentScreen';
 import { MobileHeader } from './components/layout/MobileHeader';
@@ -49,8 +49,8 @@ export default function MobileApp() {
   const [stage, setStage] = useState<Stage>(() => {
     const savedCity = localStorage.getItem('krowd-city');
     if (savedCity) return 'app';
-    // Show city selector only — skip splash and intent
-    return 'city';
+    // Try geolocation first, fall back to city selector
+    return 'splash';
   });
 
   const [selectedCity, setSelectedCity] = useState<City | null>(() => {
@@ -61,25 +61,48 @@ export default function MobileApp() {
     return null;
   });
 
+  // Auto-detect city via geolocation on first visit
+  useEffect(() => {
+    if (stage !== 'splash') return;
+    let cancelled = false;
+
+    // Try geolocation with a 5s timeout
+    const timeout = setTimeout(() => {
+      if (!cancelled) setStage('city'); // Fallback to manual selector
+    }, 5000);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (cancelled) return;
+        clearTimeout(timeout);
+        const matched = matchCityByCoords(pos.coords.latitude, pos.coords.longitude);
+        if (matched) {
+          setSelectedCity(matched);
+          localStorage.setItem('krowd-city', JSON.stringify(matched));
+          localStorage.setItem('krowd-onboarded', 'true');
+          setStage('app');
+        } else {
+          setStage('city'); // No matching city nearby
+        }
+      },
+      () => {
+        if (!cancelled) {
+          clearTimeout(timeout);
+          setStage('city'); // Permission denied or error
+        }
+      },
+      { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
+    );
+
+    return () => { cancelled = true; clearTimeout(timeout); };
+  }, [stage]);
+
   const [activeTab, setActiveTab] = useState('map');
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [cityGuideOpen, setCityGuideOpen] = useState(false);
 
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
-  }, []);
-
-  const handleSplashComplete = useCallback((coords?: { lat: number; lng: number }) => {
-    if (coords) {
-      const matched = matchCityByCoords(coords.lat, coords.lng);
-      if (matched) {
-        setSelectedCity(matched);
-        localStorage.setItem('krowd-city', JSON.stringify(matched));
-        setStage('intent');
-        return;
-      }
-    }
-    setStage('city');
   }, []);
 
   const handleCitySelect = useCallback((city: City) => {
@@ -96,7 +119,16 @@ export default function MobileApp() {
 
   // Onboarding stages
   if (stage === 'splash') {
-    return <SplashScreen onComplete={handleSplashComplete} />;
+    // Brief loading while geolocation auto-detects
+    return (
+      <div className="h-dvh bg-[var(--k-bg)] flex flex-col items-center justify-center gap-4">
+        <div className="w-14 h-14 rounded-2xl bg-[#ff4d6a]/15 flex items-center justify-center">
+          <span className="text-[20px] font-black text-[#ff4d6a] font-syne">KG</span>
+        </div>
+        <p className="font-syne font-bold text-[var(--k-text)] text-[16px]">Detecting your city...</p>
+        <div className="w-8 h-8 border-2 border-[var(--k-border)] border-t-[#ff4d6a] rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (stage === 'city') {
