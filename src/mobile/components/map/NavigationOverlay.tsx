@@ -94,7 +94,7 @@ export function NavigationOverlay() {
       <div className="fixed inset-0 z-[1200] flex items-center justify-center pointer-events-none">
         <div className="pointer-events-auto animate-arrive p-8 rounded-3xl bg-black/80 backdrop-blur-xl text-center max-w-[280px] shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#ff4d6a]/20 to-[#e8364e]/20 flex items-center justify-center">
-            <MapPin className="w-8 h-8 text-[#ff4d6a]" />
+            <MapPin className="w-8 h-8 text-[var(--k-color-coral)]" />
           </div>
           <h3 className="font-extrabold text-[20px] text-white tracking-[-0.02em]">
             You've arrived!
@@ -164,9 +164,9 @@ export function NavigationOverlay() {
 
             {/* Crowd density warning chip */}
             {destPct > 70 && (
-              <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[#FF4D6A]/20 border border-[#FF4D6A]/30 rounded-full px-3 py-1">
-                <Users className="w-3.5 h-3.5 text-[#FF4D6A]" />
-                <span className="text-[11px] font-bold text-[#FF4D6A] tracking-wide">
+              <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[#ff4d6a]/20 border border-[#ff4d6a]/30 rounded-full px-3 py-1">
+                <Users className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
+                <span className="text-[11px] font-bold text-[var(--k-color-coral)] tracking-wide">
                   HIGH DENSITY AHEAD
                 </span>
               </div>
@@ -232,7 +232,7 @@ export function NavigationOverlay() {
                 {/* End Navigation button */}
                 <button
                   onClick={endNavigation}
-                  className="w-full py-3 rounded-full bg-[#FF4D6A] text-white font-bold text-[15px] active:scale-[0.97] transition-transform shadow-[0_4px_20px_rgba(255,77,106,0.3)]"
+                  className="w-full py-3 rounded-full bg-[var(--k-color-coral)] text-white font-bold text-[15px] active:scale-[0.97] transition-transform shadow-[0_4px_20px_rgba(255,77,106,0.3)]"
                 >
                   End Navigation
                 </button>
@@ -280,13 +280,13 @@ export function NavigationOverlay() {
                   key={tab.key}
                   onClick={() => setActiveNavTab(tab.key)}
                   className={`flex-1 flex flex-col items-center gap-1 py-3 relative transition-colors ${
-                    isActive ? 'text-[#FF4D6A]' : 'text-white/40 active:text-white/60'
+                    isActive ? 'text-[var(--k-color-coral)]' : 'text-white/40 active:text-white/60'
                   }`}
                 >
                   <TabIcon className="w-4.5 h-4.5" style={{ width: 18, height: 18 }} />
                   <span className="text-[10px] font-bold tracking-[0.06em]">{tab.label}</span>
                   {isActive && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-[#FF4D6A]" />
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-[var(--k-color-coral)]" />
                   )}
                 </button>
               );

@@ -166,7 +166,7 @@ export function POIDetailSheet() {
               onClick={handleDirections}
               className="flex-1 flex flex-col items-center gap-1 py-3 rounded-2xl text-white ios-press"
               style={{
-                background: 'linear-gradient(135deg, #ff4d6a, #ff8c42)',
+                background: 'var(--k-color-coral)',
                 boxShadow: '0 4px 20px rgba(255,77,106,0.3)',
               }}
             >
@@ -340,7 +340,7 @@ export function POIDetailSheet() {
               >
                 <Heart
                   className={`w-[18px] h-[18px] ${
-                    saved ? 'text-[#ff4d6a] fill-[#ff4d6a]' : 'text-[var(--k-text-m)]'
+                    saved ? 'text-[var(--k-color-coral)] fill-[var(--k-color-coral)]' : 'text-[var(--k-text-m)]'
                   }`}
                 />
               </div>

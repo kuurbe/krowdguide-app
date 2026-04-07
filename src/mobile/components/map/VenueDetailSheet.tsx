@@ -65,7 +65,7 @@ export function VenueDetailSheet({
   };
 
   const fav = isFavorite(venue.id);
-  const crowdColor = venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399';
+  const crowdColor = venue.crowd === 'busy' ? 'var(--k-color-coral)' : venue.crowd === 'moderate' ? 'var(--k-color-amber)' : 'var(--k-color-green)';
   const crowdLabel = venue.crowd === 'busy' ? 'Peak' : venue.crowd === 'moderate' ? 'Moderate' : 'Quiet';
   const occupancyLabel = venue.crowd === 'busy' ? 'High' : venue.crowd === 'moderate' ? 'Medium' : 'Low';
 
@@ -98,7 +98,7 @@ export function VenueDetailSheet({
               className="absolute top-3 right-[90px] z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md
                          flex items-center justify-center active:scale-90 transition-all"
             >
-              <Heart className={`w-[18px] h-[18px] transition-colors ${fav ? 'text-[#ff4d6a] fill-[#ff4d6a]' : 'text-white/70'}`} />
+              <Heart className={`w-[18px] h-[18px] transition-colors ${fav ? 'text-[var(--k-color-coral)] fill-[var(--k-color-coral)]' : 'text-white/70'}`} />
             </button>
 
             {/* Close — top left */}
@@ -157,7 +157,7 @@ export function VenueDetailSheet({
               <p className="type-overline text-[var(--k-text-m)] text-[9px] mb-0.5">WAIT</p>
               <p className="text-[14px] font-extrabold text-[var(--k-text)]">
                 {venue.wait ? venue.wait : venue.hasHH ? (
-                  <span className="text-[#ff8c42]">{venue.hhDeal}</span>
+                  <span className="text-[var(--k-color-orange)]">{venue.hhDeal}</span>
                 ) : 'None'}
               </p>
             </div>
@@ -222,7 +222,7 @@ export function VenueDetailSheet({
               onClose();
             }}
             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[18px] text-white text-[14px] font-bold ios-press mb-4"
-            style={{ background: 'linear-gradient(135deg, #ff4d6a, #ff8c42)', boxShadow: '0 4px 20px rgba(255,77,106,0.3)' }}
+            style={{ background: 'var(--k-color-coral)', boxShadow: '0 4px 20px rgba(255,77,106,0.3)' }}
           >
             <Footprints className="w-4 h-4" /> Walk Here
           </button>
@@ -231,7 +231,7 @@ export function VenueDetailSheet({
           <div className="flex items-center justify-center gap-6 mb-5">
             <button onClick={() => toggleFavorite(venue.id)} className="flex flex-col items-center gap-1 ios-press">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${fav ? 'bg-[#ff4d6a]/15' : 'glass-chip'}`}>
-                <Heart className={`w-[18px] h-[18px] ${fav ? 'text-[#ff4d6a] fill-[#ff4d6a]' : 'text-[var(--k-text-m)]'}`} />
+                <Heart className={`w-[18px] h-[18px] ${fav ? 'text-[var(--k-color-coral)] fill-[var(--k-color-coral)]' : 'text-[var(--k-text-m)]'}`} />
               </div>
               <span className="text-[10px] font-semibold text-[var(--k-text-m)]">{fav ? 'Saved' : 'Save'}</span>
             </button>

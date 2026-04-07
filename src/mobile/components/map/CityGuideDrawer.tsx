@@ -7,7 +7,7 @@ import { Search, Zap, Calendar, Bookmark } from 'lucide-react';
 import type { Venue } from '../../types';
 
 const CATEGORIES = [
-  { id: 'nightlife', emoji: '🍸', name: 'Nightlife', subtitle: 'Quiet spots', keywords: ['bar', 'brewery', 'lounge', 'club', 'pub'] },
+  { id: 'nightlife', emoji: '🍸', name: 'Nightlife', subtitle: 'Hot spots', keywords: ['bar', 'brewery', 'lounge', 'club', 'pub'] },
   { id: 'parks', emoji: '🌳', name: 'Parks', subtitle: 'Green zones', keywords: ['park', 'garden', 'trail', 'outdoor'] },
   { id: 'dining', emoji: '🍴', name: 'Dining', subtitle: 'Intimate cafes', keywords: ['restaurant', 'grill', 'bistro', 'diner', 'kitchen'] },
   { id: 'retail', emoji: '🛍️', name: 'Retail', subtitle: 'Boutique shops', keywords: ['shop', 'store', 'boutique', 'retail', 'market'] },
@@ -88,8 +88,8 @@ export function CityGuideDrawer({
         {/* Header — always visible, not scrollable */}
         <div className="px-5 pt-5 pb-2 flex-shrink-0">
           <DrawerTitle className="font-syne text-[26px] font-extrabold text-[var(--k-text)] tracking-[-0.03em] leading-[1.15]">
-            Find your{' '}
-            <span className="text-[#ff6b6b]">quiet.</span>
+            Find Your{' '}
+            <span className="text-[var(--k-color-coral)]">Crowd.</span>
           </DrawerTitle>
         </div>
 
@@ -154,10 +154,10 @@ export function CityGuideDrawer({
                 </div>
               </div>
 
-              {/* Quiet Nearby */}
+              {/* Popular Nearby */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <p className="type-overline text-[var(--k-text-m)]">Quiet Nearby</p>
+                  <p className="type-overline text-[var(--k-text-m)]">Popular Nearby</p>
                   {isLive && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">
                       <Zap className="w-2.5 h-2.5" /> LIVE
@@ -169,7 +169,7 @@ export function CityGuideDrawer({
                   {quietVenues.map((venue) => {
                     const avatars = getAvatars(venue.name);
                     const isFav = favorites.has(venue.id);
-                    const densityColor = venue.crowd === 'quiet' ? '#34d399' : '#fbbf24';
+                    const densityColor = venue.crowd === 'quiet' ? 'var(--k-color-green)' : 'var(--k-color-amber)';
                     const extraCount = Math.max(0, Math.floor(venue.pct / 8));
 
                     return (
@@ -250,10 +250,10 @@ export function CityGuideDrawer({
                   {quietVenues.length === 0 && (
                     <div className="text-center py-10">
                       <p className="text-[var(--k-text-m)] text-[14px]">
-                        {searchQuery ? 'No venues match your search' : 'No quiet spots nearby'}
+                        {searchQuery ? 'No venues match your search' : 'No popular spots nearby'}
                       </p>
                       {searchQuery && (
-                        <button onClick={() => setSearchQuery('')} className="mt-2 text-[12px] text-[#ff6b6b] font-bold">
+                        <button onClick={() => setSearchQuery('')} className="mt-2 text-[12px] text-[var(--k-color-coral)] font-bold">
                           Clear search
                         </button>
                       )}

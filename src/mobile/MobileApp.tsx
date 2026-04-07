@@ -191,13 +191,8 @@ function AppShell({
       if (activeTab !== 'map') onTabChange('map');
       return;
     }
-    if (tab === 'alerts') {
-      setAlertsOpen(true);
-      if (activeTab !== 'map') onTabChange('map');
-      return;
-    }
     onTabChange(tab);
-  }, [onTabChange, activeTab, setCityGuideOpen, setAlertsOpen]);
+  }, [onTabChange, activeTab, setCityGuideOpen, setSearchOpen]);
 
   const handleSearchVenueSelect = useCallback((venue: typeof venues[0]) => {
     setSearchResults([]);
@@ -261,7 +256,7 @@ function AppShell({
 
         {/* Floating Bottom Nav — tight width to show liquid glass */}
         <div className="absolute bottom-4 z-[1100] safe-bottom"
-             style={{ left: '50%', transform: 'translateX(-50%)', width: 'min(340px, 88vw)' }}>
+             style={{ left: '50%', transform: 'translateX(-50%)', width: 'min(280px, 75vw)' }}>
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
       </div>

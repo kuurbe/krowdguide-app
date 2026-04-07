@@ -70,7 +70,7 @@ export function AlertsDrawer({
 
           {/* New Alert button */}
           <button className="w-full flex items-center justify-center gap-2 py-3 rounded-[18px]
-                             border border-[#ff4d6a] text-[#ff4d6a] text-[14px] font-bold
+                             border border-[var(--k-color-coral)] text-[var(--k-color-coral)] text-[14px] font-bold
                              ios-press hover:bg-[#ff4d6a]/10 transition-colors mb-6">
             <Plus className="w-4 h-4" />
             New Alert
@@ -110,7 +110,7 @@ export function AlertsDrawer({
                       onClick={() => setAlertTime(alert.id, t)}
                       className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-all ios-press
                         ${alert.time === t
-                          ? 'bg-[#ff4d6a] text-white'
+                          ? 'bg-[var(--k-color-coral)] text-white'
                           : 'glass-chip text-[var(--k-text-m)]'
                         }`}
                     >

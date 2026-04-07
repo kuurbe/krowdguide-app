@@ -17,7 +17,7 @@ const MODES: { id: TravelMode; label: string; Icon: typeof Navigation }[] = [
 /** Pick a maneuver icon + color based on step type */
 function StepIcon({ type, modifier }: { type: string; modifier?: string }) {
   const isTurn = type.includes('turn') || !!modifier?.match(/left|right/);
-  const bg = isTurn ? 'bg-[#ff4d6a]' : 'bg-[#34d399]';
+  const bg = isTurn ? 'bg-[var(--k-color-coral)]' : 'bg-[var(--k-color-green)]';
   const Icon = isTurn
     ? modifier?.includes('left') ? CornerUpLeft : CornerUpRight
     : ArrowUp;
@@ -72,7 +72,7 @@ export function DirectionsDrawer() {
               {/* Destination + stats row */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex-1 min-w-0 pr-3">
-                  <p className="text-[12px] text-[#ff4d6a] font-bold uppercase tracking-wider mb-0.5">
+                  <p className="text-[12px] text-[var(--k-color-coral)] font-bold uppercase tracking-wider mb-0.5">
                     {directions.mode === 'walking' ? 'Walking' : directions.mode === 'cycling' ? 'Cycling' : 'Driving'} · {totalKm} km
                   </p>
                   <h2 className="font-syne text-[22px] font-black leading-[1.1] text-[var(--k-text)] tracking-[-0.02em] truncate">
@@ -85,8 +85,8 @@ export function DirectionsDrawer() {
 
                 {/* ETA badge */}
                 <div className="flex-shrink-0 text-center px-4 py-2 rounded-2xl bg-[#ff4d6a]/15">
-                  <span className="text-[28px] font-syne font-black text-[#ff4d6a] leading-none">{totalMin}</span>
-                  <p className="text-[11px] font-bold text-[#ff4d6a] -mt-0.5">min</p>
+                  <span className="text-[28px] font-syne font-black text-[var(--k-color-coral)] leading-none">{totalMin}</span>
+                  <p className="text-[11px] font-bold text-[var(--k-color-coral)] -mt-0.5">min</p>
                 </div>
               </div>
 
@@ -98,7 +98,7 @@ export function DirectionsDrawer() {
                     onClick={() => setDirectionsMode(id)}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all ios-press text-[12px] font-bold
                       ${directions.mode === id
-                        ? 'bg-[#ff4d6a] text-white shadow-md'
+                        ? 'bg-[var(--k-color-coral)] text-white shadow-md'
                         : 'glass-chip text-[var(--k-text-m)]'
                       }`}
                   >
@@ -113,7 +113,7 @@ export function DirectionsDrawer() {
           {/* Loading */}
           {directions.loading && (
             <div className="flex items-center justify-center py-6 gap-2 text-[var(--k-text-m)]">
-              <div className="w-5 h-5 border-2 border-[#ff4d6a] border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-[var(--k-color-coral)] border-t-transparent rounded-full animate-spin" />
               <span className="text-[13px] font-medium">Finding best route...</span>
             </div>
           )}
@@ -121,7 +121,7 @@ export function DirectionsDrawer() {
           {/* Error */}
           {directions.error && (
             <div className="text-center py-4">
-              <p className="text-[#ff4d6a] text-[13px] font-medium">{directions.error}</p>
+              <p className="text-[var(--k-color-coral)] text-[13px] font-medium">{directions.error}</p>
             </div>
           )}
 
@@ -129,7 +129,7 @@ export function DirectionsDrawer() {
           {route && !directions.loading && (
             <button
               onClick={startNavigation}
-              className="w-full py-3.5 rounded-2xl bg-[#ff4d6a] text-white font-black text-[15px] tracking-wide
+              className="w-full py-3.5 rounded-2xl bg-[var(--k-color-coral)] text-white font-black text-[15px] tracking-wide
                          shadow-[0_4px_20px_rgba(66,133,244,0.35)] active:scale-[0.97] transition-transform flex items-center justify-center gap-2 ios-press mb-3"
             >
               <Compass className="w-5 h-5" />
@@ -169,12 +169,12 @@ export function DirectionsDrawer() {
                           <p className="text-[11px] text-[var(--k-text-m)] mt-0.5">{formatDistance(step.distance)}</p>
                           {isTurn && (
                             <div className="flex items-center gap-1 mt-1">
-                              <Users className="w-3 h-3 text-[#ff4d6a]" />
-                              <span className="text-[9px] font-bold text-[#ff4d6a] uppercase tracking-wider">HIGH CROWD DENSITY</span>
+                              <Users className="w-3 h-3 text-[var(--k-color-coral)]" />
+                              <span className="text-[9px] font-bold text-[var(--k-color-coral)] uppercase tracking-wider">HIGH CROWD DENSITY</span>
                             </div>
                           )}
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${i === 0 ? 'bg-[#ff4d6a]/15 text-[#ff4d6a]' : 'bg-[var(--k-surface)] text-[var(--k-text-m)]'}`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${i === 0 ? 'bg-[#ff4d6a]/15 text-[var(--k-color-coral)]' : 'bg-[var(--k-surface)] text-[var(--k-text-m)]'}`}>
                           {timeBadge}
                         </span>
                       </div>

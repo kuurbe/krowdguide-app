@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
-import { Map, Sparkles, Search, Bell, User } from 'lucide-react';
+import { Map, Sparkles, Search, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptic } from '../../utils/haptics';
 
@@ -8,7 +8,6 @@ const TABS = [
   { id: 'map', icon: Map, label: 'MAP' },
   { id: 'ai', icon: Sparkles, label: 'PREDICT' },
   { id: 'search', icon: Search, label: 'SEARCH' },
-  { id: 'alerts', icon: Bell, label: 'ALERTS' },
   { id: 'account', icon: User, label: 'ACCOUNT' },
 ] as const;
 
@@ -109,9 +108,7 @@ export function BottomNav({
               isActive ? 'active:scale-[0.92]' : 'active:scale-[0.88] ios-press',
             )}
           >
-            {tab.id === 'alerts' && (
-              <span className="absolute top-1.5 right-2.5 w-[5px] h-[5px] rounded-full bg-[var(--k-accent)] ring-[1.5px] ring-[var(--k-glass-bg)]" />
-            )}
+            {/* No notification badges on nav tabs */}
 
             <tab.icon
               className={cn(

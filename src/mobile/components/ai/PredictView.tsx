@@ -32,10 +32,10 @@ function jitter(seed: string, slot: number): number {
 }
 
 function densityColor(pct: number): string {
-  if (pct < 30) return '#34d399';   // green
+  if (pct < 30) return 'var(--k-color-green)';
   if (pct < 50) return '#a3b18a';   // olive
-  if (pct < 70) return '#fbbf24';   // amber
-  if (pct < 85) return '#ff4d6a';   // red
+  if (pct < 70) return 'var(--k-color-amber)';
+  if (pct < 85) return 'var(--k-color-coral)';
   return '#92400e';                  // brown
 }
 
@@ -103,7 +103,7 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
     <div className="flex-1 overflow-y-auto p-4 no-scrollbar scroll-smooth space-y-5">
       {/* ── Overline + Headline ── */}
       <div className="pt-2 space-y-1">
-        <p className="text-[10px] font-bold text-[#ff4d6a] tracking-[0.1em] uppercase">
+        <p className="text-[10px] font-bold text-[var(--k-color-coral)] tracking-[0.1em] uppercase">
           PREDICTIVE INTELLIGENCE
         </p>
         <h1 className="font-syne text-[28px] font-extrabold leading-tight text-[var(--k-text)]">
@@ -127,11 +127,11 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
           </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--k-text-f)]">
-              <span className="w-[6px] h-[6px] rounded-full bg-[#34d399]" />
+              <span className="w-[6px] h-[6px] rounded-full bg-[var(--k-color-green)]" />
               LIVE
             </span>
             <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--k-text-f)]">
-              <span className="w-[6px] h-[6px] rounded-full bg-[#ff4d6a]" />
+              <span className="w-[6px] h-[6px] rounded-full bg-[var(--k-color-coral)]" />
               FORECAST
             </span>
           </div>
@@ -143,7 +143,7 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
             <div key={bar.label} className="flex flex-col items-center flex-1 gap-1.5 relative">
               {/* LIVE floating label on first bar */}
               {i === liveBarIdx && (
-                <span className="absolute -top-5 text-[8px] font-bold text-[#34d399] tracking-wider">LIVE</span>
+                <span className="absolute -top-5 text-[8px] font-bold text-[var(--k-color-green)] tracking-wider">LIVE</span>
               )}
               <div
                 className="w-[48px] rounded-t-[8px] transition-all duration-500"
@@ -194,8 +194,8 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
             }}
           >
             {/* Zap icon in coral circle */}
-            <div className="w-12 h-12 rounded-full bg-[#ff4d6a]/20 flex items-center justify-center mx-auto">
-              <Zap className="w-6 h-6 text-[#ff4d6a]" />
+            <div className="w-12 h-12 rounded-full bg-[var(--k-color-coral)]/20 flex items-center justify-center mx-auto">
+              <Zap className="w-6 h-6 text-[var(--k-color-coral)]" />
             </div>
 
             <p className="text-[18px] font-bold text-white">
@@ -215,10 +215,10 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
           {/* Predictive Accuracy sub-card */}
           <div className="liquid-glass rounded-[20px] p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#a855f7]/15 flex items-center justify-center flex-shrink-0">
-              <Brain className="w-5 h-5 text-[#a855f7]" />
+              <Brain className="w-5 h-5 text-[var(--k-color-purple)]" />
             </div>
             <span className="text-[13px] font-semibold text-[var(--k-text)]">Predictive Accuracy</span>
-            <span className="ml-auto text-[20px] font-black text-[#34d399] font-mono">94.8%</span>
+            <span className="ml-auto text-[20px] font-black text-[var(--k-color-green)] font-mono">94.8%</span>
           </div>
         </div>
       )}
@@ -240,13 +240,13 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
               >
                 {/* Top row: MapPin icon + venue name + surge badge */}
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#ff4d6a]/10 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-[#ff4d6a]" />
+                  <div className="w-9 h-9 rounded-xl bg-[var(--k-color-coral)]/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-[var(--k-color-coral)]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-bold text-[var(--k-text)] truncate">{h.venue.name}</p>
                   </div>
-                  <div className="px-2.5 py-1 rounded-full text-[10px] font-black bg-[#ff4d6a]/12 text-[#ff4d6a] tracking-wide">
+                  <div className="px-2.5 py-1 rounded-full text-[10px] font-black bg-[var(--k-color-coral)]/12 text-[var(--k-color-coral)] tracking-wide">
                     +{surgePct > 0 ? surgePct : Math.abs(h.change)}% SURGE
                   </div>
                 </div>
@@ -357,7 +357,7 @@ export function PredictView() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl liquid-glass flex items-center justify-center"
                  style={{ boxShadow: 'var(--k-glow-coral)' }}>
-              <BrainCircuit className="w-5 h-5 text-[#ff4d6a]" />
+              <BrainCircuit className="w-5 h-5 text-[var(--k-color-coral)]" />
             </div>
             <div>
               <h2 className="font-syne font-extrabold text-[17px] gradient-text tracking-[-0.02em]">KROWD AI</h2>
@@ -384,7 +384,7 @@ export function PredictView() {
               className={cn(
                 'px-3.5 py-1.5 rounded-full text-[11px] font-bold transition-all ios-press',
                 viewMode === 'forecast'
-                  ? 'glass-chip text-[#ff4d6a]'
+                  ? 'glass-chip text-[var(--k-color-coral)]'
                   : 'text-[var(--k-text-f)]'
               )}
             >
@@ -420,7 +420,7 @@ export function PredictView() {
                   className={cn(
                     'px-3 py-1.5 rounded-full text-[11px] font-bold transition-all',
                     inputMode === 'talk' || isListening
-                      ? 'bg-[#a855f7]/15 text-[#a855f7]'
+                      ? 'bg-[#a855f7]/15 text-[var(--k-color-purple)]'
                       : 'text-[var(--k-text-f)]'
                   )}
                 >
@@ -448,7 +448,7 @@ export function PredictView() {
                       key={i}
                       onClick={() => handleSend(chip)}
                       className="px-3.5 py-2 text-[12px] rounded-full glass-chip
-                                 hover:bg-[#ff4d6a]/8 hover:border-[#ff4d6a]/20 hover:text-[#ff4d6a] transition-colors
+                                 hover:bg-[#ff4d6a]/8 hover:border-[#ff4d6a]/20 hover:text-[var(--k-color-coral)] transition-colors
                                  text-[var(--k-text-2)] font-medium animate-fadeUp"
                       style={{ animationDelay: `${i * 0.04}s` }}
                     >
@@ -530,7 +530,7 @@ export function PredictView() {
                             key={i}
                             onClick={() => handleSend(chip)}
                             className="px-3 py-1.5 text-[11px] rounded-full glass-chip
-                                       hover:bg-[#a855f7]/10 hover:border-[#a855f7]/20 hover:text-[#a855f7] transition-colors
+                                       hover:bg-[#a855f7]/10 hover:border-[#a855f7]/20 hover:text-[var(--k-color-purple)] transition-colors
                                        text-[var(--k-text-m)] font-medium"
                           >
                             {chip}
@@ -563,7 +563,7 @@ export function PredictView() {
               <div className="text-center py-2">
                 <button
                   onClick={handleMic}
-                  className="w-14 h-14 mx-auto rounded-full bg-[#ff4d6a] animate-pulse flex items-center justify-center
+                  className="w-14 h-14 mx-auto rounded-full bg-[var(--k-color-coral)] animate-pulse flex items-center justify-center
                              shadow-[0_0_30px_rgba(255,77,106,0.4)]"
                 >
                   <MicOff className="w-6 h-6 text-white" />
@@ -603,7 +603,7 @@ export function PredictView() {
                     background: 'rgba(255, 77, 106, 0.15)',
                   }}
                 >
-                  <Send className={`w-4 h-4 ${input.trim() ? 'text-white' : 'text-[#ff4d6a]'}`} />
+                  <Send className={`w-4 h-4 ${input.trim() ? 'text-white' : 'text-[var(--k-color-coral)]'}`} />
                 </button>
               </div>
             )}
