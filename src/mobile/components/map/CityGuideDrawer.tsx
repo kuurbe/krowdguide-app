@@ -218,13 +218,16 @@ export function CityGuideDrawer({
                 />
               </div>
 
-              {/* KG Orb — the city's living pulse (Phase 1) */}
+              {/* KG Orb — the city's living pulse (Phase 2) */}
               <div className="py-2 flex flex-col items-center">
                 <KGOrb
-                  size={260}
+                  orbSize={220}
                   cityName={selectedCity.name}
                   cityPct={bentoStats.avgCrowd}
                   label={crowdPulseLabel}
+                  forecast={bentoStats.sparkline.slice(0, 6)}
+                  satellites={venues.slice(0, 9)}
+                  onSatelliteTap={handleVenueTap}
                 />
                 {/* Below-orb mini stat row — weather + events */}
                 <div className="flex items-center gap-4 mt-3">

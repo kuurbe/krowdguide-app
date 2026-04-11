@@ -507,15 +507,20 @@ html, body {
 /* ── KG ORB — the city's living pulse ────────────────────── */
 .kg-orb-wrap {
   position: relative;
-  display: grid;
-  place-items: center;
+  display: block;
   isolation: isolate;
+  margin: 0 auto;
+}
+
+/* Orb core container — positioned inside the wrap */
+.kg-orb-core-wrap {
+  position: absolute;
+  z-index: 2;
 }
 
 /* Aurora backdrop — 3 slow-drifting radial gradients */
 .kg-orb-aurora {
   position: absolute;
-  inset: -8%;
   border-radius: 50%;
   background:
     radial-gradient(ellipse at 30% 30%, rgba(255, 77, 106, 0.35), transparent 55%),
@@ -530,6 +535,85 @@ html, body {
   0%,100% { transform: rotate(0deg) scale(1); opacity: 0.85; }
   33%     { transform: rotate(120deg) scale(1.08); opacity: 1; }
   66%     { transform: rotate(240deg) scale(0.96); opacity: 0.75; }
+}
+
+/* Forecast ring — SVG arcs positioned absolutely over the wrap */
+.kg-orb-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Orbit layer — holds the satellite wrappers */
+.kg-orb-orbit-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Orbit wrapper — spins around the center */
+.kg-orbit-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+@keyframes kg-orbit-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes kg-orbit-spin-rev {
+  to { transform: rotate(-360deg); }
+}
+
+/* Orbit chip — counter-rotates to stay upright */
+.kg-orbit-chip {
+  position: absolute;
+  left: -18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(20, 22, 32, 0.72);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 0 16px rgba(255, 77, 106, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform;
+  font-size: 16px;
+}
+.kg-orbit-chip:active {
+  transform-origin: center;
+}
+.kg-orbit-chip-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+.kg-orbit-chip-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 4px currentColor;
+}
+@keyframes kg-orbit-counter {
+  to { transform: rotate(-360deg); }
+}
+@keyframes kg-orbit-counter-rev {
+  to { transform: rotate(360deg); }
 }
 
 /* Nebula SVG layer — feTurbulence displacement */
