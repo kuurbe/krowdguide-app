@@ -504,6 +504,33 @@ html, body {
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
+/* ── ASK BAR — AI prompt input with shimmer border ──────── */
+.ask-bar-wrap {
+  position: relative;
+  padding: 1.5px;
+  border-radius: 19px;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 77, 106, 0.5),
+    rgba(168, 85, 247, 0.35),
+    rgba(34, 211, 238, 0.4),
+    rgba(255, 77, 106, 0.5)
+  );
+  background-size: 300% 300%;
+  animation: ask-bar-shimmer 6s ease-in-out infinite;
+}
+.ask-bar {
+  background: var(--k-bg2);
+  border: 1px solid var(--k-border);
+}
+[data-theme="light"] .ask-bar {
+  background: #ffffff;
+}
+@keyframes ask-bar-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 /* ── KG ORB — shiny circular button with moving glare ──────── */
 .kg-orb {
   position: relative;

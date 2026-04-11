@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, Clock, Zap, Brain, SlidersHorizontal, ChevronRight, MapPin } from 'lucide-react';
+import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, Zap, Brain, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppContext } from '../../context';
 import { generateAIResponse, SUGGESTION_CHIPS } from '../../services/ai-responses';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { AIVenueCard } from './AIVenueCard';
+import { AskBar } from '../shared/AskBar';
 import type { ChatMessage, Venue } from '../../types';
 
 /** Follow-up chips per response type */
@@ -19,9 +20,8 @@ const FOLLOW_UP_CHIPS: Record<string, string[]> = {
 
 // ── Forecast helpers ────────────────────────────────────────
 
-type TimeRange = 'NOW' | '1H' | '3H' | '8H';
-
-const TIME_SLOTS = ['18:00', '19:00', '20:00', '21:00', '22:00'] as const;
+const SLOT_LABELS = ['NOW', '+1h', '+2h', '+3h', '+4h'] as const;
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 /** Deterministic pseudo-random jitter from venue id + slot */
 function jitter(seed: string, slot: number): number {
@@ -31,73 +31,163 @@ function jitter(seed: string, slot: number): number {
   return ((h % 41) - 20); // -20 to +20
 }
 
-function densityColor(pct: number): string {
-  if (pct < 30) return 'var(--k-color-green)';
-  if (pct < 50) return '#a3b18a';   // olive
-  if (pct < 70) return 'var(--k-color-amber)';
-  if (pct < 85) return 'var(--k-color-coral)';
-  return '#92400e';                  // brown
-}
+type Verdict = 'GO NOW' | 'WATCH' | 'AVOID';
 
-interface ForecastVenue {
+interface VerdictVenue {
   venue: Venue;
   forecastPct: number;
-  change: number;
-  peakTime: string;
-  footTraffic: number;
+  verdict: Verdict;
+  reason: string;
+  spark: number[];
+  factors: { label: string; delta: string; color: string }[];
 }
 
-function buildForecastData(venues: Venue[], range: TimeRange): {
-  bars: { label: string; pct: number; color: string }[];
-  hotspots: ForecastVenue[];
-  criticalVenue: ForecastVenue | null;
-} {
-  const multiplier = range === 'NOW' ? 0 : range === '1H' ? 1 : range === '3H' ? 2 : 3;
+function verdictFor(pct: number): Verdict {
+  if (pct < 40) return 'GO NOW';
+  if (pct < 70) return 'WATCH';
+  return 'AVOID';
+}
 
-  // Build density bars from aggregate venue data per time slot
-  const bars = TIME_SLOTS.map((label, i) => {
-    const avgPct = venues.length > 0
-      ? venues.reduce((sum, v) => sum + Math.min(100, Math.max(0, v.pct + jitter(v.id, i + multiplier))), 0) / venues.length
+function reasonFor(verdict: Verdict): string {
+  if (verdict === 'AVOID') return '2x normal for this hour. Peak crowd — try again after 11pm.';
+  if (verdict === 'WATCH') return 'Building steadily. Still room now but will fill.';
+  return 'Quiet window — 70% under normal. Act fast.';
+}
+
+function buildSpark(venue: Venue): number[] {
+  const base = venue.pct;
+  const pts: number[] = [];
+  for (let i = 0; i < 20; i++) {
+    const wobble = jitter(venue.id, i) * 0.6;
+    const curve = Math.sin((i / 20) * Math.PI) * 12;
+    pts.push(Math.max(5, Math.min(100, base + wobble + curve)));
+  }
+  return pts;
+}
+
+function buildOverlayBars(venues: Venue[]): { label: string; typical: number; live: number }[] {
+  return SLOT_LABELS.map((label, i) => {
+    const avgLive = venues.length > 0
+      ? venues.reduce((sum, v) => sum + Math.min(100, Math.max(0, v.pct + jitter(v.id, i))), 0) / venues.length
       : 50;
-    const clamped = Math.min(100, Math.max(15, avgPct));
-    return { label, pct: clamped, color: densityColor(clamped) };
+    // Typical is a smoother baseline — lower wobble
+    const avgTypical = venues.length > 0
+      ? venues.reduce((sum, v) => sum + Math.min(100, Math.max(0, v.pct + jitter(v.id, i + 100) * 0.3)), 0) / venues.length
+      : 50;
+    return {
+      label,
+      live: Math.min(100, Math.max(15, avgLive)),
+      typical: Math.min(100, Math.max(15, avgTypical * 0.85 + 8)),
+    };
   });
+}
 
-  // Build hotspot list
-  const peakTimes = ['2:30 PM', '3:15 PM', '4:00 PM', '5:45 PM', '6:30 PM', '7:00 PM', '8:15 PM'];
-  const hotspots: ForecastVenue[] = venues.map((v, i) => {
-    const forecastPct = Math.min(100, Math.max(5, v.pct + jitter(v.id, multiplier)));
-    const change = forecastPct - v.pct;
+function buildVerdictVenues(venues: Venue[]): VerdictVenue[] {
+  const list: VerdictVenue[] = venues.map(v => {
+    const forecastPct = Math.min(100, Math.max(5, v.pct + jitter(v.id, 1)));
+    const verdict = verdictFor(forecastPct);
     return {
       venue: v,
       forecastPct,
-      change,
-      peakTime: peakTimes[i % peakTimes.length],
-      footTraffic: Math.round(12 + Math.abs(jitter(v.id, multiplier + 3)) * 1.5),
+      verdict,
+      reason: reasonFor(verdict),
+      spark: buildSpark(v),
+      factors: [
+        { label: 'Base: Friday night', delta: '+20%', color: 'var(--k-color-coral)' },
+        { label: 'Weather clear', delta: '+5%', color: 'var(--k-color-green)' },
+        { label: 'Event: concert nearby', delta: '+35%', color: 'var(--k-color-coral)' },
+        { label: 'Your frequent time slot', delta: '+10%', color: 'var(--k-color-purple)' },
+      ],
     };
   });
+  // Sort: AVOID first, then WATCH, then GO NOW
+  const order: Record<Verdict, number> = { 'AVOID': 0, 'WATCH': 1, 'GO NOW': 2 };
+  list.sort((a, b) => order[a.verdict] - order[b.verdict] || b.forecastPct - a.forecastPct);
+  return list.slice(0, 6);
+}
 
-  hotspots.sort((a, b) => b.forecastPct - a.forecastPct);
+// ── Sparkline SVG ────────────────────────────────────────────
+function Sparkline({ points, color }: { points: number[]; color: string }) {
+  const w = 40;
+  const h = 18;
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const range = max - min || 1;
+  const path = points
+    .map((p, i) => {
+      const x = (i / (points.length - 1)) * w;
+      const y = h - ((p - min) / range) * h;
+      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="flex-shrink-0">
+      <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
-  const criticalVenue = hotspots.find(h => h.forecastPct >= 80) ?? null;
+// ── Verdict Card ─────────────────────────────────────────────
+function VerdictCard({ item, index }: { item: VerdictVenue; index: number }) {
+  const [expanded, setExpanded] = useState(false);
 
-  return { bars, hotspots: hotspots.slice(0, 6), criticalVenue };
+  const verdictBg =
+    item.verdict === 'GO NOW' ? 'var(--k-color-green)' :
+    item.verdict === 'WATCH' ? 'var(--k-color-amber)' :
+    'var(--k-color-coral)';
+
+  const sparkColor =
+    item.verdict === 'GO NOW' ? 'var(--k-color-green)' :
+    item.verdict === 'WATCH' ? 'var(--k-color-amber)' :
+    'var(--k-color-coral)';
+
+  return (
+    <button
+      onClick={() => setExpanded(e => !e)}
+      className="w-full liquid-glass rounded-[20px] p-4 space-y-3 animate-fadeUp ios-press text-left"
+      style={{ animationDelay: `${index * 0.06}s` }}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="text-[13px] font-black uppercase tracking-wide px-3 py-1.5 rounded-full text-white flex-shrink-0"
+          style={{ background: verdictBg }}
+        >
+          {item.verdict}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[14px] font-bold text-[var(--k-text)] truncate">{item.venue.name}</p>
+          <p className="text-[11px] text-[var(--k-text-f)] truncate">{item.venue.type}</p>
+        </div>
+        <Sparkline points={item.spark} color={sparkColor} />
+      </div>
+
+      <p className="text-[12px] italic text-[var(--k-text-f)] leading-snug">{item.reason}</p>
+
+      {expanded && (
+        <div className="pt-2 border-t border-[var(--k-border-s)] space-y-2 animate-fadeUp">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-[var(--k-text-m)] uppercase">
+            <Brain className="w-3 h-3" />
+            Why this forecast?
+          </div>
+          {item.factors.map(f => (
+            <div key={f.label} className="flex items-center justify-between text-[11px]">
+              <span className="text-[var(--k-text-m)]">{f.label}</span>
+              <span className="font-mono font-bold" style={{ color: f.color }}>{f.delta}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </button>
+  );
 }
 
 // ── Forecast Mode Component ─────────────────────────────────
 
 function ForecastMode({ venues }: { venues: Venue[] }) {
-  const [timeRange, setTimeRange] = useState<TimeRange>('NOW');
+  const overlayBars = useMemo(() => buildOverlayBars(venues), [venues]);
+  const verdictVenues = useMemo(() => buildVerdictVenues(venues), [venues]);
 
-  const { bars, hotspots, criticalVenue } = useMemo(
-    () => buildForecastData(venues, timeRange),
-    [venues, timeRange]
-  );
-
-  const ranges: TimeRange[] = ['NOW', '1H', '3H', '8H'];
-
-  // Find the "live" bar index (first bar)
-  const liveBarIdx = 0;
+  const dayName = DAY_NAMES[new Date().getDay()];
 
   return (
     <div className="flex-1 overflow-y-auto p-4 no-scrollbar scroll-smooth space-y-5">
@@ -117,175 +207,101 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
         </h1>
       </div>
 
-      {/* ── Density Trends Card ── */}
+      {/* ── Ask the Forecast Bar ── */}
+      <AskBar
+        placeholder="Ask the forecast anything..."
+        onSubmit={(prompt) => console.log('[KG Forecast]', prompt)}
+        suggestions={[
+          'Where should I go tonight under 20min wait?',
+          'Quietest bar after 9pm',
+          'Will it be busy at 11?',
+        ]}
+      />
+
+      {/* ── Live vs Typical Overlay Card ── */}
       <div className="liquid-glass rounded-[20px] p-5 space-y-4">
-        {/* Card header */}
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[15px] font-bold text-[var(--k-text)]">Density Trends</p>
-            <p className="text-[11px] text-[var(--k-text-f)] mt-0.5">Live vs. Predicted saturation levels</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--k-text-f)]">
-              <span className="w-[6px] h-[6px] rounded-full bg-[var(--k-color-green)]" />
-              LIVE
-            </span>
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--k-text-f)]">
-              <span className="w-[6px] h-[6px] rounded-full bg-[var(--k-color-coral)]" />
-              FORECAST
-            </span>
+            <p className="text-[15px] font-bold text-[var(--k-text)]">Tonight vs Typical {dayName}</p>
+            <p className="text-[11px] text-[var(--k-text-f)] mt-0.5">Live forecast overlaid on the baseline</p>
           </div>
         </div>
 
-        {/* Bar chart */}
-        <div className="relative h-[150px] flex items-end justify-between gap-3 px-1">
-          {bars.map((bar, i) => (
-            <div key={bar.label} className="flex flex-col items-center flex-1 gap-1.5 relative">
-              {/* LIVE floating label on first bar */}
-              {i === liveBarIdx && (
-                <span className="absolute -top-5 text-[8px] font-bold text-[var(--k-color-green)] tracking-wider">LIVE</span>
-              )}
-              <div
-                className="w-[48px] rounded-t-[8px] transition-all duration-500"
-                style={{
-                  height: `${Math.max(20, (bar.pct / 100) * 140)}px`,
-                  background: `linear-gradient(to top, ${bar.color}cc, ${bar.color}88)`,
-                  boxShadow: `0 0 12px ${bar.color}33`,
-                  animationDelay: `${i * 0.08}s`,
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Labels below bars */}
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[9px] font-bold text-[var(--k-text-f)] tracking-wider">CURRENT</span>
-          <span className="text-[9px] font-bold text-[var(--k-text-f)] tracking-wider">PROJECTION WINDOW</span>
-        </div>
-
-        {/* Time range pills */}
-        <div className="flex items-center gap-2">
-          {ranges.map(r => (
-            <button
-              key={r}
-              onClick={() => setTimeRange(r)}
-              className={cn(
-                'px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wide transition-all ios-press',
-                timeRange === r
-                  ? 'bg-[var(--k-text)] text-[var(--k-bg)]'
-                  : 'glass-chip text-[var(--k-text-f)] hover:text-[var(--k-text-m)]'
-              )}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Critical Capacity Alert ── */}
-      {criticalVenue && (
-        <div className="space-y-3">
-          <div
-            className="rounded-[20px] p-5 space-y-4 animate-fadeUp text-center"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,77,106,0.18), rgba(255,138,92,0.10))',
-              border: '1px solid rgba(255, 77, 106, 0.25)',
-            }}
-          >
-            {/* Zap icon in coral circle */}
-            <div className="w-12 h-12 rounded-full bg-[var(--k-color-coral)]/20 flex items-center justify-center mx-auto">
-              <Zap className="w-6 h-6 text-[var(--k-color-coral)]" />
-            </div>
-
-            <p className="text-[18px] font-bold text-white">
-              Critical Capacity Alert
-            </p>
-            <p className="text-[13px] text-white/80 leading-relaxed">
-              {criticalVenue.venue.name} is predicted to reach{' '}
-              <span className="font-bold text-white">{criticalVenue.forecastPct}% capacity</span>{' '}
-              by {criticalVenue.peakTime}.
-            </p>
-
-            <button className="px-5 py-2.5 rounded-full text-[11px] font-bold tracking-wider text-white border border-white/30 hover:bg-white/10 transition-colors ios-press">
-              VIEW ALTERNATIVE ROUTES
-            </button>
-          </div>
-
-          {/* Predictive Accuracy sub-card */}
-          <div className="liquid-glass rounded-[20px] p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#a855f7]/15 flex items-center justify-center flex-shrink-0">
-              <Brain className="w-5 h-5 text-[var(--k-color-purple)]" />
-            </div>
-            <span className="text-[13px] font-semibold text-[var(--k-text)]">Predictive Accuracy</span>
-            <span className="ml-auto text-[20px] font-black text-[var(--k-color-green)] font-mono">94.8%</span>
-          </div>
-        </div>
-      )}
-
-      {/* ── Surge Hotspots ── */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="type-overline text-[var(--k-text-f)]">SURGE HOTSPOTS</span>
-          <SlidersHorizontal className="w-4 h-4 text-[var(--k-text-f)]" />
-        </div>
-        <div className="space-y-2">
-          {hotspots.map((h, i) => {
-            const surgePct = Math.max(0, h.forecastPct - h.venue.pct);
+        {/* Overlay bar chart */}
+        <div className="relative h-[160px] flex items-end justify-between gap-3 px-1 pt-6">
+          {overlayBars.map((bar, i) => {
+            const typicalH = Math.max(20, (bar.typical / 100) * 140);
+            const liveH = Math.max(20, (bar.live / 100) * 140);
             return (
-              <div
-                key={h.venue.id}
-                className="liquid-glass rounded-[20px] p-4 space-y-3 animate-fadeUp ios-press"
-                style={{ animationDelay: `${i * 0.06}s` }}
-              >
-                {/* Top row: MapPin icon + venue name + surge badge */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[var(--k-color-coral)]/10 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-[var(--k-color-coral)]" />
+              <div key={bar.label} className="flex flex-col items-center flex-1 gap-1.5 relative">
+                {/* NOW red pill label with arrow */}
+                {i === 0 && (
+                  <div className="absolute -top-6 flex flex-col items-center">
+                    <span className="px-1.5 py-0.5 rounded-full bg-[var(--k-color-coral)] text-white text-[8px] font-black tracking-wider">
+                      NOW
+                    </span>
+                    <ChevronDown className="w-3 h-3 text-[var(--k-color-coral)] -mt-0.5" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-bold text-[var(--k-text)] truncate">{h.venue.name}</p>
-                  </div>
-                  <div className="px-2.5 py-1 rounded-full text-[10px] font-black bg-[var(--k-color-coral)]/12 text-[var(--k-color-coral)] tracking-wide">
-                    +{surgePct > 0 ? surgePct : Math.abs(h.change)}% SURGE
-                  </div>
-                </div>
+                )}
 
-                {/* Location line */}
-                <div className="flex items-center gap-1.5 text-[11px] text-[var(--k-text-f)]">
-                  <MapPin className="w-3 h-3" />
-                  <span>{h.venue.type}</span>
-                </div>
-
-                {/* Stats row */}
-                <div className="flex items-center justify-between text-[10px] font-bold font-mono text-[var(--k-text-m)] tracking-wide">
-                  <span>CURRENT: {h.venue.pct}%</span>
-                  <span>PEAK: {h.forecastPct}%</span>
-                </div>
-
-                {/* Progress bar — coral gradient */}
-                <div className="h-[5px] rounded-full bg-[var(--k-border-s)] overflow-hidden">
+                <div className="relative w-[44px]" style={{ height: '140px' }}>
+                  {/* Typical (faded gray background) */}
                   <div
-                    className="h-full rounded-full transition-all duration-700"
+                    className="absolute bottom-0 left-0 right-0 rounded-t-[8px]"
                     style={{
-                      width: `${Math.min(100, h.forecastPct)}%`,
-                      background: 'linear-gradient(90deg, #ff4d6a, #ff8a5c)',
+                      height: `${typicalH}px`,
+                      background: 'rgba(180, 180, 190, 0.4)',
+                    }}
+                  />
+                  {/* Live/forecast (coral overlay) */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 rounded-t-[8px] transition-all duration-500"
+                    style={{
+                      height: `${liveH}px`,
+                      background: 'linear-gradient(to top, var(--k-color-coral), #ff8a5c)',
+                      boxShadow: '0 0 12px rgba(255, 77, 106, 0.3)',
+                      animationDelay: `${i * 0.08}s`,
                     }}
                   />
                 </div>
 
-                {/* Peak time footer */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--k-text-m)]">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Peak at {h.peakTime}</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[var(--k-text-f)]" />
-                </div>
+                <span className="text-[9px] font-bold text-[var(--k-text-f)] tracking-wider">{bar.label}</span>
               </div>
             );
           })}
         </div>
+
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-4 pt-1">
+          <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--k-text-f)]">
+            <span className="w-[8px] h-[8px] rounded-full" style={{ background: 'rgba(180, 180, 190, 0.6)' }} />
+            Typical
+          </span>
+          <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--k-text-f)]">
+            <span className="w-[8px] h-[8px] rounded-full bg-[var(--k-color-coral)]" />
+            Predicted
+          </span>
+        </div>
+      </div>
+
+      {/* ── Verdict Cards ── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="type-overline text-[var(--k-text-f)]">TONIGHT'S VERDICTS</span>
+          <SlidersHorizontal className="w-4 h-4 text-[var(--k-text-f)]" />
+        </div>
+        <div className="space-y-2">
+          {verdictVenues.map((item, i) => (
+            <VerdictCard key={item.venue.id} item={item} index={i} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Predictive Accuracy footer badge ── */}
+      <div className="liquid-glass rounded-full py-2 px-4 flex items-center gap-2 justify-center w-fit mx-auto">
+        <Brain className="w-3.5 h-3.5 text-[var(--k-color-purple)]" />
+        <span className="text-[11px] font-semibold text-[var(--k-text-m)]">Predictive Accuracy</span>
+        <span className="text-[12px] font-black text-[var(--k-color-green)] font-mono">94.8%</span>
       </div>
 
       {/* Bottom padding for floating nav */}
