@@ -504,6 +504,82 @@ html, body {
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
+/* ── KG ORB — shiny circular button with moving glare ──────── */
+.kg-orb {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 25%,
+    #ff7088 0%,
+    #ff4d6a 40%,
+    #c9334c 100%
+  );
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.55),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.35),
+    0 0 0 0.5px rgba(255, 255, 255, 0.15),
+    0 4px 14px rgba(255, 77, 106, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.kg-orb:active {
+  transform: scale(0.9);
+}
+.kg-orb-label {
+  position: relative;
+  z-index: 2;
+  font-family: 'Syne', sans-serif;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.kg-orb-glare {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.45) 48%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.45) 52%,
+    transparent 65%
+  );
+  animation: kg-orb-shine 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
+}
+.kg-orb::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 14px;
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.7) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(0.5px);
+}
+@keyframes kg-orb-shine {
+  0% { transform: translateX(-60%) translateY(-60%); }
+  50% { transform: translateX(20%) translateY(20%); }
+  100% { transform: translateX(-60%) translateY(-60%); }
+}
+
 
 /* ── TYPE SCALE — 2026 Editorial Hierarchy ────────────── */
 

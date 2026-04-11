@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Compass, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { useAppContext } from '../../context';
 import { CommandPalette } from '../search/CommandPalette';
 import { CategoryPills } from './CategoryPills';
@@ -105,18 +105,14 @@ export function MapSearchBar({
           <SlidersHorizontal className="w-[15px] h-[15px]" />
         </button>
 
-        {/* KG Guide module button */}
+        {/* KG Guide — shiny circular orb */}
         <button
           onClick={onKGClick}
           aria-label="Open City Guide"
-          className="flex items-center gap-1.5 h-[32px] px-3 rounded-[10px]
-                     bg-gradient-to-r from-[var(--k-accent)] to-[var(--k-accent-3)]
-                     text-white text-[11px] font-bold tracking-wide uppercase
-                     shadow-[0_2px_8px_rgba(255,77,106,0.25)]
-                     ios-press flex-shrink-0"
+          className="kg-orb flex-shrink-0 ios-press"
         >
-          <Compass className="w-3.5 h-3.5 stroke-[2.2]" />
-          <span>KG</span>
+          <span className="kg-orb-label">KG</span>
+          <span className="kg-orb-glare" aria-hidden="true" />
         </button>
       </div>
 
