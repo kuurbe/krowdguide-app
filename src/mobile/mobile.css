@@ -504,6 +504,155 @@ html, body {
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
+/* ── KG ORB — the city's living pulse ────────────────────── */
+.kg-orb-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+/* Aurora backdrop — 3 slow-drifting radial gradients */
+.kg-orb-aurora {
+  position: absolute;
+  inset: -8%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(255, 77, 106, 0.35), transparent 55%),
+    radial-gradient(ellipse at 75% 60%, rgba(168, 85, 247, 0.22), transparent 60%),
+    radial-gradient(ellipse at 50% 85%, rgba(34, 211, 238, 0.18), transparent 55%);
+  filter: blur(24px);
+  animation: kg-aurora-drift 24s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+@keyframes kg-aurora-drift {
+  0%,100% { transform: rotate(0deg) scale(1); opacity: 0.85; }
+  33%     { transform: rotate(120deg) scale(1.08); opacity: 1; }
+  66%     { transform: rotate(240deg) scale(0.96); opacity: 0.75; }
+}
+
+/* Nebula SVG layer — feTurbulence displacement */
+.kg-orb-nebula {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+/* Breathing glow core */
+.kg-orb-core {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 32%, #ffe2e9 0%, #ff4d6a 38%, #7a0520 72%, transparent 100%);
+  box-shadow:
+    0 0 42px 8px rgba(255, 77, 106, 0.55),
+    0 0 140px 30px rgba(255, 77, 106, 0.35),
+    inset 0 0 60px rgba(255, 200, 210, 0.6);
+  animation: kg-orb-breathe 4.5s ease-in-out infinite;
+  will-change: transform, box-shadow;
+  z-index: 2;
+  pointer-events: none;
+}
+.kg-orb-pulse-low {
+  animation-duration: 6s;
+  filter: saturate(0.85);
+}
+.kg-orb-pulse-mid {
+  animation-duration: 4.5s;
+}
+.kg-orb-pulse-high {
+  animation-duration: 3s;
+  filter: saturate(1.15) brightness(1.05);
+}
+
+@keyframes kg-orb-breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 42px 8px rgba(255, 77, 106, 0.55),
+      0 0 140px 30px rgba(255, 77, 106, 0.30),
+      inset 0 0 60px rgba(255, 200, 210, 0.55);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 64px 16px rgba(255, 77, 106, 0.75),
+      0 0 180px 48px rgba(255, 77, 106, 0.45),
+      inset 0 0 80px rgba(255, 200, 210, 0.75);
+  }
+}
+
+/* Specular highlight — glossy top-left */
+.kg-orb-glint {
+  position: absolute;
+  top: 18%;
+  left: 22%;
+  width: 26%;
+  height: 14%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.55) 0%, transparent 65%);
+  filter: blur(2px);
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Tap target — invisible button over the orb */
+.kg-orb-btn {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.kg-orb-label {
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Ripple on tap */
+.kg-orb-ripple {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  margin-top: -2px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 60%);
+  pointer-events: none;
+  animation: kg-orb-ripple 0.8s ease-out forwards;
+}
+@keyframes kg-orb-ripple {
+  0%   { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(120); opacity: 0; }
+}
+
+/* Reduced-motion fallback: kill animations but keep static look */
+.kg-orb-static {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kg-orb-core,
+  .kg-orb-aurora,
+  .kg-orb-ripple {
+    animation: none !important;
+  }
+}
+
 /* ── ASK BAR — AI prompt input with shimmer border ──────── */
 .ask-bar-wrap {
   position: relative;

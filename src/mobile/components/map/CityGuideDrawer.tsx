@@ -9,6 +9,7 @@ import { Sparkline, generateForecast } from '../shared/Sparkline';
 import { PeekPreview } from '../shared/PeekPreview';
 import { usePressHold } from '../../hooks/usePressHold';
 import { QuestCard } from '../shared/QuestCard';
+import { KGOrb } from '../shared/KGOrb';
 import { getQuestsForCity } from '../../data/quests';
 import { SwipeStack } from '../shared/SwipeStack';
 import {
@@ -217,26 +218,32 @@ export function CityGuideDrawer({
                 />
               </div>
 
-              {/* Pulse Bar — compact 3-stat hero */}
-              <div className="pb-3">
-                <div className="liquid-glass rounded-[16px] px-4 py-3 flex items-center">
-                  <div className="flex-1 text-center">
-                    <p className="font-syne text-[22px] font-black text-[var(--k-text)] leading-none">{bentoStats.avgCrowd}%</p>
-                    <p className="type-overline text-[var(--k-text-f)] text-[9px] mt-1">{crowdPulseLabel}</p>
+              {/* KG Orb — the city's living pulse (Phase 1) */}
+              <div className="py-2 flex flex-col items-center">
+                <KGOrb
+                  size={260}
+                  cityName={selectedCity.name}
+                  cityPct={bentoStats.avgCrowd}
+                  label={crowdPulseLabel}
+                />
+                {/* Below-orb mini stat row — weather + events */}
+                <div className="flex items-center gap-4 mt-3">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-chip">
+                    <WeatherIconComponent className="w-3.5 h-3.5 text-[var(--k-color-cyan)]" />
+                    <span className="text-[11px] font-bold text-[var(--k-text)]">
+                      {weather?.temperature ?? '--'}°
+                    </span>
+                    <span className="text-[10px] text-[var(--k-text-m)]">
+                      {weather?.description?.split(' ')[0] || 'Clear'}
+                    </span>
                   </div>
-                  <div className="w-px h-10 bg-[var(--k-border)]" />
-                  <div className="flex-1 text-center">
-                    <WeatherIconComponent className="w-5 h-5 mx-auto text-[var(--k-color-cyan)]" />
-                    <p className="type-overline text-[var(--k-text-f)] text-[9px] mt-1">
-                      {weather?.temperature ?? '--'}° {weather?.description?.split(' ')[0] || ''}
-                    </p>
-                  </div>
-                  <div className="w-px h-10 bg-[var(--k-border)]" />
-                  <div className="flex-1 text-center">
-                    <p className="font-syne text-[22px] font-black text-[var(--k-color-coral)] leading-none">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-chip">
+                    <span className="text-[11px] font-black text-[var(--k-color-coral)]">
                       {events.length || 3}
-                    </p>
-                    <p className="type-overline text-[var(--k-text-f)] text-[9px] mt-1">EVENTS TONIGHT</p>
+                    </span>
+                    <span className="text-[10px] font-bold text-[var(--k-text-m)] uppercase tracking-wider">
+                      Events Tonight
+                    </span>
                   </div>
                 </div>
               </div>
