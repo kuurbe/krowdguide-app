@@ -182,17 +182,11 @@ function AppShell({
   const { selectedVenue, closeVenueSheet, selectVenue, venues } = useAppContext();
   const [searchResults, setSearchResults] = useState<typeof venues>([]);
 
-  // Clear search results on tab change or venue selection
+  // Clear search results on tab change
   const handleTabChange = useCallback((tab: string) => {
     setSearchResults([]);
-    // Search and Alerts are drawer tabs — open overlay, stay on map
-    if (tab === 'search') {
-      setSearchOpen(true);
-      if (activeTab !== 'map') onTabChange('map');
-      return;
-    }
     onTabChange(tab);
-  }, [onTabChange, activeTab, setCityGuideOpen, setSearchOpen]);
+  }, [onTabChange]);
 
   const handleSearchVenueSelect = useCallback((venue: typeof venues[0]) => {
     setSearchResults([]);
@@ -256,7 +250,7 @@ function AppShell({
 
         {/* Floating Bottom Nav — tight width to show liquid glass */}
         <div className="absolute bottom-4 z-[1100] safe-bottom"
-             style={{ left: '50%', transform: 'translateX(-50%)', width: 'min(280px, 75vw)' }}>
+             style={{ left: '50%', transform: 'translateX(-50%)', width: 'min(240px, 68vw)' }}>
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { CrowdPill } from '../shared/CrowdPill';
-import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees, Map, Navigation, Loader2, Search } from 'lucide-react';
+import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees, Map, Navigation, Loader2, Search, Sparkles, Zap } from 'lucide-react';
 import { useAppContext } from '../../context';
 import { MAPBOX_TOKEN } from '../../config/mapbox';
 import { fetchSearchResult, generateSessionToken } from '../../services/searchBoxService';
@@ -162,6 +162,54 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto px-4 pb-6">
+
+          {/* Forecast Now — live predictions intertwined with search (shown when not searching) */}
+          {!isSearching && venues.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between px-1 py-2">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-[var(--k-color-coral)]" />
+                  <p className="text-[10px] font-bold text-[var(--k-text-f)] uppercase tracking-[0.08em]">Forecast Now</p>
+                </div>
+                <button
+                  onClick={() => { onOpenChange(false); /* user navigates to Predict tab */ }}
+                  className="text-[10px] font-bold text-[var(--k-color-coral)] tracking-wide uppercase"
+                >
+                  View all →
+                </button>
+              </div>
+              <div className="space-y-1.5">
+                {venues
+                  .slice()
+                  .sort((a, b) => a.pct - b.pct) // quietest first (GO NOW)
+                  .slice(0, 3)
+                  .map((v) => {
+                    const verdict = v.pct < 40 ? { label: 'GO NOW', color: 'var(--k-color-green)' }
+                                  : v.pct < 70 ? { label: 'WATCH', color: 'var(--k-color-amber)' }
+                                  : { label: 'AVOID', color: 'var(--k-color-coral)' };
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => handleVenue(v)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl liquid-glass hover:bg-[var(--k-surface-h)] transition-colors text-left"
+                      >
+                        <div
+                          className="text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full text-white flex-shrink-0"
+                          style={{ background: verdict.color }}
+                        >
+                          {verdict.label}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-bold text-[var(--k-text)] truncate">{v.name}</p>
+                          <p className="text-[10px] text-[var(--k-text-f)] truncate">{v.type} · {v.pct}% crowd</p>
+                        </div>
+                        <Zap className="w-3 h-3 text-[var(--k-color-coral)] flex-shrink-0" />
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
 
           {/* POI results from Mapbox */}
           {isSearching && (

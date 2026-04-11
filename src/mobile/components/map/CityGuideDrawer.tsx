@@ -12,7 +12,7 @@ import { QuestCard } from '../shared/QuestCard';
 import { getQuestsForCity } from '../../data/quests';
 import { SwipeStack } from '../shared/SwipeStack';
 import {
-  Search, Zap, Calendar, Bookmark, Activity, TrendingUp, Compass,
+  Search, Zap, Calendar, Bookmark,
   Cloud, CloudRain, CloudSnow, CloudLightning, CloudSun, Sun, Wind, CloudFog,
   Layers, Hand,
 } from 'lucide-react';
@@ -146,19 +146,25 @@ export function CityGuideDrawer({
     console.log('[KG Ask]', prompt);
   }, []);
 
-  // Build sparkline SVG path
-  const sparkPath = useMemo(() => {
-    const pts = bentoStats.sparkline;
-    const w = 100;
-    const h = 28;
-    return pts
-      .map((v, i) => {
-        const x = (i / (pts.length - 1)) * w;
-        const y = h - v * h;
-        return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
-      })
-      .join(' ');
-  }, [bentoStats.sparkline]);
+  /** Time-context section label for unified feed */
+  const sectionLabel = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return `This morning in ${selectedCity.name}`;
+    if (hour >= 12 && hour < 17) return `This afternoon in ${selectedCity.name}`;
+    return `Tonight in ${selectedCity.name}`;
+  }, [selectedCity.name]);
+
+  /** Crowd label with capitalized first letter for Pulse Bar */
+  const crowdPulseLabel = useMemo(() => {
+    const l = bentoStats.crowdLabel;
+    return l.charAt(0).toUpperCase() + l.slice(1);
+  }, [bentoStats.crowdLabel]);
+
+  /** Featured quest (first available for city) */
+  const featuredQuest = useMemo(() => {
+    const qs = getQuestsForCity(selectedCity.id);
+    return qs.length > 0 ? qs[0] : null;
+  }, [selectedCity.id]);
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -169,9 +175,8 @@ export function CityGuideDrawer({
           <p className="type-overline text-[var(--k-text-m)] mb-1" style={{ color: timeCtx.accent }}>
             {timeCtx.greeting} &middot; {selectedCity.name}
           </p>
-          <DrawerTitle className="font-syne text-[26px] font-extrabold text-[var(--k-text)] tracking-[-0.03em] leading-[1.15]">
-            Find Your{' '}
-            <span className="text-[var(--k-color-coral)]">Crowd.</span>
+          <DrawerTitle className="font-syne text-[24px] font-extrabold text-[var(--k-text)] tracking-[-0.03em] leading-[1.15] whitespace-nowrap">
+            Find Your <span className="text-[var(--k-color-coral)]">{timeCtx.featured.charAt(0).toUpperCase() + timeCtx.featured.slice(1)}.</span>
           </DrawerTitle>
         </div>
 
@@ -200,7 +205,7 @@ export function CityGuideDrawer({
           {activeTab === 'discover' ? (
             <>
               {/* Ask the City AI bar */}
-              <div className="pb-4">
+              <div className="pb-3">
                 <AskBar
                   placeholder="Ask anything about your city..."
                   onSubmit={handleAsk}
@@ -212,192 +217,66 @@ export function CityGuideDrawer({
                 />
               </div>
 
-              {/* Bento-Grid Hero Dashboard — 3x3 grid */}
-              <div className="pb-4">
-                <div className="grid grid-cols-3 grid-rows-3 gap-2 h-[240px]">
-                  {/* NOW HERE — large hero (2x2) */}
-                  <div
-                    className="col-span-2 row-span-2 liquid-glass rounded-2xl p-3.5 flex flex-col justify-between relative overflow-hidden"
-                    style={{ boxShadow: `inset 0 0 0 1px ${timeCtx.accent}33, 0 0 30px -8px ${timeCtx.accent}55` }}
-                  >
-                    <div
-                      className="absolute inset-0 opacity-20 pointer-events-none"
-                      style={{ background: `radial-gradient(circle at 30% 20%, ${timeCtx.accent}, transparent 60%)` }}
-                    />
-                    <div className="relative">
-                      <p className="type-overline text-[var(--k-text-f)] text-[9px]">NOW HERE</p>
-                      <p className="text-[15px] font-bold text-[var(--k-text)] leading-tight truncate mt-0.5">
-                        {selectedCity.name}
-                      </p>
-                    </div>
-                    <div className="relative">
-                      <div className="flex items-baseline gap-1">
-                        <p className="font-syne text-[38px] font-extrabold text-[var(--k-text)] leading-none tracking-[-0.03em]">
-                          {bentoStats.avgCrowd}
-                        </p>
-                        <p className="text-[13px] font-bold text-[var(--k-text-m)]">%</p>
-                      </div>
-                      <p className="text-[10px] text-[var(--k-text-f)] mt-0.5">
-                        it&apos;s <span style={{ color: timeCtx.accent }} className="font-bold">{bentoStats.crowdLabel}</span> right now
-                      </p>
-                      {weather && (
-                        <div className="flex items-center gap-1 mt-1.5">
-                          <WeatherIconComponent className="w-3.5 h-3.5 text-[var(--k-color-cyan)]" />
-                          <p className="text-[11px] font-bold text-[var(--k-text-m)]">
-                            {weather.temperature}°F &middot; {weather.description}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+              {/* Pulse Bar — compact 3-stat hero */}
+              <div className="pb-3">
+                <div className="liquid-glass rounded-[16px] px-4 py-3 flex items-center">
+                  <div className="flex-1 text-center">
+                    <p className="font-syne text-[22px] font-black text-[var(--k-text)] leading-none">{bentoStats.avgCrowd}%</p>
+                    <p className="type-overline text-[var(--k-text-f)] text-[9px] mt-1">{crowdPulseLabel}</p>
                   </div>
-
-                  {/* VIBE — top-right (1x1) */}
-                  <div className="liquid-glass rounded-2xl p-2.5 flex flex-col justify-between">
-                    <div className="flex items-center gap-1">
-                      <Activity className="w-3 h-3 text-[var(--k-color-green)]" />
-                      <p className="type-overline text-[var(--k-text-f)] text-[9px]">VIBE</p>
-                    </div>
-                    <div className="space-y-1">
-                      {[
-                        { label: 'energy', v: 0.7, color: 'var(--k-color-coral)' },
-                        { label: 'noise', v: 0.5, color: 'var(--k-color-amber)' },
-                        { label: 'crowd', v: bentoStats.avgCrowd / 100, color: 'var(--k-color-green)' },
-                      ].map((s) => (
-                        <div key={s.label} className="flex items-center gap-1">
-                          <span className="text-[8px] text-[var(--k-text-f)] w-8 uppercase">{s.label}</span>
-                          <div className="flex-1 flex gap-[2px]">
-                            {Array.from({ length: 6 }).map((_, i) => (
-                              <div
-                                key={i}
-                                className="flex-1 h-[3px] rounded-full"
-                                style={{ backgroundColor: i < Math.round(s.v * 6) ? s.color : 'var(--k-fill-3)' }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="w-px h-10 bg-[var(--k-border)]" />
+                  <div className="flex-1 text-center">
+                    <WeatherIconComponent className="w-5 h-5 mx-auto text-[var(--k-color-cyan)]" />
+                    <p className="type-overline text-[var(--k-text-f)] text-[9px] mt-1">
+                      {weather?.temperature ?? '--'}° {weather?.description?.split(' ')[0] || ''}
+                    </p>
                   </div>
-
-                  {/* FORECAST — middle-right (1x1) */}
-                  <div className="liquid-glass rounded-2xl p-2.5 flex flex-col justify-between">
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3 text-[var(--k-color-coral)]" />
-                      <p className="type-overline text-[var(--k-text-f)] text-[9px]">FORECAST</p>
-                    </div>
-                    <svg viewBox="0 0 100 28" className="w-full h-6" preserveAspectRatio="none">
-                      <path
-                        d={sparkPath}
-                        fill="none"
-                        stroke="var(--k-color-coral)"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <p className="text-[9px] text-[var(--k-text-f)] leading-tight">peaks at <span className="text-[var(--k-text-m)] font-bold">9pm</span></p>
-                  </div>
-
-                  {/* QUEST — bottom-left (2x1) */}
-                  <div className="col-span-2 liquid-glass rounded-2xl p-2.5 flex items-center gap-2.5">
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: `${timeCtx.accent}22` }}
-                    >
-                      <Compass className="w-4 h-4" style={{ color: timeCtx.accent }} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="type-overline text-[var(--k-text-f)] text-[9px]">QUEST</p>
-                      <p className="text-[11px] font-bold text-[var(--k-text)] leading-tight truncate">
-                        4-stop quiet cafe crawl
-                      </p>
-                      <p className="text-[9px] text-[var(--k-text-f)] truncate">AI-curated &middot; ~90 min</p>
-                    </div>
-                  </div>
-
-                  {/* WEATHER — bottom-right (1x1) */}
-                  <div className="liquid-glass rounded-2xl p-2.5 flex flex-col justify-between">
-                    <div className="flex items-center gap-1">
-                      <WeatherIconComponent className="w-3 h-3 text-[var(--k-color-cyan)]" />
-                      <p className="type-overline text-[var(--k-text-f)] text-[9px]">WEATHER</p>
-                    </div>
-                    {weather ? (
-                      <>
-                        <p className="font-syne text-[20px] font-extrabold text-[var(--k-text)] leading-none">
-                          {weather.temperature}°
-                        </p>
-                        <p className="text-[8px] text-[var(--k-text-f)] leading-tight">good patio weather</p>
-                      </>
-                    ) : (
-                      <p className="text-[9px] text-[var(--k-text-f)]">loading…</p>
-                    )}
+                  <div className="w-px h-10 bg-[var(--k-border)]" />
+                  <div className="flex-1 text-center">
+                    <p className="font-syne text-[22px] font-black text-[var(--k-color-coral)] leading-none">
+                      {events.length || 3}
+                    </p>
+                    <p className="type-overline text-[var(--k-text-f)] text-[9px] mt-1">EVENTS TONIGHT</p>
                   </div>
                 </div>
               </div>
 
-              {/* Secondary search bar */}
-              <div className="pb-4">
-                <div className="glass-chip flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl">
+              {/* Compact search */}
+              <div className="pb-3">
+                <div className="glass-chip flex items-center gap-2.5 px-3.5 py-2 rounded-full">
                   <Search className="w-4 h-4 text-[var(--k-text-f)] flex-shrink-0" />
                   <input
                     type="text"
                     placeholder="Search venues, areas or vibes"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 bg-transparent text-[14px] text-[var(--k-text)] placeholder:text-[var(--k-text-f)] outline-none"
+                    className="flex-1 bg-transparent text-[13px] text-[var(--k-text)] placeholder:text-[var(--k-text-f)] outline-none"
                   />
                 </div>
               </div>
 
-              {/* Categories */}
+              {/* Categories — compact 4x1 pill row */}
               <div className="pb-4">
-                <p className="type-overline text-[var(--k-text-m)] mb-2">Categories</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {orderedCategories.map((cat) => {
-                    const isFeatured = cat.id === timeCtx.featured;
-                    return (
-                      <button
-                        key={cat.id}
-                        className="liquid-glass rounded-2xl p-3 text-left ios-press flex items-center gap-3"
-                        style={isFeatured ? { boxShadow: `inset 0 0 0 1px ${timeCtx.accent}55` } : undefined}
-                      >
-                        <div className="glass-chip w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-[16px]">{cat.emoji}</span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-bold text-[var(--k-text)] leading-tight">{cat.name}</p>
-                          <p className="text-[10px] text-[var(--k-text-f)] mt-0.5">
-                            {categoryCounts[cat.id] || 0} {cat.subtitle.toLowerCase()}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Quests — gamified walking tours */}
-              <div className="pb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
-                    <p className="type-overline text-[var(--k-text-m)]">Quests</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-[var(--k-color-coral)] px-2 py-0.5 rounded-full bg-[var(--k-color-coral)]/10">
-                    +XP
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-2">
-                  {getQuestsForCity(selectedCity.id).map((q) => (
-                    <QuestCard key={q.id} quest={q} />
+                <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                  {orderedCategories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      className="flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-full glass-chip ios-press whitespace-nowrap"
+                    >
+                      <span className="text-[14px]">{cat.emoji}</span>
+                      <div className="text-left">
+                        <p className="text-[11px] font-bold text-[var(--k-text)] leading-none">{cat.name}</p>
+                        <p className="text-[9px] text-[var(--k-text-f)] leading-none mt-0.5">{categoryCounts[cat.id] || 0}</p>
+                      </div>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              {/* Popular Nearby */}
+              {/* Unified feed — section header with mode toggle */}
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="type-overline text-[var(--k-text-m)]">Popular Nearby</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="type-overline text-[var(--k-text-m)]">{sectionLabel}</p>
                   {isLive && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">
                       <Zap className="w-2.5 h-2.5" /> LIVE
@@ -429,34 +308,40 @@ export function CityGuideDrawer({
                     onExit={() => setSwipeMode(false)}
                   />
                 ) : (
-                <div className="space-y-3">
-                  {quietVenues.map((venue) => (
-                    <PopularVenueCard
-                      key={venue.id}
-                      venue={venue}
-                      isFav={favorites.has(venue.id)}
-                      avatars={getAvatars(venue.name)}
-                      pullQuote={getPullQuote(venue)}
-                      densityLabel={getDensityLabel(venue.crowd)}
-                      onTap={handleVenueTap}
-                      onPeek={setPeekedVenue}
-                      onToggleFavorite={toggleFavorite}
-                    />
-                  ))}
+                  <div className="space-y-3">
+                    {/* Featured quest — first item in feed */}
+                    {featuredQuest && (
+                      <QuestCard quest={featuredQuest} />
+                    )}
 
-                  {quietVenues.length === 0 && (
-                    <div className="text-center py-10">
-                      <p className="text-[var(--k-text-m)] text-[14px]">
-                        {searchQuery ? 'No venues match your search' : 'No popular spots nearby'}
-                      </p>
-                      {searchQuery && (
-                        <button onClick={() => setSearchQuery('')} className="mt-2 text-[12px] text-[var(--k-color-coral)] font-bold">
-                          Clear search
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
+                    {/* Popular venues — 3-4 max */}
+                    {quietVenues.slice(0, 4).map((venue) => (
+                      <PopularVenueCard
+                        key={venue.id}
+                        venue={venue}
+                        isFav={favorites.has(venue.id)}
+                        avatars={getAvatars(venue.name)}
+                        pullQuote={getPullQuote(venue)}
+                        densityLabel={getDensityLabel(venue.crowd)}
+                        onTap={handleVenueTap}
+                        onPeek={setPeekedVenue}
+                        onToggleFavorite={toggleFavorite}
+                      />
+                    ))}
+
+                    {quietVenues.length === 0 && !featuredQuest && (
+                      <div className="text-center py-10">
+                        <p className="text-[var(--k-text-m)] text-[14px]">
+                          {searchQuery ? 'No venues match your search' : 'No popular spots nearby'}
+                        </p>
+                        {searchQuery && (
+                          <button onClick={() => setSearchQuery('')} className="mt-2 text-[12px] text-[var(--k-color-coral)] font-bold">
+                            Clear search
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </>

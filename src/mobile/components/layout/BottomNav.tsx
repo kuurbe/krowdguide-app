@@ -1,13 +1,12 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
-import { Map, Sparkles, Search, User } from 'lucide-react';
+import { Map, Sparkles, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptic } from '../../utils/haptics';
 
 const TABS = [
   { id: 'map', icon: Map, label: 'MAP' },
   { id: 'ai', icon: Sparkles, label: 'PREDICT' },
-  { id: 'search', icon: Search, label: 'SEARCH' },
   { id: 'account', icon: User, label: 'ACCOUNT' },
 ] as const;
 
