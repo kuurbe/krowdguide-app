@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, Zap, Brain, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, Zap, Brain, SlidersHorizontal, ChevronDown, AlertTriangle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppContext } from '../../context';
 import { generateAIResponse, SUGGESTION_CHIPS } from '../../services/ai-responses';
@@ -189,8 +189,59 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
 
   const dayName = DAY_NAMES[new Date().getDay()];
 
+  // Anomaly detection: find venue with highest pct, flag if >80%
+  const anomalyVenue = useMemo(() => {
+    if (venues.length === 0) return null;
+    const top = venues.reduce((a, b) => (a.pct > b.pct ? a : b));
+    return top.pct > 80 ? top : null;
+  }, [venues]);
+
+  // Scenario planner state
+  const [selectedScenario, setSelectedScenario] = useState('9:00 PM');
+  const scenarios = [
+    { time: '8:00 PM', crowd: 45, verdict: 'Moderate' },
+    { time: '9:00 PM', crowd: 72, verdict: 'Busy' },
+    { time: '10:00 PM', crowd: 88, verdict: 'Peak' },
+  ];
+  const scenarioRecommendation = useMemo(() => {
+    const s = scenarios.find(s => s.time === selectedScenario);
+    if (!s) return '';
+    if (s.crowd < 50) return 'Best window — walk in without a wait.';
+    if (s.crowd < 75) return 'Still manageable. Expect 5-10 min wait.';
+    return 'Peak crowd window. Consider alternatives.';
+  }, [selectedScenario]);
+
   return (
     <div className="flex-1 overflow-y-auto p-4 no-scrollbar scroll-smooth space-y-5">
+      {/* ── Anomaly Spike Alert Banner ── */}
+      {anomalyVenue && (
+        <div className="mb-5 liquid-glass rounded-[18px] p-4 border border-[var(--k-color-coral)]/30 relative overflow-hidden"
+             style={{ boxShadow: '0 0 40px -8px rgba(255, 77, 106, 0.4)' }}>
+          {/* Pulsing bg */}
+          <div className="absolute inset-0 bg-[var(--k-color-coral)]/5 animate-pulse pointer-events-none" />
+          <div className="relative flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-[var(--k-color-coral)]/15 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 text-[var(--k-color-coral)]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[var(--k-color-coral)]">ANOMALY DETECTED</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--k-color-coral)] animate-pulse" />
+              </div>
+              <p className="text-[14px] font-bold text-[var(--k-text)] leading-tight">
+                Unusual crowd incoming at {anomalyVenue.name}
+              </p>
+              <p className="text-[11px] text-[var(--k-text-m)] mt-1 leading-snug">
+                Predicted 2.3× typical for this hour. Likely cause: nearby event letting out.
+              </p>
+              <button className="mt-2 text-[11px] font-bold text-[var(--k-color-coral)] ios-press">
+                View alternatives →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Overline + Headline ── */}
       <div className="pt-2 space-y-1">
         <p className="text-[10px] font-bold text-[var(--k-color-coral)] tracking-[0.1em] uppercase">
@@ -281,6 +332,40 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
             <span className="w-[8px] h-[8px] rounded-full bg-[var(--k-color-coral)]" />
             Predicted
           </span>
+        </div>
+      </div>
+
+      {/* ── Scenario Planner ── */}
+      <div className="mb-5">
+        <div className="flex items-center gap-1.5 mb-3">
+          <Clock className="w-3.5 h-3.5 text-[var(--k-text-m)]" />
+          <span className="type-overline text-[var(--k-text-m)]">SCENARIO PLANNER</span>
+        </div>
+        <div className="liquid-glass rounded-[18px] p-4">
+          <p className="text-[12px] text-[var(--k-text-m)] mb-3">
+            If you leave at...
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {scenarios.map((s) => (
+              <button
+                key={s.time}
+                onClick={() => setSelectedScenario(s.time)}
+                className={`rounded-[14px] p-3 transition-all ios-press text-left
+                  ${selectedScenario === s.time
+                    ? 'bg-[var(--k-color-coral)]/15 border border-[var(--k-color-coral)]/40'
+                    : 'glass-chip'}`}
+              >
+                <p className="text-[11px] font-bold text-[var(--k-text-m)] mb-1">{s.time}</p>
+                <p className="text-[18px] font-syne font-black text-[var(--k-text)] leading-none">{s.crowd}%</p>
+                <p className="text-[9px] text-[var(--k-text-f)] mt-1 font-semibold uppercase tracking-wider">
+                  {s.verdict}
+                </p>
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-[var(--k-text-m)] mt-3 leading-snug italic">
+            {scenarioRecommendation}
+          </p>
         </div>
       </div>
 

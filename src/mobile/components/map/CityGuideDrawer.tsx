@@ -5,6 +5,7 @@ import { useTicketmasterEvents } from '../../hooks/useTicketmasterEvents';
 import { useWeather } from '../../hooks/useWeather';
 import { EventCard } from '../shared/EventCard';
 import { AskBar } from '../shared/AskBar';
+import { Sparkline, generateForecast } from '../shared/Sparkline';
 import {
   Search, Zap, Calendar, Bookmark, Activity, TrendingUp, Compass,
   Cloud, CloudRain, CloudSnow, CloudLightning, CloudSun, Sun, Wind, CloudFog,
@@ -423,7 +424,7 @@ export function CityGuideDrawer({
                             {venue.type} &middot; {venue.dist}
                           </p>
 
-                          {/* Density badges */}
+                          {/* Density badges + 6h forecast sparkline */}
                           <div className="flex items-center gap-2 mt-2.5">
                             <span className="glass-chip inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ color: densityColor }}>
                               <span className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: densityColor }} />
@@ -432,6 +433,15 @@ export function CityGuideDrawer({
                             <span className="glass-chip inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold text-[var(--k-text-m)]">
                               {getDensityLabel(venue.crowd)}
                             </span>
+                            <div className="ml-auto flex items-center gap-1.5">
+                              <Sparkline
+                                values={generateForecast(venue.id, venue.pct, 6)}
+                                width={48}
+                                height={18}
+                                color={venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399'}
+                              />
+                              <span className="text-[9px] font-bold text-[var(--k-text-f)] uppercase tracking-wider">6h</span>
+                            </div>
                           </div>
 
                           {/* Avatars + pull quote */}
