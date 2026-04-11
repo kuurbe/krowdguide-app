@@ -65,7 +65,7 @@ export function PeekPreview({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center px-6"
+      className="fixed inset-0 z-[3000] flex items-center justify-center px-6"
       style={{
         backdropFilter: visible ? 'blur(18px)' : 'blur(0px)',
         WebkitBackdropFilter: visible ? 'blur(18px)' : 'blur(0px)',

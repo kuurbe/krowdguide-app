@@ -495,12 +495,16 @@ export function CityGuideDrawer({
           venue={peekedVenue}
           onClose={() => setPeekedVenue(null)}
           onOpenFull={(v) => {
-            handleVenueTap(v);
+            // Close peek FIRST, then open venue sheet (prevents orphan overlay)
             setPeekedVenue(null);
+            setTimeout(() => handleVenueTap(v), 50);
           }}
           onDirections={(v) => {
-            startDirections({ coords: v.coordinates, name: v.name }, 'walking');
             setPeekedVenue(null);
+            setTimeout(() => {
+              startDirections({ coords: v.coordinates, name: v.name }, 'walking');
+              onOpenChange(false);
+            }, 50);
           }}
         />
       </DrawerContent>
@@ -539,7 +543,7 @@ function PopularVenueCard({
   return (
     <button
       onClick={() => onTap(venue)}
-      className="w-full rounded-2xl liquid-glass ios-press text-left overflow-hidden touch-none select-none"
+      className="w-full rounded-2xl liquid-glass ios-press text-left overflow-hidden"
       {...pressHoldHandlers}
     >
       {/* Full-width image */}

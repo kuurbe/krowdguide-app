@@ -8,9 +8,9 @@ import { haptic } from '../utils/haptics';
  *   const handlers = usePressHold((x, y) => setPeek({ x, y }));
  *   <button {...handlers}>...</button>
  *
- * On pointerdown a timer starts. If the pointer is released or leaves
- * before `delay` ms elapses, the timer is cancelled. Otherwise a medium
- * haptic fires and `onHold` is called with the pointer's client coords.
+ * Cancels if:
+ * - pointerup / pointerleave / pointercancel before delay
+ * - pointer moves more than 10px (user is scrolling, not holding)
  */
 export function usePressHold(
   onHold: (x: number, y: number) => void,
@@ -18,6 +18,7 @@ export function usePressHold(
 ) {
   const timerRef = useRef<number | null>(null);
   const triggeredRef = useRef(false);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
   const onHoldRef = useRef(onHold);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export function usePressHold(
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+    startRef.current = null;
   }, []);
 
   useEffect(() => () => clear(), [clear]);
@@ -38,7 +40,9 @@ export function usePressHold(
       triggeredRef.current = false;
       const x = e.clientX;
       const y = e.clientY;
+      startRef.current = { x, y };
       clear();
+      startRef.current = { x, y };
       timerRef.current = window.setTimeout(() => {
         triggeredRef.current = true;
         timerRef.current = null;
@@ -47,6 +51,19 @@ export function usePressHold(
       }, delay);
     },
     [clear, delay],
+  );
+
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!startRef.current || timerRef.current === null) return;
+      const dx = e.clientX - startRef.current.x;
+      const dy = e.clientY - startRef.current.y;
+      // If user moves more than 10px, they're scrolling — cancel hold
+      if (dx * dx + dy * dy > 100) {
+        clear();
+      }
+    },
+    [clear],
   );
 
   const onPointerUp = useCallback(
@@ -81,6 +98,7 @@ export function usePressHold(
 
   return {
     onPointerDown,
+    onPointerMove,
     onPointerUp,
     onPointerLeave,
     onPointerCancel,
