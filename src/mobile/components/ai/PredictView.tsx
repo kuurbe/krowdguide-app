@@ -275,10 +275,7 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
         <h1 className="font-syne text-[28px] font-extrabold leading-tight text-[var(--k-text)]">
           Anticipate
         </h1>
-        <h1
-          className="font-syne font-black text-[32px] leading-tight bg-gradient-to-r from-[#ff4d6a] to-[#ff8a5c] bg-clip-text"
-          style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-        >
+        <h1 className="font-syne font-black text-[32px] leading-tight text-[var(--k-color-coral)]">
           The Pulse.
         </h1>
       </div>
@@ -334,8 +331,8 @@ function ForecastMode({ venues }: { venues: Venue[] }) {
                     className="absolute bottom-0 left-0 right-0 rounded-t-[8px] transition-all duration-500"
                     style={{
                       height: `${liveH}px`,
-                      background: 'linear-gradient(to top, var(--k-color-coral), #ff8a5c)',
-                      boxShadow: '0 0 12px rgba(255, 77, 106, 0.3)',
+                      background: 'var(--k-color-coral)',
+                      boxShadow: '0 0 12px rgba(255, 77, 106, 0.35)',
                       animationDelay: `${i * 0.08}s`,
                     }}
                   />
@@ -486,7 +483,7 @@ export function PredictView() {
               <BrainCircuit className="w-5 h-5 text-[var(--k-color-coral)]" />
             </div>
             <div>
-              <h2 className="font-syne font-extrabold text-[17px] gradient-text tracking-[-0.02em]">KROWD AI</h2>
+              <h2 className="font-syne font-extrabold text-[17px] text-[var(--k-color-coral)] tracking-[-0.02em]">KROWD AI</h2>
               <p className="text-[10px] text-[var(--k-text-m)]">{selectedCity.name} · Crowd intelligence</p>
             </div>
           </div>
@@ -546,7 +543,7 @@ export function PredictView() {
                   className={cn(
                     'px-3 py-1.5 rounded-full text-[11px] font-bold transition-all',
                     inputMode === 'talk' || isListening
-                      ? 'bg-[#a855f7]/15 text-[var(--k-color-purple)]'
+                      ? 'bg-[var(--k-color-coral)]/15 text-[var(--k-color-coral)]'
                       : 'text-[var(--k-text-f)]'
                   )}
                 >
@@ -594,8 +591,7 @@ export function PredictView() {
                       )}
                     >
                       {msg.type === 'ai' && (
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#ff4d6a] to-[#a855f7]
-                                        flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-[var(--k-color-coral)] flex items-center justify-center flex-shrink-0">
                           <Sparkles className="w-4 h-4 text-white" />
                         </div>
                       )}
@@ -603,10 +599,9 @@ export function PredictView() {
                         className={cn(
                           'p-3.5 rounded-2xl text-[13px]',
                           msg.type === 'user'
-                            ? 'max-w-[75%] border border-[#ff4d6a]/15 text-[var(--k-text)] rounded-br-md'
+                            ? 'max-w-[75%] border border-[var(--k-color-coral)]/25 bg-[var(--k-color-coral)]/10 text-[var(--k-text)] rounded-br-md'
                             : 'max-w-[80%] glass-chip text-[var(--k-text)] rounded-bl-md'
                         )}
-                        style={msg.type === 'user' ? { background: 'linear-gradient(135deg, rgba(255,77,106,0.12), rgba(168,85,247,0.08))' } : undefined}
                       >
                         <p>{msg.text}</p>
 
@@ -631,7 +626,7 @@ export function PredictView() {
                               {(msg.data.chart as number[]).map((h: number, i: number) => (
                                 <div
                                   key={i}
-                                  className="flex-1 rounded-t bg-gradient-to-t from-[#ff4d6a]/40 to-[#a855f7]/80"
+                                  className="flex-1 rounded-t bg-[var(--k-color-coral)]/70"
                                   style={{ height: `${h}%` }}
                                 />
                               ))}
@@ -656,7 +651,7 @@ export function PredictView() {
                             key={i}
                             onClick={() => handleSend(chip)}
                             className="px-3 py-1.5 text-[11px] rounded-full glass-chip
-                                       hover:bg-[#a855f7]/10 hover:border-[#a855f7]/20 hover:text-[var(--k-color-purple)] transition-colors
+                                       hover:bg-[var(--k-color-coral)]/10 hover:border-[var(--k-color-coral)]/20 hover:text-[var(--k-color-coral)] transition-colors
                                        text-[var(--k-text-m)] font-medium"
                           >
                             {chip}
@@ -669,13 +664,12 @@ export function PredictView() {
 
                 {isTyping && (
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#ff4d6a] to-[#a855f7]
-                                    flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-[var(--k-color-coral)] flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
                     <div className="p-3.5 rounded-2xl glass-chip rounded-bl-md flex items-center">
                       <div className="w-16 h-[6px] rounded-full skeleton-shimmer"
-                           style={{ background: 'linear-gradient(90deg, rgba(255,77,106,0.3), rgba(168,85,247,0.3), rgba(34,211,238,0.3), rgba(255,77,106,0.3))', backgroundSize: '300% 100%' }} />
+                           style={{ background: 'linear-gradient(90deg, rgba(255,77,106,0.2), rgba(255,77,106,0.5), rgba(255,77,106,0.2))', backgroundSize: '300% 100%' }} />
                     </div>
                   </div>
                 )}
@@ -711,19 +705,17 @@ export function PredictView() {
                 {isSupported && (
                   <button
                     onClick={handleMic}
-                    className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#a855f7] to-[#ff4d6a]
-                               flex items-center justify-center hover:scale-105 transition-all flex-shrink-0"
+                    className="w-10 h-10 rounded-2xl bg-[var(--k-color-coral)]/15 flex items-center justify-center hover:scale-105 transition-all flex-shrink-0"
                   >
-                    <Mic className="w-5 h-5 text-white" />
+                    <Mic className="w-5 h-5 text-[var(--k-color-coral)]" />
                   </button>
                 )}
                 <button
                   onClick={() => handleSend(input)}
                   disabled={!input.trim()}
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center
-                             disabled:opacity-20 transition-all flex-shrink-0"
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center disabled:opacity-20 transition-all flex-shrink-0"
                   style={input.trim() ? {
-                    background: 'linear-gradient(135deg, #ff4d6a, #a855f7)',
+                    background: 'var(--k-color-coral)',
                     boxShadow: 'var(--k-glow-coral)',
                   } : {
                     background: 'rgba(255, 77, 106, 0.15)',
