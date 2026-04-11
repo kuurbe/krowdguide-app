@@ -6,9 +6,15 @@ import { useWeather } from '../../hooks/useWeather';
 import { EventCard } from '../shared/EventCard';
 import { AskBar } from '../shared/AskBar';
 import { Sparkline, generateForecast } from '../shared/Sparkline';
+import { PeekPreview } from '../shared/PeekPreview';
+import { usePressHold } from '../../hooks/usePressHold';
+import { QuestCard } from '../shared/QuestCard';
+import { getQuestsForCity } from '../../data/quests';
+import { SwipeStack } from '../shared/SwipeStack';
 import {
   Search, Zap, Calendar, Bookmark, Activity, TrendingUp, Compass,
   Cloud, CloudRain, CloudSnow, CloudLightning, CloudSun, Sun, Wind, CloudFog,
+  Layers, Hand,
 } from 'lucide-react';
 import type { Venue, WeatherIcon } from '../../types';
 
@@ -43,13 +49,15 @@ export function CityGuideDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { selectedCity, venues, isLive, selectVenue } = useAppContext();
+  const { selectedCity, venues, isLive, selectVenue, startDirections } = useAppContext();
   const { events, loading: eventsLoading } = useTicketmasterEvents(selectedCity.name);
   const { weather } = useWeather(selectedCity.coordinates);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('discover');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [swipeMode, setSwipeMode] = useState(false);
+  const [peekedVenue, setPeekedVenue] = useState<Venue | null>(null);
 
   const timeCtx = useMemo(() => getTimeContext(), []);
   const WeatherIconComponent = weather ? WEATHER_ICONS[weather.icon] ?? Cloud : Cloud;
@@ -368,6 +376,24 @@ export function CityGuideDrawer({
                 </div>
               </div>
 
+              {/* Quests — gamified walking tours */}
+              <div className="pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
+                    <p className="type-overline text-[var(--k-text-m)]">Quests</p>
+                  </div>
+                  <span className="text-[10px] font-bold text-[var(--k-color-coral)] px-2 py-0.5 rounded-full bg-[var(--k-color-coral)]/10">
+                    +XP
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {getQuestsForCity(selectedCity.id).map((q) => (
+                    <QuestCard key={q.id} quest={q} />
+                  ))}
+                </div>
+              </div>
+
               {/* Popular Nearby */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -377,98 +403,46 @@ export function CityGuideDrawer({
                       <Zap className="w-2.5 h-2.5" /> LIVE
                     </span>
                   )}
+                  <button
+                    onClick={() => setSwipeMode((s) => !s)}
+                    className="ml-auto glass-chip w-8 h-8 rounded-full flex items-center justify-center ios-press"
+                    aria-label={swipeMode ? 'Show list view' : 'Show swipe view'}
+                    title={swipeMode ? 'List view' : 'Swipe view'}
+                    style={swipeMode ? { boxShadow: `inset 0 0 0 1px ${timeCtx.accent}88` } : undefined}
+                  >
+                    {swipeMode ? (
+                      <Layers className="w-4 h-4 text-[var(--k-text-m)]" />
+                    ) : (
+                      <Hand className="w-4 h-4 text-[var(--k-text-m)]" />
+                    )}
+                  </button>
                 </div>
 
+                {swipeMode ? (
+                  <SwipeStack
+                    venues={quietVenues}
+                    onSave={(venue) => console.log('Saved:', venue.name)}
+                    onSkip={(venue) => console.log('Skipped:', venue.name)}
+                    onDirections={(venue) =>
+                      startDirections({ coords: venue.coordinates, name: venue.name }, 'walking')
+                    }
+                    onExit={() => setSwipeMode(false)}
+                  />
+                ) : (
                 <div className="space-y-3">
-                  {quietVenues.map((venue) => {
-                    const avatars = getAvatars(venue.name);
-                    const isFav = favorites.has(venue.id);
-                    const densityColor = venue.crowd === 'quiet' ? 'var(--k-color-green)' : 'var(--k-color-amber)';
-                    const extraCount = Math.max(0, Math.floor(venue.pct / 8));
-
-                    return (
-                      <button
-                        key={venue.id}
-                        onClick={() => handleVenueTap(venue)}
-                        className="w-full rounded-2xl liquid-glass ios-press text-left overflow-hidden"
-                      >
-                        {/* Full-width image */}
-                        <div className="w-full h-[160px] bg-[var(--k-surface)] relative">
-                          {venue.image ? (
-                            <img src={venue.image} alt={venue.name} className="w-full h-[160px] rounded-t-2xl object-cover" loading="lazy" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-4xl rounded-t-2xl bg-[var(--k-fill-3)]">{venue.icon}</div>
-                          )}
-                        </div>
-
-                        {/* Content below image */}
-                        <div className="px-3.5 pt-3 pb-3">
-                          {/* Name + bookmark */}
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-[18px] font-bold text-[var(--k-text)] leading-tight truncate">{venue.name}</h4>
-                            <div
-                              onClick={(e) => toggleFavorite(e, venue.id)}
-                              className="flex-shrink-0 mt-0.5"
-                            >
-                              <Bookmark
-                                className="w-5 h-5"
-                                fill={isFav ? 'currentColor' : 'none'}
-                                stroke="currentColor"
-                                style={{ color: isFav ? '#ff6b6b' : 'var(--k-text-f)' }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Type + distance */}
-                          <p className="text-[13px] text-[var(--k-text-m)] italic mt-0.5 truncate">
-                            {venue.type} &middot; {venue.dist}
-                          </p>
-
-                          {/* Density badges + 6h forecast sparkline */}
-                          <div className="flex items-center gap-2 mt-2.5">
-                            <span className="glass-chip inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ color: densityColor }}>
-                              <span className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: densityColor }} />
-                              {venue.pct}% Density
-                            </span>
-                            <span className="glass-chip inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold text-[var(--k-text-m)]">
-                              {getDensityLabel(venue.crowd)}
-                            </span>
-                            <div className="ml-auto flex items-center gap-1.5">
-                              <Sparkline
-                                values={generateForecast(venue.id, venue.pct, 6)}
-                                width={48}
-                                height={18}
-                                color={venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399'}
-                              />
-                              <span className="text-[9px] font-bold text-[var(--k-text-f)] uppercase tracking-wider">6h</span>
-                            </div>
-                          </div>
-
-                          {/* Avatars + pull quote */}
-                          <div className="flex items-center gap-2 mt-2.5">
-                            <div className="flex -space-x-1.5 flex-shrink-0">
-                              {avatars.map((init, i) => (
-                                <div
-                                  key={i}
-                                  className="w-[20px] h-[20px] rounded-full bg-[var(--k-accent)]/20 border border-[var(--k-surface)] flex items-center justify-center"
-                                >
-                                  <span className="text-[8px] font-bold text-[var(--k-accent)]">{init}</span>
-                                </div>
-                              ))}
-                              {extraCount > 0 && (
-                                <div className="w-[20px] h-[20px] rounded-full bg-[var(--k-fill-3)] border border-[var(--k-surface)] flex items-center justify-center">
-                                  <span className="text-[7px] font-bold text-[var(--k-text-f)]">+{extraCount}</span>
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-[var(--k-text-f)] italic truncate">
-                              &ldquo;{getPullQuote(venue)}&rdquo;
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  {quietVenues.map((venue) => (
+                    <PopularVenueCard
+                      key={venue.id}
+                      venue={venue}
+                      isFav={favorites.has(venue.id)}
+                      avatars={getAvatars(venue.name)}
+                      pullQuote={getPullQuote(venue)}
+                      densityLabel={getDensityLabel(venue.crowd)}
+                      onTap={handleVenueTap}
+                      onPeek={setPeekedVenue}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))}
 
                   {quietVenues.length === 0 && (
                     <div className="text-center py-10">
@@ -483,6 +457,7 @@ export function CityGuideDrawer({
                     </div>
                   )}
                 </div>
+                )}
               </div>
             </>
           ) : (
@@ -515,7 +490,132 @@ export function CityGuideDrawer({
             </div>
           )}
         </div>
+
+        <PeekPreview
+          venue={peekedVenue}
+          onClose={() => setPeekedVenue(null)}
+          onOpenFull={(v) => {
+            handleVenueTap(v);
+            setPeekedVenue(null);
+          }}
+          onDirections={(v) => {
+            startDirections({ coords: v.coordinates, name: v.name }, 'walking');
+            setPeekedVenue(null);
+          }}
+        />
       </DrawerContent>
     </Drawer>
+  );
+}
+
+interface PopularVenueCardProps {
+  venue: Venue;
+  isFav: boolean;
+  avatars: string[];
+  pullQuote: string;
+  densityLabel: string;
+  onTap: (venue: Venue) => void;
+  onPeek: (venue: Venue) => void;
+  onToggleFavorite: (e: React.MouseEvent, venueId: string) => void;
+}
+
+function PopularVenueCard({
+  venue,
+  isFav,
+  avatars,
+  pullQuote,
+  densityLabel,
+  onTap,
+  onPeek,
+  onToggleFavorite,
+}: PopularVenueCardProps) {
+  const densityColor = venue.crowd === 'quiet' ? 'var(--k-color-green)' : 'var(--k-color-amber)';
+  const extraCount = Math.max(0, Math.floor(venue.pct / 8));
+
+  const pressHoldHandlers = usePressHold(() => {
+    onPeek(venue);
+  });
+
+  return (
+    <button
+      onClick={() => onTap(venue)}
+      className="w-full rounded-2xl liquid-glass ios-press text-left overflow-hidden touch-none select-none"
+      {...pressHoldHandlers}
+    >
+      {/* Full-width image */}
+      <div className="w-full h-[160px] bg-[var(--k-surface)] relative">
+        {venue.image ? (
+          <img src={venue.image} alt={venue.name} className="w-full h-[160px] rounded-t-2xl object-cover" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-4xl rounded-t-2xl bg-[var(--k-fill-3)]">{venue.icon}</div>
+        )}
+      </div>
+
+      {/* Content below image */}
+      <div className="px-3.5 pt-3 pb-3">
+        {/* Name + bookmark */}
+        <div className="flex items-start justify-between gap-2">
+          <h4 className="text-[18px] font-bold text-[var(--k-text)] leading-tight truncate">{venue.name}</h4>
+          <div
+            onClick={(e) => onToggleFavorite(e, venue.id)}
+            className="flex-shrink-0 mt-0.5"
+          >
+            <Bookmark
+              className="w-5 h-5"
+              fill={isFav ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              style={{ color: isFav ? '#ff6b6b' : 'var(--k-text-f)' }}
+            />
+          </div>
+        </div>
+
+        {/* Type + distance */}
+        <p className="text-[13px] text-[var(--k-text-m)] italic mt-0.5 truncate">
+          {venue.type} &middot; {venue.dist}
+        </p>
+
+        {/* Density badges + 6h forecast sparkline */}
+        <div className="flex items-center gap-2 mt-2.5">
+          <span className="glass-chip inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ color: densityColor }}>
+            <span className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: densityColor }} />
+            {venue.pct}% Density
+          </span>
+          <span className="glass-chip inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold text-[var(--k-text-m)]">
+            {densityLabel}
+          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            <Sparkline
+              values={generateForecast(venue.id, venue.pct, 6)}
+              width={48}
+              height={18}
+              color={venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399'}
+            />
+            <span className="text-[9px] font-bold text-[var(--k-text-f)] uppercase tracking-wider">6h</span>
+          </div>
+        </div>
+
+        {/* Avatars + pull quote */}
+        <div className="flex items-center gap-2 mt-2.5">
+          <div className="flex -space-x-1.5 flex-shrink-0">
+            {avatars.map((init, i) => (
+              <div
+                key={i}
+                className="w-[20px] h-[20px] rounded-full bg-[var(--k-accent)]/20 border border-[var(--k-surface)] flex items-center justify-center"
+              >
+                <span className="text-[8px] font-bold text-[var(--k-accent)]">{init}</span>
+              </div>
+            ))}
+            {extraCount > 0 && (
+              <div className="w-[20px] h-[20px] rounded-full bg-[var(--k-fill-3)] border border-[var(--k-surface)] flex items-center justify-center">
+                <span className="text-[7px] font-bold text-[var(--k-text-f)]">+{extraCount}</span>
+              </div>
+            )}
+          </div>
+          <p className="text-[11px] text-[var(--k-text-f)] italic truncate">
+            &ldquo;{pullQuote}&rdquo;
+          </p>
+        </div>
+      </div>
+    </button>
   );
 }

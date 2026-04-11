@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import {
   MapPin, Bell, ChevronRight, LogOut, Palette, Moon,
-  AlertTriangle, HelpCircle, FileText, Instagram, Twitter, Heart,
+  AlertTriangle, HelpCircle, FileText, Instagram, Twitter, Heart, Zap, Trophy, Flame,
 } from 'lucide-react';
 import { useAppContext } from '../../context';
 import type { Venue } from '../../types';
@@ -61,6 +61,52 @@ export function AccountView() {
               <p className="type-overline text-[var(--k-text-m)] text-[9px] mt-0.5">{s.label}</p>
             </div>
           ))}
+        </div>
+
+        {/* Prediction Streaks widget */}
+        <div className="liquid-glass rounded-[16px] p-4 mb-5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
+               style={{ background: 'radial-gradient(circle, rgba(255,77,106,0.18), transparent 70%)' }} />
+          <div className="relative">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Zap className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
+              <p className="type-overline text-[var(--k-text-m)] text-[9px]">PREDICTION STREAK</p>
+            </div>
+            <div className="flex items-center gap-4">
+              {/* Streak number */}
+              <div className="flex items-center gap-2">
+                <Flame className="w-7 h-7 text-[var(--k-color-orange)] fill-[var(--k-color-orange)]/30" />
+                <div>
+                  <p className="font-syne text-[28px] font-black text-[var(--k-text)] leading-none">7</p>
+                  <p className="text-[10px] font-bold text-[var(--k-text-m)] uppercase tracking-wider">day streak</p>
+                </div>
+              </div>
+              <div className="w-px h-12 bg-[var(--k-border)]" />
+              {/* Accuracy */}
+              <div>
+                <p className="font-syne text-[22px] font-black text-[var(--k-color-green)] leading-none">94%</p>
+                <p className="text-[10px] font-bold text-[var(--k-text-m)] uppercase tracking-wider mt-1">accuracy</p>
+              </div>
+              {/* Badges */}
+              <div className="ml-auto flex flex-col items-end gap-1">
+                <div className="flex -space-x-1">
+                  <div className="w-7 h-7 rounded-full bg-[var(--k-color-coral)]/20 border border-[var(--k-color-coral)]/40 flex items-center justify-center">
+                    <Trophy className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-[var(--k-color-amber)]/20 border border-[var(--k-color-amber)]/40 flex items-center justify-center">
+                    <span className="text-[11px]">🎯</span>
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-[var(--k-color-purple)]/20 border border-[var(--k-color-purple)]/40 flex items-center justify-center">
+                    <span className="text-[11px]">⚡</span>
+                  </div>
+                </div>
+                <p className="text-[9px] font-bold text-[var(--k-text-f)] uppercase tracking-wider">3 badges</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-[var(--k-text-m)] mt-3 italic">
+              Nice streak — you predicted 3 surges correctly this week.
+            </p>
+          </div>
         </div>
 
         {/* Segment control */}

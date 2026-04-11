@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, Zap, Brain, SlidersHorizontal, ChevronDown, AlertTriangle, Clock } from 'lucide-react';
+import { Mic, MicOff, Send, Sparkles, Search, BrainCircuit, Zap, Brain, SlidersHorizontal, ChevronDown, AlertTriangle, Clock, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppContext } from '../../context';
 import { generateAIResponse, SUGGESTION_CHIPS } from '../../services/ai-responses';
@@ -141,6 +141,22 @@ function VerdictCard({ item, index }: { item: VerdictVenue; index: number }) {
     item.verdict === 'WATCH' ? 'var(--k-color-amber)' :
     'var(--k-color-coral)';
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const emoji = item.verdict === 'GO NOW' ? '🟢' : item.verdict === 'WATCH' ? '🟡' : '🔴';
+    const shareText = `${emoji} ${item.verdict}: ${item.venue.name}\n${item.reason}\n\nForecast by KrowdGuide`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${item.venue.name} — ${item.verdict}`,
+          text: shareText,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareText);
+      }
+    } catch { /* user cancelled */ }
+  };
+
   return (
     <button
       onClick={() => setExpanded(e => !e)}
@@ -161,7 +177,16 @@ function VerdictCard({ item, index }: { item: VerdictVenue; index: number }) {
         <Sparkline points={item.spark} color={sparkColor} />
       </div>
 
-      <p className="text-[12px] italic text-[var(--k-text-f)] leading-snug">{item.reason}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[12px] italic text-[var(--k-text-f)] leading-snug flex-1">{item.reason}</p>
+        <button
+          onClick={handleShare}
+          aria-label="Share forecast"
+          className="w-7 h-7 rounded-full glass-chip flex items-center justify-center flex-shrink-0 ios-press"
+        >
+          <Share2 className="w-3.5 h-3.5 text-[var(--k-text-m)]" />
+        </button>
+      </div>
 
       {expanded && (
         <div className="pt-2 border-t border-[var(--k-border-s)] space-y-2 animate-fadeUp">
