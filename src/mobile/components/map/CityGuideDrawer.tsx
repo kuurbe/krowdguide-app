@@ -4,13 +4,11 @@ import { useAppContext } from '../../context';
 import { useTicketmasterEvents } from '../../hooks/useTicketmasterEvents';
 import { useWeather } from '../../hooks/useWeather';
 import { EventCard } from '../shared/EventCard';
-import { AskBar } from '../shared/AskBar';
 import { Sparkline, generateForecast } from '../shared/Sparkline';
 import { PeekPreview } from '../shared/PeekPreview';
 import { usePressHold } from '../../hooks/usePressHold';
 import { QuestCard } from '../shared/QuestCard';
 import { NeighborhoodStrip } from '../shared/NeighborhoodStrip';
-import { FocusCard } from '../shared/FocusCard';
 import { getNeighborhoodsForCity, type Neighborhood } from '../../data/neighborhoods';
 import { getFriendsForCity } from '../../data/friends';
 import { getQuestsForCity } from '../../data/quests';
@@ -130,11 +128,6 @@ export function CityGuideDrawer({
     onOpenChange(false);
   }, [selectVenue, onOpenChange]);
 
-  const handleAsk = useCallback((prompt: string) => {
-    // For now, just log it — real AI integration comes later
-    console.log('[KG Ask]', prompt);
-  }, []);
-
   /** Time-context section label for unified feed */
   const sectionLabel = useMemo(() => {
     const hour = new Date().getHours();
@@ -187,19 +180,6 @@ export function CityGuideDrawer({
 
           {activeTab === 'discover' ? (
             <>
-              {/* Ask the City AI bar */}
-              <div className="pb-3">
-                <AskBar
-                  placeholder="Ask anything about your city..."
-                  onSubmit={handleAsk}
-                  suggestions={[
-                    'Quietest coffee right now',
-                    'Rooftops with sunset views',
-                    'Where are my friends tonight?',
-                  ]}
-                />
-              </div>
-
               {/* Neighborhood selector strip */}
               <div className="pb-3">
                 <NeighborhoodStrip
@@ -208,11 +188,6 @@ export function CityGuideDrawer({
                   onSelect={setSelectedNeighborhood}
                   friends={cityFriends}
                 />
-              </div>
-
-              {/* Focus Card — AI concierge rotating recommendation */}
-              <div className="pb-3">
-                <FocusCard venues={venues} onAct={handleVenueTap} />
               </div>
 
               {/* Weather + events mini row (kept, compact) */}
