@@ -123,9 +123,12 @@ export function LeaveNowToast({ venues, onAct, enabled = true }: Props) {
         transition: 'transform 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 300ms ease',
       }}
     >
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={handleAct}
-        className="pointer-events-auto liquid-glass glass-border-glow rounded-2xl px-4 py-3 flex items-center gap-3 max-w-sm w-full text-left ios-press"
+        onKeyDown={(e) => { if (e.key === 'Enter') handleAct(); }}
+        className="pointer-events-auto liquid-glass glass-border-glow rounded-2xl px-4 py-3 flex items-center gap-3 max-w-sm w-full text-left ios-press cursor-pointer"
         style={{
           boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 32px rgba(255,77,106,0.3)',
         }}
@@ -156,7 +159,7 @@ export function LeaveNowToast({ venues, onAct, enabled = true }: Props) {
         >
           <X className="w-3 h-3 text-[var(--k-text-m)]" />
         </button>
-      </button>
+      </div>
     </div>,
     document.body
   );
