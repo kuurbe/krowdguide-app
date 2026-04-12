@@ -9,7 +9,7 @@ import { Sparkline, generateForecast } from '../shared/Sparkline';
 import { PeekPreview } from '../shared/PeekPreview';
 import { usePressHold } from '../../hooks/usePressHold';
 import { QuestCard } from '../shared/QuestCard';
-import { NeighborhoodGrid } from '../shared/NeighborhoodGrid';
+import { NeighborhoodStrip } from '../shared/NeighborhoodStrip';
 import { FocusCard } from '../shared/FocusCard';
 import { getNeighborhoodsForCity, type Neighborhood } from '../../data/neighborhoods';
 import { getFriendsForCity } from '../../data/friends';
@@ -200,9 +200,9 @@ export function CityGuideDrawer({
                 />
               </div>
 
-              {/* Neighborhood Pulse Grid — live crowd tiles */}
+              {/* Neighborhood selector strip */}
               <div className="pb-3">
-                <NeighborhoodGrid
+                <NeighborhoodStrip
                   neighborhoods={cityNeighborhoods}
                   selectedId={selectedNeighborhood?.id ?? null}
                   onSelect={setSelectedNeighborhood}
