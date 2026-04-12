@@ -9,7 +9,9 @@ import { Sparkline, generateForecast } from '../shared/Sparkline';
 import { PeekPreview } from '../shared/PeekPreview';
 import { usePressHold } from '../../hooks/usePressHold';
 import { QuestCard } from '../shared/QuestCard';
-import { KGOrb } from '../shared/KGOrb';
+import { NeighborhoodGrid } from '../shared/NeighborhoodGrid';
+import { FocusCard } from '../shared/FocusCard';
+import { getNeighborhoodsForCity, type Neighborhood } from '../../data/neighborhoods';
 import { getQuestsForCity } from '../../data/quests';
 import { SwipeStack } from '../shared/SwipeStack';
 import {
@@ -58,6 +60,8 @@ export function CityGuideDrawer({
   const [activeTab, setActiveTab] = useState<Tab>('discover');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [swipeMode, setSwipeMode] = useState(false);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<Neighborhood | null>(null);
+  const cityNeighborhoods = useMemo(() => getNeighborhoodsForCity(selectedCity.id), [selectedCity.id]);
   const [peekedVenue, setPeekedVenue] = useState<Venue | null>(null);
 
   const timeCtx = useMemo(() => getTimeContext(), []);
@@ -117,25 +121,7 @@ export function CityGuideDrawer({
     return featured ? [featured, ...rest] : [...CATEGORIES];
   }, [timeCtx.featured]);
 
-  /** Bento stats — avg crowd, crowd label, forecast sparkline */
-  const bentoStats = useMemo(() => {
-    const avgCrowd = venues.length
-      ? Math.round(venues.reduce((acc, v) => acc + v.pct, 0) / venues.length)
-      : 0;
-    let crowdLabel = 'quiet';
-    if (avgCrowd >= 65) crowdLabel = 'busy';
-    else if (avgCrowd >= 35) crowdLabel = 'moderate';
-
-    // Synthetic sparkline — simulated peak curve through the day
-    const hour = new Date().getHours();
-    const sparkline = Array.from({ length: 12 }, (_, i) => {
-      const h = (hour - 5 + i + 24) % 24;
-      const peak = Math.exp(-Math.pow((h - 21) / 4, 2)) * 0.8 + Math.exp(-Math.pow((h - 13) / 3, 2)) * 0.4;
-      return Math.max(0.1, Math.min(1, peak + (i % 3) * 0.05));
-    });
-
-    return { avgCrowd, crowdLabel, sparkline };
-  }, [venues]);
+  // bentoStats removed — replaced by NeighborhoodGrid + FocusCard hero
 
   const handleVenueTap = useCallback((venue: Venue) => {
     selectVenue(venue);
@@ -154,12 +140,6 @@ export function CityGuideDrawer({
     if (hour >= 12 && hour < 17) return `This afternoon in ${selectedCity.name}`;
     return `Tonight in ${selectedCity.name}`;
   }, [selectedCity.name]);
-
-  /** Crowd label with capitalized first letter for Pulse Bar */
-  const crowdPulseLabel = useMemo(() => {
-    const l = bentoStats.crowdLabel;
-    return l.charAt(0).toUpperCase() + l.slice(1);
-  }, [bentoStats.crowdLabel]);
 
   /** Featured quest (first available for city) */
   const featuredQuest = useMemo(() => {
@@ -218,36 +198,38 @@ export function CityGuideDrawer({
                 />
               </div>
 
-              {/* KG Orb — the city's living pulse (Phase 2) */}
-              <div className="py-2 flex flex-col items-center">
-                <KGOrb
-                  orbSize={220}
-                  cityName={selectedCity.name}
-                  cityPct={bentoStats.avgCrowd}
-                  label={crowdPulseLabel}
-                  forecast={bentoStats.sparkline.slice(0, 6)}
-                  satellites={venues.slice(0, 9)}
-                  onSatelliteTap={handleVenueTap}
+              {/* Neighborhood Pulse Grid — live crowd tiles */}
+              <div className="pb-3">
+                <NeighborhoodGrid
+                  neighborhoods={cityNeighborhoods}
+                  selectedId={selectedNeighborhood?.id ?? null}
+                  onSelect={setSelectedNeighborhood}
                 />
-                {/* Below-orb mini stat row — weather + events */}
-                <div className="flex items-center gap-4 mt-3">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-chip">
-                    <WeatherIconComponent className="w-3.5 h-3.5 text-[var(--k-color-cyan)]" />
-                    <span className="text-[11px] font-bold text-[var(--k-text)]">
-                      {weather?.temperature ?? '--'}°
-                    </span>
-                    <span className="text-[10px] text-[var(--k-text-m)]">
-                      {weather?.description?.split(' ')[0] || 'Clear'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-chip">
-                    <span className="text-[11px] font-black text-[var(--k-color-coral)]">
-                      {events.length || 3}
-                    </span>
-                    <span className="text-[10px] font-bold text-[var(--k-text-m)] uppercase tracking-wider">
-                      Events Tonight
-                    </span>
-                  </div>
+              </div>
+
+              {/* Focus Card — AI concierge rotating recommendation */}
+              <div className="pb-3">
+                <FocusCard venues={venues} onAct={handleVenueTap} />
+              </div>
+
+              {/* Weather + events mini row (kept, compact) */}
+              <div className="flex items-center gap-2 pb-3">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-chip flex-shrink-0">
+                  <WeatherIconComponent className="w-3.5 h-3.5 text-[var(--k-color-cyan)]" />
+                  <span className="text-[11px] font-bold text-[var(--k-text)]">
+                    {weather?.temperature ?? '--'}°
+                  </span>
+                  <span className="text-[10px] text-[var(--k-text-m)]">
+                    {weather?.description?.split(' ')[0] || 'Clear'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-chip flex-shrink-0">
+                  <span className="text-[11px] font-black text-[var(--k-color-coral)]">
+                    {events.length || 3}
+                  </span>
+                  <span className="text-[10px] font-bold text-[var(--k-text-m)] uppercase tracking-wider">
+                    Tonight
+                  </span>
                 </div>
               </div>
 

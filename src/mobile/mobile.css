@@ -504,6 +504,15 @@ html, body {
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
+/* ── NEIGHBORHOOD GRID — pulsing tile glows ──────────────── */
+@keyframes nh-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nh-pulse { animation: none !important; }
+}
+
 /* ── KG ORB — the city's living pulse ────────────────────── */
 .kg-orb-wrap {
   position: relative;
