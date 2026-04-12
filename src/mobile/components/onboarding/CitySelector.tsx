@@ -4,10 +4,11 @@ import { cn } from '@/lib/utils';
 import gsap from 'gsap';
 import { CITIES } from '../../data/cities';
 import type { City } from '../../types';
+import { VenueIcon } from '../../utils/icons';
 
-const CITY_META: Record<string, { emoji: string; neighborhoods: string; vibe: string }> = {
-  dallas: { emoji: '🤠', neighborhoods: 'Deep Ellum · Uptown · Bishop Arts', vibe: 'Southern hospitality meets nightlife' },
-  reno: { emoji: '🎰', neighborhoods: 'Midtown · Downtown · Riverwalk', vibe: 'The Biggest Little City' },
+const CITY_META: Record<string, { iconId: string; neighborhoods: string; vibe: string }> = {
+  dallas: { iconId: 'cowboy', neighborhoods: 'Deep Ellum · Uptown · Bishop Arts', vibe: 'Southern hospitality meets nightlife' },
+  reno: { iconId: 'dice', neighborhoods: 'Midtown · Downtown · Riverwalk', vibe: 'The Biggest Little City' },
 };
 
 export function CitySelector({ onSelect }: { onSelect: (city: City) => void }) {
@@ -104,7 +105,7 @@ export function CitySelector({ onSelect }: { onSelect: (city: City) => void }) {
         {/* City cards — liquid glass with spring press */}
         <div ref={cardsRef} className="space-y-3">
           {CITIES.map((city) => {
-            const meta = CITY_META[city.id] || { emoji: '📍', neighborhoods: '', vibe: '' };
+            const meta = CITY_META[city.id] || { iconId: 'pin', neighborhoods: '', vibe: '' };
             const isSelected = selected === city.id;
             return (
               <button
@@ -124,7 +125,7 @@ export function CitySelector({ onSelect }: { onSelect: (city: City) => void }) {
                       ? 'bg-[#ff4d6a]/15 shadow-[var(--k-glow-coral)]'
                       : 'bg-white/[0.04]'
                   )}>
-                    {meta.emoji}
+                    <VenueIcon iconId={meta.iconId} className="w-7 h-7 text-white/70" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-syne font-bold text-[18px] text-white tracking-[-0.01em]">

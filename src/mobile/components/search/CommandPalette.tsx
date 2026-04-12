@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { CrowdPill } from '../shared/CrowdPill';
 import { Flame, Volume1, Beer, MapPin, Coffee, UtensilsCrossed, Moon, Trees, Map, Navigation, Loader2, Search, Sparkles, Zap } from 'lucide-react';
 import { useAppContext } from '../../context';
+import { VenueIcon } from '../../utils/icons';
 import { MAPBOX_TOKEN } from '../../config/mapbox';
 import { fetchSearchResult, generateSessionToken } from '../../services/searchBoxService';
 import type { SearchSuggestion } from '../../services/searchBoxService';
@@ -258,7 +259,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
                   onClick={() => handleVenue(venue)}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--k-surface-h)] transition-colors text-left"
                 >
-                  <span className="text-[18px] flex-shrink-0">{venue.icon}</span>
+                  <VenueIcon iconId={venue.icon} className="w-5 h-5 text-[var(--k-text-m)] flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-semibold text-[var(--k-text)] truncate">{venue.name}</p>
                     <p className="text-[11px] text-[var(--k-text-m)] truncate">{venue.type} · {venue.dist}</p>

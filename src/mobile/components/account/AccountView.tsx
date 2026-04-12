@@ -4,6 +4,7 @@ import {
   AlertTriangle, HelpCircle, FileText, Instagram, Twitter, Heart, Zap, Trophy, Flame,
 } from 'lucide-react';
 import { useAppContext } from '../../context';
+import { VenueIcon } from '../../utils/icons';
 import type { Venue } from '../../types';
 
 function SettingRow({ icon, title, subtitle, action, onPress }: {
@@ -44,7 +45,7 @@ export function AccountView() {
         {/* Profile */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-[72px] h-[72px] rounded-full ring-[2.5px] ring-[#ff6b6b] ring-offset-2 ring-offset-[var(--k-bg)]
-                          bg-[var(--k-surface)] flex items-center justify-center text-3xl mb-3">👤</div>
+                          bg-[var(--k-surface)] flex items-center justify-center mb-3"><VenueIcon iconId="user" className="w-8 h-8 text-[var(--k-text-m)]" /></div>
           <h2 className="font-syne text-[20px] font-bold text-[var(--k-text)]">Alex Rivera</h2>
           <p className="text-[13px] text-[var(--k-text-m)] mb-2">@rivera_design</p>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25">
@@ -94,10 +95,10 @@ export function AccountView() {
                     <Trophy className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
                   </div>
                   <div className="w-7 h-7 rounded-full bg-[var(--k-color-amber)]/20 border border-[var(--k-color-amber)]/40 flex items-center justify-center">
-                    <span className="text-[11px]">🎯</span>
+                    <VenueIcon iconId="target" className="w-3.5 h-3.5 text-[var(--k-color-amber)]" />
                   </div>
                   <div className="w-7 h-7 rounded-full bg-[var(--k-color-purple)]/20 border border-[var(--k-color-purple)]/40 flex items-center justify-center">
-                    <span className="text-[11px]">⚡</span>
+                    <VenueIcon iconId="zap" className="w-3.5 h-3.5 text-[var(--k-color-purple)]" />
                   </div>
                 </div>
                 <p className="text-[9px] font-bold text-[var(--k-text-f)] uppercase tracking-wider">3 badges</p>
@@ -166,7 +167,7 @@ export function AccountView() {
                 {favVenues.map((v: Venue) => (
                   <div key={v.id} className="flex items-center gap-3 p-3 rounded-[14px] liquid-glass ios-press">
                     {v.image ? <img src={v.image} alt={v.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                      : <div className="w-12 h-12 rounded-lg bg-[var(--k-surface)] flex items-center justify-center text-xl flex-shrink-0">{v.icon}</div>}
+                      : <div className="w-12 h-12 rounded-lg bg-[var(--k-surface)] flex items-center justify-center flex-shrink-0"><VenueIcon iconId={v.icon} className="w-5 h-5 text-[var(--k-text-m)]" /></div>}
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-bold text-[var(--k-text)] truncate">{v.name}</p>
                       <p className="text-[11px] text-[var(--k-text-m)]">{v.type} · {v.dist}</p>

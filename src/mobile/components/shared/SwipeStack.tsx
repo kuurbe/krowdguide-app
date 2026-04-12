@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { Heart, X, Navigation, RotateCcw } from 'lucide-react';
 import type { Venue } from '../../types';
+import { VenueIcon } from '../../utils/icons';
 
 interface SwipeStackProps {
   venues: Venue[];
@@ -257,7 +258,7 @@ function CardContent({
             draggable={false}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-6xl">{venue.icon}</div>
+          <div className="w-full h-full flex items-center justify-center"><VenueIcon iconId={venue.icon} className="w-16 h-16 text-[var(--k-text-f)]" /></div>
         )}
 
         {/* Gradient */}

@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import { X, Star } from 'lucide-react';
 import { CrowdPill } from '../shared/CrowdPill';
 import type { Venue } from '../../types';
+import { VenueIcon } from '../../utils/icons';
 
 interface SearchResultsCarouselProps {
   venues: Venue[];
@@ -55,8 +56,8 @@ export function SearchResultsCarousel({ venues, onSelect, onClear }: SearchResul
                 loading="lazy"
               />
             ) : (
-              <div className="w-[76px] h-[76px] rounded-xl bg-[var(--k-surface)] flex items-center justify-center flex-shrink-0 text-2xl">
-                {venue.icon}
+              <div className="w-[76px] h-[76px] rounded-xl bg-[var(--k-surface)] flex items-center justify-center flex-shrink-0">
+                <VenueIcon iconId={venue.icon} className="w-7 h-7 text-[var(--k-text-f)]" />
               </div>
             )}
 

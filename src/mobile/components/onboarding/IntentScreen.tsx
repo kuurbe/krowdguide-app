@@ -5,14 +5,15 @@ import { cn } from '@/lib/utils';
 import gsap from 'gsap';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import type { City } from '../../types';
+import { VenueIcon } from '../../utils/icons';
 
 const QUICK_INTENTS = [
-  { label: 'Events going on', icon: '🎉', color: 'from-[#ff4d6a] to-[#ff8c42]', desc: 'Live & upcoming' },
-  { label: 'Best places to eat', icon: '🍽️', color: 'from-[#22d3ee] to-[#0891b2]', desc: 'Top rated spots' },
-  { label: 'Bars & nightlife', icon: '🍸', color: 'from-[#a855f7] to-[#7c3aed]', desc: 'Trending tonight' },
-  { label: 'Things to do', icon: '📍', color: 'from-[#f97316] to-[#ef4444]', desc: 'Explore the city' },
-  { label: 'Venues nearby', icon: '🏟️', color: 'from-[#06b6d4] to-[#8b5cf6]', desc: 'Within walking distance' },
-  { label: 'Happy hour deals', icon: '🍻', color: 'from-[#eab308] to-[#f97316]', desc: 'Active specials' },
+  { label: 'Events going on', iconId: 'party', color: 'from-[#ff4d6a] to-[#ff8c42]', desc: 'Live & upcoming' },
+  { label: 'Best places to eat', iconId: 'utensils', color: 'from-[#22d3ee] to-[#0891b2]', desc: 'Top rated spots' },
+  { label: 'Bars & nightlife', iconId: 'cocktail', color: 'from-[#a855f7] to-[#7c3aed]', desc: 'Trending tonight' },
+  { label: 'Things to do', iconId: 'pin', color: 'from-[#f97316] to-[#ef4444]', desc: 'Explore the city' },
+  { label: 'Venues nearby', iconId: 'landmark', color: 'from-[#06b6d4] to-[#8b5cf6]', desc: 'Within walking distance' },
+  { label: 'Happy hour deals', iconId: 'cheers', color: 'from-[#eab308] to-[#f97316]', desc: 'Active specials' },
 ];
 
 export function IntentScreen({ city, onComplete }: { city: City; onComplete: (intent?: string) => void }) {
@@ -183,7 +184,7 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
                 )} />
                 {/* Icon in glass circle */}
                 <div className="w-10 h-10 rounded-xl glass-chip flex items-center justify-center mb-2.5">
-                  <span className="text-2xl">{intent.icon}</span>
+                  <VenueIcon iconId={intent.iconId} className="w-5 h-5 text-white/70" />
                 </div>
                 <span className="text-[14px] font-semibold text-white/90 block leading-tight">{intent.label}</span>
                 <span className="text-[11px] text-white/30 block mt-1">{intent.desc}</span>

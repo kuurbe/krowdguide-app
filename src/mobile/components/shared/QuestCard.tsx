@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { MapPin, Clock, Zap, Check } from 'lucide-react';
 import type { Quest } from '../../data/quests';
+import { VenueIcon } from '../../utils/icons';
 
 /**
  * QuestCard — gamified walking tour card with progress meter.
@@ -42,9 +43,9 @@ export function QuestCard({ quest }: { quest: Quest }) {
       <div className="relative">
         {/* Header row — emoji + difficulty badge */}
         <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-[22px] flex-shrink-0"
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
                style={{ background: `${quest.accent}20`, border: `1px solid ${quest.accent}40` }}>
-            {quest.emoji}
+            <VenueIcon iconId={quest.emoji} className="w-5 h-5" style={{ color: quest.accent }} />
           </div>
           <span
             className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-[0.08em]"

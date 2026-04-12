@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MapPin, ExternalLink, Activity, Users, Clock } from 'lucide-react';
 import type { Venue } from '../../types';
+import { VenueIcon } from '../../utils/icons';
 
 interface PeekPreviewProps {
   venue: Venue | null;
@@ -95,8 +96,8 @@ export function PeekPreview({
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl bg-[var(--k-fill-3)]">
-              {venue.icon}
+            <div className="w-full h-full flex items-center justify-center bg-[var(--k-fill-3)]">
+              <VenueIcon iconId={venue.icon} className="w-16 h-16 text-[var(--k-text-f)]" />
             </div>
           )}
           <div

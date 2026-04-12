@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { CrowdMomentum } from '../shared/CrowdMomentum';
+import { VenueIcon } from '../../utils/icons';
 import { CrowdPredictionChart } from '../charts/CrowdPredictionChart';
 import { CrowdPill as MiniCrowdPill } from '../shared/CrowdPill';
 import { X, Star, Zap, Heart, Share2, Footprints, Sparkles } from 'lucide-react';
@@ -183,7 +184,7 @@ export function VenueDetailSheet({
           </div>
         ) : (
           <div className="relative bg-[var(--k-surface)]" style={{ height: 180 }}>
-            <div className="w-full h-full flex items-center justify-center text-4xl">{venue.icon}</div>
+            <div className="w-full h-full flex items-center justify-center"><VenueIcon iconId={venue.icon} className="w-10 h-10 text-[var(--k-text-f)]" /></div>
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--k-bg)] via-transparent to-transparent" />
             <button onClick={onClose} className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform">
               <X className="w-4 h-4 text-white" />
@@ -363,7 +364,7 @@ export function VenueDetailSheet({
                     {v.image ? (
                       <img src={v.image} alt={v.name} className="w-full h-[56px] rounded-lg object-cover mb-2" loading="lazy" />
                     ) : (
-                      <div className="w-full h-[56px] rounded-lg bg-[var(--k-surface)] flex items-center justify-center text-xl mb-2">{v.icon}</div>
+                      <div className="w-full h-[56px] rounded-lg bg-[var(--k-surface)] flex items-center justify-center mb-2"><VenueIcon iconId={v.icon} className="w-5 h-5 text-[var(--k-text-f)]" /></div>
                     )}
                     <p className="text-[11px] font-bold text-[var(--k-text)] truncate">{v.name}</p>
                     <div className="flex items-center justify-between mt-1">

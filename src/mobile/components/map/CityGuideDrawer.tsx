@@ -19,12 +19,13 @@ import {
   Layers, Hand,
 } from 'lucide-react';
 import type { Venue, WeatherIcon } from '../../types';
+import { VenueIcon } from '../../utils/icons';
 
 const CATEGORIES = [
-  { id: 'nightlife', emoji: '🍸', name: 'Nightlife', subtitle: 'Hot spots', keywords: ['bar', 'brewery', 'lounge', 'club', 'pub'] },
-  { id: 'parks', emoji: '🌳', name: 'Parks', subtitle: 'Green zones', keywords: ['park', 'garden', 'trail', 'outdoor'] },
-  { id: 'dining', emoji: '🍴', name: 'Dining', subtitle: 'Intimate cafes', keywords: ['restaurant', 'grill', 'bistro', 'diner', 'kitchen'] },
-  { id: 'retail', emoji: '🛍️', name: 'Retail', subtitle: 'Boutique shops', keywords: ['shop', 'store', 'boutique', 'retail', 'market'] },
+  { id: 'nightlife', iconId: 'cocktail', name: 'Nightlife', subtitle: 'Hot spots', keywords: ['bar', 'brewery', 'lounge', 'club', 'pub'] },
+  { id: 'parks', iconId: 'tree', name: 'Parks', subtitle: 'Green zones', keywords: ['park', 'garden', 'trail', 'outdoor'] },
+  { id: 'dining', iconId: 'utensils', name: 'Dining', subtitle: 'Intimate cafes', keywords: ['restaurant', 'grill', 'bistro', 'diner', 'kitchen'] },
+  { id: 'retail', iconId: 'shopping', name: 'Retail', subtitle: 'Boutique shops', keywords: ['shop', 'store', 'boutique', 'retail', 'market'] },
 ] as const;
 
 type Tab = 'discover' | 'events';
@@ -233,7 +234,7 @@ export function CityGuideDrawer({
                       key={cat.id}
                       className="flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-full glass-chip ios-press whitespace-nowrap"
                     >
-                      <span className="text-[14px]">{cat.emoji}</span>
+                      <VenueIcon iconId={cat.iconId} className="w-4 h-4 text-[var(--k-text-m)]" />
                       <div className="text-left">
                         <p className="text-[11px] font-bold text-[var(--k-text)] leading-none">{cat.name}</p>
                         <p className="text-[9px] text-[var(--k-text-f)] leading-none mt-0.5">{categoryCounts[cat.id] || 0}</p>
@@ -406,7 +407,7 @@ function PopularVenueCard({
         {venue.image ? (
           <img src={venue.image} alt={venue.name} className="w-full h-[160px] rounded-t-2xl object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl rounded-t-2xl bg-[var(--k-fill-3)]">{venue.icon}</div>
+          <div className="w-full h-full flex items-center justify-center rounded-t-2xl bg-[var(--k-fill-3)]"><VenueIcon iconId={venue.icon} className="w-10 h-10 text-[var(--k-text-f)]" /></div>
         )}
       </div>
 

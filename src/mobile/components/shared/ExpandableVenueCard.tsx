@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import type { Venue } from '../../types';
 import { CrowdPill } from './CrowdPill';
 import { CrowdPredictionChart } from '../charts/CrowdPredictionChart';
+import { VenueIcon } from '../../utils/icons';
 import { ShieldCheck, ChevronDown, Route, Footprints, Bike, Beer } from 'lucide-react';
 import { useAppContext } from '../../context';
 import type { TravelMode } from '../../services/directionsService';
@@ -60,7 +61,7 @@ export function ExpandableVenueCard({ venue }: { venue: Venue }) {
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="type-title-3 truncate text-[var(--k-text)] leading-tight">
-            {venue.icon} {venue.name}
+            <VenueIcon iconId={venue.icon} className="w-3.5 h-3.5 text-[var(--k-text-m)] inline-block" /> {venue.name}
           </h4>
           <p className="text-[11px] text-[var(--k-text-m)] mt-0.5 leading-tight">{venue.type} · {venue.dist}</p>
         </div>

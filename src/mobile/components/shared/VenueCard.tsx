@@ -2,6 +2,7 @@ import type { Venue } from '../../types';
 import { CrowdPill } from './CrowdPill';
 import { ShieldCheck, Navigation } from 'lucide-react';
 import { useAppContext } from '../../context';
+import { VenueIcon } from '../../utils/icons';
 
 export function VenueCard({ venue, verified }: { venue: Venue; verified?: boolean }) {
   const { startDirections } = useAppContext();
@@ -24,15 +25,15 @@ export function VenueCard({ venue, verified }: { venue: Venue; verified?: boolea
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="type-title-3 truncate text-[var(--k-text)] leading-tight">{venue.icon} {venue.name}</h4>
+          <h4 className="type-title-3 truncate text-[var(--k-text)] leading-tight flex items-center gap-1.5"><VenueIcon iconId={venue.icon} className="w-4 h-4 text-[var(--k-text-m)] flex-shrink-0" /> {venue.name}</h4>
           <CrowdPill crowd={venue.crowd} pct={venue.pct} />
         </div>
         <p className="text-[12px] text-[var(--k-text-m)] mt-0.5 leading-tight">{venue.type} · {venue.dist}</p>
         {venue.wait && (
-          <p className="text-[12px] text-amber-400 mt-1 font-semibold">⏱️ ~{venue.wait}</p>
+          <p className="text-[12px] text-amber-400 mt-1 font-semibold flex items-center gap-1"><VenueIcon iconId="timer" className="w-3 h-3" /> ~{venue.wait}</p>
         )}
         {venue.hasHH && (
-          <p className="text-[12px] text-[var(--k-color-orange)] mt-1 font-semibold">🍺 HH: {venue.hhDeal}</p>
+          <p className="text-[12px] text-[var(--k-color-orange)] mt-1 font-semibold flex items-center gap-1"><VenueIcon iconId="beer" className="w-3 h-3" /> HH: {venue.hhDeal}</p>
         )}
         {(isOracle || verified) && (
           <div className="flex items-center gap-1.5 mt-1.5">

@@ -3,6 +3,7 @@ import type { Neighborhood } from '../../data/neighborhoods';
 import { getNeighborhoodCrowd, crowdLevel } from '../../data/neighborhoods';
 import type { Friend } from '../../data/friends';
 import { friendsByNeighborhood } from '../../data/friends';
+import { VenueIcon } from '../../utils/icons';
 
 /**
  * NeighborhoodGrid — 3×2 grid of neighborhood tiles that pulse with live crowd density.
@@ -132,7 +133,7 @@ export function NeighborhoodGrid({ neighborhoods, selectedId, onSelect, friends 
               )}
 
               {/* Emoji */}
-              <span className="text-[22px] block relative leading-none">{h.emoji}</span>
+              <span className="block relative leading-none"><VenueIcon iconId={h.emoji} className="w-6 h-6 text-[var(--k-text-m)]" /></span>
 
               {/* Name */}
               <p className="text-[12px] font-bold text-[var(--k-text)] mt-1.5 truncate relative">

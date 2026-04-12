@@ -2,6 +2,7 @@ import { Heart, Navigation } from 'lucide-react';
 import { CrowdPill } from '../shared/CrowdPill';
 import { useAppContext } from '../../context';
 import type { Venue } from '../../types';
+import { VenueIcon } from '../../utils/icons';
 
 interface AIVenueCardProps {
   venue: Venue;
@@ -29,15 +30,15 @@ export function AIVenueCard({ venue, index = 0, showHHDeal = false }: AIVenueCar
           loading="lazy"
         />
       ) : (
-        <div className="w-10 h-10 rounded-xl bg-[var(--k-surface)] flex items-center justify-center text-lg flex-shrink-0">
-          {venue.icon}
+        <div className="w-10 h-10 rounded-xl bg-[var(--k-surface)] flex items-center justify-center flex-shrink-0">
+          <VenueIcon iconId={venue.icon} className="w-5 h-5 text-[var(--k-text-m)]" />
         </div>
       )}
 
       {/* Info */}
       <div className="flex-1 min-w-0">
         <p className="text-[12px] font-bold text-[var(--k-text)] truncate leading-tight tracking-[-0.01em]">
-          {venue.icon} {venue.name}
+          <VenueIcon iconId={venue.icon} className="w-3.5 h-3.5 text-[var(--k-text-m)] inline-block" /> {venue.name}
         </p>
         <p className="text-[10px] text-[var(--k-text-m)] truncate mt-0.5">
           {venue.type} · {venue.dist}

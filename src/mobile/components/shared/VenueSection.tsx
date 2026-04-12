@@ -3,6 +3,7 @@ import type { Venue } from '../../types';
 import { CrowdPill } from './CrowdPill';
 import { CrowdMomentum } from './CrowdMomentum';
 import { ChevronRight, Heart } from 'lucide-react';
+import { VenueIcon } from '../../utils/icons';
 import { useAppContext } from '../../context';
 
 interface VenueSectionProps {
@@ -82,8 +83,8 @@ export function VenueSection({ icon, title, accentColor, venues, onVenueTap, ven
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl">
-                    {venue.icon}
+                  <div className="w-full h-full flex items-center justify-center">
+                    <VenueIcon iconId={venue.icon} className="w-6 h-6 text-[var(--k-text-f)]" />
                   </div>
                 )}
 
@@ -125,7 +126,7 @@ export function VenueSection({ icon, title, accentColor, venues, onVenueTap, ven
               {/* Card info — tappable, more padding */}
               <div className="p-3" onClick={() => onVenueTap(venue)}>
                 <h4 className="type-title-3 truncate text-[var(--k-text)] leading-tight">
-                  {venue.icon} {venue.name}
+                  <VenueIcon iconId={venue.icon} className="w-3.5 h-3.5 text-[var(--k-text-m)] inline-block" /> {venue.name}
                 </h4>
                 <p className="text-[10px] text-[var(--k-text-m)] mt-0.5 truncate">
                   {venue.type} · {venue.dist}

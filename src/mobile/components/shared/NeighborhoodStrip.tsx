@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getNeighborhoodCrowd, crowdLevel, type Neighborhood } from '../../data/neighborhoods';
 import { friendsByNeighborhood, type Friend } from '../../data/friends';
 import { haptic } from '../../utils/haptics';
+import { VenueIcon } from '../../utils/icons';
 
 const LEVEL_COLOR: Record<string, string> = {
   quiet: 'var(--k-color-green)',
@@ -114,7 +115,7 @@ export function NeighborhoodStrip({
                 boxShadow: `0 0 16px -4px ${hColor}55`,
               } : undefined}
             >
-              <span className="text-[13px]">{hood.emoji}</span>
+              <VenueIcon iconId={hood.emoji} className="w-3.5 h-3.5 text-[var(--k-text-m)]" />
               <span className={`text-[11px] font-bold ${isActive ? 'text-[var(--k-text)]' : 'text-[var(--k-text-m)]'}`}>
                 {hood.name}
               </span>
@@ -140,7 +141,7 @@ export function NeighborhoodStrip({
         </span>
         <span className="text-[var(--k-text-f)]">&middot;</span>
         <span className="text-[var(--k-text-m)] font-semibold">
-          {activeHood.emoji} {activeHood.name}
+          <VenueIcon iconId={activeHood.emoji} className="w-3 h-3 inline-block" /> {activeHood.name}
         </span>
         {hoodFriends.length > 0 && (
           <>
