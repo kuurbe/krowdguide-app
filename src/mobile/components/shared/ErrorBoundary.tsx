@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-[var(--k-bg)]">
           <div className="w-16 h-16 rounded-2xl liquid-glass flex items-center justify-center mb-5"
                style={{ boxShadow: 'var(--k-glow-coral)' }}>
-            <AlertTriangle className="w-8 h-8 text-[#ff4d6a]" />
+            <AlertTriangle className="w-8 h-8 text-[var(--k-color-coral)]" />
           </div>
 
           <h3 className="type-title-2 text-[var(--k-text)] mb-2">
@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <button
             onClick={this.handleRetry}
             className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-bold
-                       bg-gradient-to-r from-[#ff4d6a] to-[#a855f7] text-white
+                       bg-gradient-to-r from-[var(--k-color-coral)] to-[var(--k-color-purple)] text-white
                        ios-press"
             style={{ boxShadow: 'var(--k-glow-coral)' }}
           >

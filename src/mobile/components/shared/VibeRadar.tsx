@@ -23,10 +23,10 @@ export function VibeRadar({ venue, size = 140 }: { venue: Venue; size?: number }
     const wait = venue.wait ? 0.7 + rand(2) * 0.25 : energy * 0.6;
 
     return [
-      { label: 'Energy', value: energy, color: '#ff4d6a' },
-      { label: 'Noise', value: noise, color: '#ff8c42' },
-      { label: 'Mix', value: ageMix, color: '#a855f7' },
-      { label: 'Wait', value: wait, color: '#fbbf24' },
+      { label: 'Energy', value: energy, color: 'var(--k-color-coral)' },
+      { label: 'Noise', value: noise, color: 'var(--k-color-orange)' },
+      { label: 'Mix', value: ageMix, color: 'var(--k-color-purple)' },
+      { label: 'Wait', value: wait, color: 'var(--k-color-amber)' },
     ];
   }, [venue]);
 

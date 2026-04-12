@@ -1,22 +1,26 @@
 import { useMemo } from 'react';
 import type { Neighborhood } from '../../data/neighborhoods';
 import { getNeighborhoodCrowd, crowdLevel } from '../../data/neighborhoods';
+import type { Friend } from '../../data/friends';
+import { friendsByNeighborhood } from '../../data/friends';
 
 /**
  * NeighborhoodGrid — 3×2 grid of neighborhood tiles that pulse with live crowd density.
  * Each tile is tappable to filter the venue feed below.
+ * Friend avatars appear as small dots when friends are checked in at a neighborhood.
  */
 interface Props {
   neighborhoods: Neighborhood[];
   selectedId?: string | null;
   onSelect?: (hood: Neighborhood | null) => void;
+  friends?: Friend[];
 }
 
 const LEVEL_COLOR: Record<ReturnType<typeof crowdLevel>, string> = {
-  quiet: '#34d399',
-  moderate: '#fbbf24',
-  busy: '#ff8c42',
-  peak: '#ff4d6a',
+  quiet: 'var(--k-color-green)',
+  moderate: 'var(--k-color-amber)',
+  busy: 'var(--k-color-orange)',
+  peak: 'var(--k-color-coral)',
 };
 
 const LEVEL_LABEL: Record<ReturnType<typeof crowdLevel>, string> = {
@@ -26,7 +30,7 @@ const LEVEL_LABEL: Record<ReturnType<typeof crowdLevel>, string> = {
   peak: 'Peak',
 };
 
-export function NeighborhoodGrid({ neighborhoods, selectedId, onSelect }: Props) {
+export function NeighborhoodGrid({ neighborhoods, selectedId, onSelect, friends = [] }: Props) {
   const hoodsWithCrowd = useMemo(() =>
     neighborhoods.map(h => {
       const crowd = getNeighborhoodCrowd(h);
@@ -38,6 +42,10 @@ export function NeighborhoodGrid({ neighborhoods, selectedId, onSelect }: Props)
   // How many are "hot" or "peak" right now
   const hotCount = hoodsWithCrowd.filter(h => h.level === 'busy' || h.level === 'peak').length;
 
+  // Friends grouped by neighborhood
+  const friendMap = useMemo(() => friendsByNeighborhood(friends), [friends]);
+  const totalFriendsOut = friends.filter(f => f.neighborhoodId && f.lastSeen === 'now').length;
+
   return (
     <div>
       {/* Header row */}
@@ -46,9 +54,16 @@ export function NeighborhoodGrid({ neighborhoods, selectedId, onSelect }: Props)
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--k-color-coral)] animate-pulse" />
           <p className="type-overline text-[var(--k-text-m)] text-[9px]">Neighborhoods Live</p>
         </div>
-        <p className="text-[10px] font-bold text-[var(--k-text-m)]">
-          <span className="text-[var(--k-color-coral)]">{hotCount}</span> hot now
-        </p>
+        <div className="flex items-center gap-2.5">
+          {totalFriendsOut > 0 && (
+            <p className="text-[10px] font-bold text-[var(--k-text-m)]">
+              <span className="text-[var(--k-color-cyan)]">{totalFriendsOut}</span> friends out
+            </p>
+          )}
+          <p className="text-[10px] font-bold text-[var(--k-text-m)]">
+            <span className="text-[var(--k-color-coral)]">{hotCount}</span> hot now
+          </p>
+        </div>
       </div>
 
       {/* 3×2 grid */}
@@ -56,6 +71,7 @@ export function NeighborhoodGrid({ neighborhoods, selectedId, onSelect }: Props)
         {hoodsWithCrowd.map(h => {
           const color = LEVEL_COLOR[h.level];
           const isSelected = selectedId === h.id;
+          const hoodFriends = friendMap.get(h.id) ?? [];
           return (
             <button
               key={h.id}
@@ -87,6 +103,33 @@ export function NeighborhoodGrid({ neighborhoods, selectedId, onSelect }: Props)
                   animation: `nh-pulse ${h.level === 'peak' ? 1.8 : h.level === 'busy' ? 2.4 : h.level === 'moderate' ? 3.2 : 4.5}s ease-in-out infinite`,
                 }}
               />
+
+              {/* Friend avatars — top right (overlay, so the emoji stays visible) */}
+              {hoodFriends.length > 0 && (
+                <div className="absolute top-2 right-2 flex -space-x-1.5 z-10">
+                  {hoodFriends.slice(0, 2).map((f) => (
+                    <div
+                      key={f.id}
+                      className="w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center text-[6px] font-black text-white"
+                      style={{
+                        background: f.avatarColor,
+                        borderColor: 'var(--k-bg)',
+                      }}
+                      title={`${f.name} ${f.lastSeen === 'now' ? 'is here' : `was here ${f.lastSeen}`}`}
+                    >
+                      {f.initials}
+                    </div>
+                  ))}
+                  {hoodFriends.length > 2 && (
+                    <div
+                      className="w-4 h-4 rounded-full border-[1.5px] bg-[var(--k-surface-solid)] flex items-center justify-center text-[6px] font-black text-[var(--k-text-m)]"
+                      style={{ borderColor: 'var(--k-bg)' }}
+                    >
+                      +{hoodFriends.length - 2}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Emoji */}
               <span className="text-[22px] block relative leading-none">{h.emoji}</span>

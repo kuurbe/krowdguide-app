@@ -7,8 +7,8 @@ import type { DataLayerType } from '../../types';
 const LAYER_OPTIONS: { id: DataLayerType; icon: typeof Bus; label: string; color: string }[] = [
   { id: 'transit',       icon: Bus,           label: 'Transit',     color: '#3b82f6' },
   { id: 'bikes',         icon: Bike,          label: 'Bikes',       color: '#22c55e' },
-  { id: 'ev',            icon: Zap,           label: 'EV',          color: '#22d3ee' },
-  { id: 'accessibility', icon: Accessibility, label: 'Access',      color: '#a855f7' },
+  { id: 'ev',            icon: Zap,           label: 'EV',          color: 'var(--k-color-cyan)' },
+  { id: 'accessibility', icon: Accessibility, label: 'Access',      color: 'var(--k-color-purple)' },
   { id: 'isochrone',     icon: Timer,         label: 'Walk Range',  color: '#f97316' },
 ];
 

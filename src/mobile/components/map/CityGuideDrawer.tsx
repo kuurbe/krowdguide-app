@@ -12,6 +12,7 @@ import { QuestCard } from '../shared/QuestCard';
 import { NeighborhoodGrid } from '../shared/NeighborhoodGrid';
 import { FocusCard } from '../shared/FocusCard';
 import { getNeighborhoodsForCity, type Neighborhood } from '../../data/neighborhoods';
+import { getFriendsForCity } from '../../data/friends';
 import { getQuestsForCity } from '../../data/quests';
 import { SwipeStack } from '../shared/SwipeStack';
 import {
@@ -39,10 +40,10 @@ const WEATHER_ICONS: Record<WeatherIcon, typeof Cloud> = {
 /** Adaptive theming based on time of day */
 function getTimeContext() {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 11) return { label: 'Morning', greeting: 'Good morning', accent: '#ff8c42', featured: 'dining' as CategoryId };
-  if (hour >= 11 && hour < 17) return { label: 'Afternoon', greeting: 'Good afternoon', accent: '#fbbf24', featured: 'parks' as CategoryId };
-  if (hour >= 17 && hour < 21) return { label: 'Evening', greeting: 'Good evening', accent: '#ff4d6a', featured: 'dining' as CategoryId };
-  return { label: 'Night', greeting: 'Good night', accent: '#a855f7', featured: 'nightlife' as CategoryId };
+  if (hour >= 5 && hour < 11) return { label: 'Morning', greeting: 'Good morning', accent: 'var(--k-color-orange)', featured: 'dining' as CategoryId };
+  if (hour >= 11 && hour < 17) return { label: 'Afternoon', greeting: 'Good afternoon', accent: 'var(--k-color-amber)', featured: 'parks' as CategoryId };
+  if (hour >= 17 && hour < 21) return { label: 'Evening', greeting: 'Good evening', accent: 'var(--k-color-coral)', featured: 'dining' as CategoryId };
+  return { label: 'Night', greeting: 'Good night', accent: 'var(--k-color-purple)', featured: 'nightlife' as CategoryId };
 }
 
 export function CityGuideDrawer({
@@ -62,6 +63,7 @@ export function CityGuideDrawer({
   const [swipeMode, setSwipeMode] = useState(false);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<Neighborhood | null>(null);
   const cityNeighborhoods = useMemo(() => getNeighborhoodsForCity(selectedCity.id), [selectedCity.id]);
+  const cityFriends = useMemo(() => getFriendsForCity(selectedCity.id), [selectedCity.id]);
   const [peekedVenue, setPeekedVenue] = useState<Venue | null>(null);
 
   const timeCtx = useMemo(() => getTimeContext(), []);
@@ -204,6 +206,7 @@ export function CityGuideDrawer({
                   neighborhoods={cityNeighborhoods}
                   selectedId={selectedNeighborhood?.id ?? null}
                   onSelect={setSelectedNeighborhood}
+                  friends={cityFriends}
                 />
               </div>
 
@@ -469,7 +472,7 @@ function PopularVenueCard({
               values={generateForecast(venue.id, venue.pct, 6)}
               width={48}
               height={18}
-              color={venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399'}
+              color={venue.crowd === 'busy' ? 'var(--k-color-coral)' : venue.crowd === 'moderate' ? 'var(--k-color-amber)' : 'var(--k-color-green)'}
             />
             <span className="text-[9px] font-bold text-[var(--k-text-f)] uppercase tracking-wider">6h</span>
           </div>

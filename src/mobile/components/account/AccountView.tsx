@@ -172,7 +172,7 @@ export function AccountView() {
                       <p className="text-[11px] text-[var(--k-text-m)]">{v.type} · {v.dist}</p>
                     </div>
                     <button onClick={() => toggleFavorite(v.id)} className="ios-press">
-                      <Heart className="w-4 h-4 text-[#ff4d6a] fill-[#ff4d6a]" />
+                      <Heart className="w-4 h-4 text-[var(--k-color-coral)] fill-[var(--k-color-coral)]" />
                     </button>
                   </div>
                 ))}

@@ -43,7 +43,7 @@ export function AIVenueCard({ venue, index = 0, showHHDeal = false }: AIVenueCar
           {venue.type} · {venue.dist}
         </p>
         {showHHDeal && venue.hasHH && venue.hhDeal && (
-          <p className="text-[10px] text-[#ff8c42] font-semibold truncate mt-0.5">
+          <p className="text-[10px] text-[var(--k-color-orange)] font-semibold truncate mt-0.5">
             {venue.hhDeal}
           </p>
         )}
@@ -61,7 +61,7 @@ export function AIVenueCard({ venue, index = 0, showHHDeal = false }: AIVenueCar
           aria-label={fav ? 'Remove from favorites' : 'Add to favorites'}
         >
           <Heart
-            className={`w-3.5 h-3.5 transition-colors ${fav ? 'text-[#ff4d6a] fill-[#ff4d6a]' : 'text-[var(--k-text-f)]'}`}
+            className={`w-3.5 h-3.5 transition-colors ${fav ? 'text-[var(--k-color-coral)] fill-[var(--k-color-coral)]' : 'text-[var(--k-text-f)]'}`}
           />
         </button>
         <button
@@ -69,11 +69,11 @@ export function AIVenueCard({ venue, index = 0, showHHDeal = false }: AIVenueCar
             e.stopPropagation();
             startDirections({ coords: venue.coordinates, name: venue.name });
           }}
-          className="w-7 h-7 rounded-lg bg-[#ff4d6a]/10 flex items-center justify-center
+          className="w-7 h-7 rounded-lg bg-[var(--k-color-coral)]/10 flex items-center justify-center
                      active:scale-90 transition-all"
           aria-label={`Directions to ${venue.name}`}
         >
-          <Navigation className="w-3.5 h-3.5 text-[#ff4d6a]" />
+          <Navigation className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
         </button>
       </div>
     </div>

@@ -76,7 +76,7 @@ export function ExpandableVenueCard({ venue }: { venue: Venue }) {
             <div className="relative h-[140px] rounded-xl overflow-hidden">
               <img src={venue.image} alt={venue.name} className="w-full h-full object-cover" />
               <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold
-                              ${venue.crowd === 'busy' ? 'bg-[#ff4d6a]/90 text-white' :
+                              ${venue.crowd === 'busy' ? 'bg-[var(--k-color-coral)]/90 text-white' :
                                 venue.crowd === 'moderate' ? 'bg-amber-500/90 text-white' :
                                 'bg-emerald-500/90 text-white'}`}>
                 {venue.pct}% LOAD
@@ -90,8 +90,8 @@ export function ExpandableVenueCard({ venue }: { venue: Venue }) {
           {/* Happy hour info */}
           {venue.hasHH && (
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl glass-chip">
-              <Beer className="w-3.5 h-3.5 text-[#ff8c42] flex-shrink-0" />
-              <span className="text-[12px] font-bold text-[#ff8c42]">{venue.hhDeal}</span>
+              <Beer className="w-3.5 h-3.5 text-[var(--k-color-orange)] flex-shrink-0" />
+              <span className="text-[12px] font-bold text-[var(--k-color-orange)]">{venue.hhDeal}</span>
             </div>
           )}
 
@@ -112,7 +112,7 @@ export function ExpandableVenueCard({ venue }: { venue: Venue }) {
                            }`}
                 style={{
                   ...(id === 'walking' ? {
-                    background: 'linear-gradient(135deg, #ff4d6a, #ff8c42)',
+                    background: 'linear-gradient(135deg, var(--k-color-coral), var(--k-color-orange))',
                     boxShadow: '0 3px 12px rgba(255,77,106,0.25)',
                   } : {}),
                   transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',

@@ -53,7 +53,7 @@ export function InstallPrompt() {
       {/* Install banner */}
       <div className="fixed bottom-[76px] left-4 right-4 z-[1050] animate-fadeUp">
         <div className="liquid-glass glass-border-glow rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#ff4d6a]/15 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[var(--k-color-coral)]/15 flex items-center justify-center flex-shrink-0">
             <Download className="w-5 h-5 text-[var(--k-color-coral)]" />
           </div>
           <div className="flex-1 min-w-0">
@@ -63,7 +63,7 @@ export function InstallPrompt() {
           <button
             onClick={handleInstall}
             className="px-4 py-2 rounded-full text-[12px] font-bold text-white ios-press flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #ff4d6a, #ff8c42)' }}
+            style={{ background: 'linear-gradient(135deg, var(--k-color-coral), var(--k-color-orange))' }}
           >
             Install
           </button>
@@ -77,7 +77,7 @@ export function InstallPrompt() {
       {showIOSGuide && (
         <div className="fixed inset-0 z-[2000] bg-black/70 flex items-end justify-center p-4" onClick={() => setShowIOSGuide(false)}>
           <div className="liquid-glass glass-border-glow rounded-2xl p-6 max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-2xl bg-[#ff4d6a]/15 flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--k-color-coral)]/15 flex items-center justify-center mx-auto mb-4">
               <span className="text-[20px] font-black text-[var(--k-color-coral)] font-syne">KG</span>
             </div>
             <h3 className="font-syne font-bold text-[18px] text-[var(--k-text)] mb-2">Add KrowdGuide</h3>

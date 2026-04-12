@@ -53,7 +53,7 @@ export function VenueSection({ icon, title, accentColor, venues, onVenueTap, ven
       <div className="grid grid-cols-2 gap-3">
         {visible.map((venue, i) => {
           const fav = isFavorite(venue.id);
-          const crowdColor = venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399';
+          const crowdColor = venue.crowd === 'busy' ? 'var(--k-color-coral)' : venue.crowd === 'moderate' ? 'var(--k-color-amber)' : 'var(--k-color-green)';
           return (
             <div
               key={venue.id}
@@ -94,7 +94,7 @@ export function VenueSection({ icon, title, accentColor, venues, onVenueTap, ven
                 <div
                   className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-bold
                              backdrop-blur-sm text-white
-                             ${venue.crowd === 'busy' ? 'bg-[#ff4d6a]/80' :
+                             ${venue.crowd === 'busy' ? 'bg-[var(--k-color-coral)]/80' :
                                venue.crowd === 'moderate' ? 'bg-amber-500/80' :
                                'bg-emerald-500/80'}`}
                 >
@@ -111,7 +111,7 @@ export function VenueSection({ icon, title, accentColor, venues, onVenueTap, ven
                   aria-label={fav ? 'Remove from favorites' : 'Add to favorites'}
                 >
                   <Heart
-                    className={`w-3.5 h-3.5 transition-colors ${fav ? 'text-[#ff4d6a] fill-[#ff4d6a]' : 'text-white/70'}`}
+                    className={`w-3.5 h-3.5 transition-colors ${fav ? 'text-[var(--k-color-coral)] fill-[var(--k-color-coral)]' : 'text-white/70'}`}
                   />
                 </button>
 

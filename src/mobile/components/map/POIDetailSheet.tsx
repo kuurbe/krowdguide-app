@@ -335,7 +335,7 @@ export function POIDetailSheet() {
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  saved ? 'bg-[#ff4d6a]/15' : 'glass-chip'
+                  saved ? 'bg-[var(--k-color-coral)]/15' : 'glass-chip'
                 }`}
               >
                 <Heart

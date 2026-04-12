@@ -10,9 +10,9 @@ interface ContextFiltersProps {
 
 const CROWD_OPTIONS = [
   { id: 'any', label: 'Any', color: '' },
-  { id: 'quiet', label: 'Quiet', color: '#34d399' },
-  { id: 'moderate', label: 'Moderate', color: '#fbbf24' },
-  { id: 'busy', label: 'Buzzing', color: '#ff4d6a' },
+  { id: 'quiet', label: 'Quiet', color: 'var(--k-color-green)' },
+  { id: 'moderate', label: 'Moderate', color: 'var(--k-color-amber)' },
+  { id: 'busy', label: 'Buzzing', color: 'var(--k-color-coral)' },
 ];
 
 const TYPE_OPTIONS = [
@@ -47,8 +47,8 @@ function Pill({
                     : 'bg-transparent border border-[var(--k-border)] text-[var(--k-text-m)] hover:text-[var(--k-text)] hover:border-[var(--k-text-f)]'
                   }`}
       style={active ? {
-        backgroundColor: accentColor || '#ff4d6a',
-        boxShadow: `0 2px 16px ${accentColor || '#ff4d6a'}50, 0 0 4px ${accentColor || '#ff4d6a'}30`,
+        backgroundColor: accentColor || 'var(--k-color-coral)',
+        boxShadow: `0 2px 16px ${accentColor || 'var(--k-color-coral)'}50, 0 0 4px ${accentColor || 'var(--k-color-coral)'}30`,
       } : undefined}
     >
       {label}
@@ -97,7 +97,7 @@ export function ContextFilters({
       <Pill
         label="Best Now"
         active={smartSort}
-        accentColor="#a855f7"
+        accentColor="var(--k-color-purple)"
         onClick={() => setSmartSort(!smartSort)}
       />
     </div>

@@ -13,12 +13,12 @@ interface ManeuverIconProps {
 }
 
 export function ManeuverIcon({ type, modifier, size = 20, active = false, className }: ManeuverIconProps) {
-  const color = active ? 'text-[#22d3ee]' : 'text-[var(--k-text-2)]';
+  const color = active ? 'text-[var(--k-color-cyan)]' : 'text-[var(--k-text-2)]';
   const props = { className: cn(color, className), style: { width: size, height: size } };
 
   // Depart / Arrive
   if (type === 'depart') return <Circle {...props} className={cn('text-emerald-400', className)} />;
-  if (type === 'arrive') return <MapPin {...props} className={cn('text-[#ff4d6a]', className)} />;
+  if (type === 'arrive') return <MapPin {...props} className={cn('text-[var(--k-color-coral)]', className)} />;
 
   // Roundabout
   if (type === 'roundabout' || type === 'rotary') return <RotateCw {...props} />;

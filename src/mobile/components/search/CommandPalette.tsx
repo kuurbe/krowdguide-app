@@ -9,10 +9,10 @@ import type { SearchSuggestion } from '../../services/searchBoxService';
 import type { Venue } from '../../types';
 
 const QUICK_ACTIONS = [
-  { id: 'busy', label: 'Show busy venues', Icon: Flame, color: '#ff4d6a' },
-  { id: 'quiet', label: 'Find quiet spots', Icon: Volume1, color: '#34d399' },
-  { id: 'hh', label: 'Happy hour deals', Icon: Beer, color: '#ff8c42' },
-  { id: 'nearest', label: 'Nearest venue', Icon: MapPin, color: '#22d3ee' },
+  { id: 'busy', label: 'Show busy venues', Icon: Flame, color: 'var(--k-color-coral)' },
+  { id: 'quiet', label: 'Find quiet spots', Icon: Volume1, color: 'var(--k-color-green)' },
+  { id: 'hh', label: 'Happy hour deals', Icon: Beer, color: 'var(--k-color-orange)' },
+  { id: 'nearest', label: 'Nearest venue', Icon: MapPin, color: 'var(--k-color-cyan)' },
 ] as const;
 
 const CATEGORIES = [
@@ -227,7 +227,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
                   onClick={() => handlePOISelect(poi)}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--k-surface-h)] transition-colors text-left"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#ff4d6a]/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--k-color-coral)]/10 flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-4 h-4 text-[var(--k-color-coral)]" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -236,7 +236,7 @@ export function CommandPalette({ open, onOpenChange, venues, onVenueSelect, onQu
                   </div>
                   <button
                     onClick={(e) => handlePOIDirections(e, poi)}
-                    className="w-8 h-8 rounded-lg bg-[#ff4d6a]/10 flex items-center justify-center flex-shrink-0 ios-press"
+                    className="w-8 h-8 rounded-lg bg-[var(--k-color-coral)]/10 flex items-center justify-center flex-shrink-0 ios-press"
                   >
                     <Navigation className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
                   </button>

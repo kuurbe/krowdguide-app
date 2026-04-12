@@ -197,7 +197,7 @@ export function SwipeStack({ venues, onSave, onSkip, onDirections }: SwipeStackP
           style={{ boxShadow: 'inset 0 0 0 1px rgba(255, 77, 106, 0.4)' }}
           aria-label="Skip"
         >
-          <X className="w-6 h-6 text-[#ff4d6a]" strokeWidth={2.5} />
+          <X className="w-6 h-6 text-[var(--k-color-coral)]" strokeWidth={2.5} />
         </button>
         <button
           onClick={() => commit('up')}
@@ -205,7 +205,7 @@ export function SwipeStack({ venues, onSave, onSkip, onDirections }: SwipeStackP
           style={{ boxShadow: 'inset 0 0 0 1px rgba(34, 211, 238, 0.4)' }}
           aria-label="Directions"
         >
-          <Navigation className="w-5 h-5 text-[#22d3ee]" strokeWidth={2.5} />
+          <Navigation className="w-5 h-5 text-[var(--k-color-cyan)]" strokeWidth={2.5} />
         </button>
         <button
           onClick={() => commit('right')}
@@ -213,7 +213,7 @@ export function SwipeStack({ venues, onSave, onSkip, onDirections }: SwipeStackP
           style={{ boxShadow: 'inset 0 0 0 1px rgba(52, 211, 153, 0.5)' }}
           aria-label="Save"
         >
-          <Heart className="w-6 h-6 text-[#34d399]" fill="#34d399" strokeWidth={2} />
+          <Heart className="w-6 h-6 text-[var(--k-color-green)]" fill="#34d399" strokeWidth={2} />
         </button>
       </div>
 
@@ -277,13 +277,13 @@ function CardContent({
           style={{
             opacity: rightOpacity,
             transform: `rotate(-12deg) scale(${0.9 + rightOpacity * 0.15})`,
-            border: '2.5px solid #34d399',
+            border: '2.5px solid var(--k-color-green)',
             background: 'rgba(52, 211, 153, 0.18)',
             backdropFilter: 'blur(6px)',
           }}
         >
-          <Heart className="w-4 h-4 text-[#34d399]" fill="#34d399" />
-          <span className="text-[14px] font-extrabold text-[#34d399] tracking-wider">SAVE</span>
+          <Heart className="w-4 h-4 text-[var(--k-color-green)]" fill="#34d399" />
+          <span className="text-[14px] font-extrabold text-[var(--k-color-green)] tracking-wider">SAVE</span>
         </div>
 
         {/* Ghost badge: SKIP (left) */}
@@ -292,13 +292,13 @@ function CardContent({
           style={{
             opacity: leftOpacity,
             transform: `rotate(12deg) scale(${0.9 + leftOpacity * 0.15})`,
-            border: '2.5px solid #ff4d6a',
+            border: '2.5px solid var(--k-color-coral)',
             background: 'rgba(255, 77, 106, 0.18)',
             backdropFilter: 'blur(6px)',
           }}
         >
-          <X className="w-4 h-4 text-[#ff4d6a]" strokeWidth={3} />
-          <span className="text-[14px] font-extrabold text-[#ff4d6a] tracking-wider">SKIP</span>
+          <X className="w-4 h-4 text-[var(--k-color-coral)]" strokeWidth={3} />
+          <span className="text-[14px] font-extrabold text-[var(--k-color-coral)] tracking-wider">SKIP</span>
         </div>
 
         {/* Ghost badge: GO (up) */}
@@ -307,13 +307,13 @@ function CardContent({
           style={{
             opacity: upOpacity,
             transform: `translate(-50%, -50%) scale(${0.9 + upOpacity * 0.2})`,
-            border: '2.5px solid #22d3ee',
+            border: '2.5px solid var(--k-color-cyan)',
             background: 'rgba(34, 211, 238, 0.18)',
             backdropFilter: 'blur(6px)',
           }}
         >
-          <Navigation className="w-4 h-4 text-[#22d3ee]" fill="#22d3ee" />
-          <span className="text-[14px] font-extrabold text-[#22d3ee] tracking-wider">GO</span>
+          <Navigation className="w-4 h-4 text-[var(--k-color-cyan)]" fill="#22d3ee" />
+          <span className="text-[14px] font-extrabold text-[var(--k-color-cyan)] tracking-wider">GO</span>
         </div>
       </div>
 

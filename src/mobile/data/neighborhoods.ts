@@ -12,24 +12,26 @@ export interface Neighborhood {
   venueCount: number;
   cityId: string;
   vibe: string; // short 1-word flavor
+  /** Approximate center [lat, lng] — used for map heat-cloud overlays */
+  center: [number, number];
 }
 
 const DALLAS: Neighborhood[] = [
-  { id: 'dal-de', name: 'Deep Ellum', emoji: '🎸', venueCount: 18, cityId: 'dallas', vibe: 'Live' },
-  { id: 'dal-ba', name: 'Bishop Arts', emoji: '🎨', venueCount: 12, cityId: 'dallas', vibe: 'Chill' },
-  { id: 'dal-up', name: 'Uptown', emoji: '🍸', venueCount: 22, cityId: 'dallas', vibe: 'Hot' },
-  { id: 'dal-kn', name: 'Knox-Henderson', emoji: '🍽️', venueCount: 14, cityId: 'dallas', vibe: 'Foodie' },
-  { id: 'dal-gr', name: 'Greenville', emoji: '🌳', venueCount: 9, cityId: 'dallas', vibe: 'Local' },
-  { id: 'dal-vc', name: 'Victory Park', emoji: '🏟️', venueCount: 8, cityId: 'dallas', vibe: 'Events' },
+  { id: 'dal-de', name: 'Deep Ellum', emoji: '🎸', venueCount: 18, cityId: 'dallas', vibe: 'Live', center: [32.7842, -96.7843] },
+  { id: 'dal-ba', name: 'Bishop Arts', emoji: '🎨', venueCount: 12, cityId: 'dallas', vibe: 'Chill', center: [32.7485, -96.8274] },
+  { id: 'dal-up', name: 'Uptown', emoji: '🍸', venueCount: 22, cityId: 'dallas', vibe: 'Hot', center: [32.7982, -96.8024] },
+  { id: 'dal-kn', name: 'Knox-Henderson', emoji: '🍽️', venueCount: 14, cityId: 'dallas', vibe: 'Foodie', center: [32.8177, -96.7868] },
+  { id: 'dal-gr', name: 'Greenville', emoji: '🌳', venueCount: 9, cityId: 'dallas', vibe: 'Local', center: [32.8260, -96.7713] },
+  { id: 'dal-vc', name: 'Victory Park', emoji: '🏟️', venueCount: 8, cityId: 'dallas', vibe: 'Events', center: [32.7905, -96.8114] },
 ];
 
 const RENO: Neighborhood[] = [
-  { id: 'ren-mt', name: 'Midtown', emoji: '☕', venueCount: 16, cityId: 'reno', vibe: 'Indie' },
-  { id: 'ren-dr', name: 'Downtown', emoji: '🎰', venueCount: 24, cityId: 'reno', vibe: 'Hot' },
-  { id: 'ren-ad', name: 'Arts District', emoji: '🎨', venueCount: 10, cityId: 'reno', vibe: 'Creative' },
-  { id: 'ren-wl', name: 'Riverwalk', emoji: '🌊', venueCount: 13, cityId: 'reno', vibe: 'Chill' },
-  { id: 'ren-ol', name: 'Old Southwest', emoji: '🏡', venueCount: 7, cityId: 'reno', vibe: 'Cozy' },
-  { id: 'ren-ue', name: 'University', emoji: '🎓', venueCount: 11, cityId: 'reno', vibe: 'Young' },
+  { id: 'ren-mt', name: 'Midtown', emoji: '☕', venueCount: 16, cityId: 'reno', vibe: 'Indie', center: [39.5108, -119.8135] },
+  { id: 'ren-dr', name: 'Downtown', emoji: '🎰', venueCount: 24, cityId: 'reno', vibe: 'Hot', center: [39.5296, -119.8138] },
+  { id: 'ren-ad', name: 'Arts District', emoji: '🎨', venueCount: 10, cityId: 'reno', vibe: 'Creative', center: [39.5250, -119.8170] },
+  { id: 'ren-wl', name: 'Riverwalk', emoji: '🌊', venueCount: 13, cityId: 'reno', vibe: 'Chill', center: [39.5245, -119.8130] },
+  { id: 'ren-ol', name: 'Old Southwest', emoji: '🏡', venueCount: 7, cityId: 'reno', vibe: 'Cozy', center: [39.5180, -119.8200] },
+  { id: 'ren-ue', name: 'University', emoji: '🎓', venueCount: 11, cityId: 'reno', vibe: 'Young', center: [39.5422, -119.8160] },
 ];
 
 export function getNeighborhoodsForCity(cityId: string): Neighborhood[] {

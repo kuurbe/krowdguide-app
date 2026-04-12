@@ -43,7 +43,7 @@ function buildRecommendations(venues: Venue[]): Recommendation[] {
       subtitle: `Quietest window right now — ${quietest.pct}% crowd`,
       action: 'Walk here',
       venue: quietest,
-      accent: '#34d399',
+      accent: 'var(--k-color-green)',
       icon: Sparkles,
     });
   }
@@ -58,7 +58,7 @@ function buildRecommendations(venues: Venue[]): Recommendation[] {
       subtitle: hh.hhDeal || 'Happy hour running now',
       action: 'Get directions',
       venue: hh,
-      accent: '#ff8c42',
+      accent: 'var(--k-color-orange)',
       icon: Clock,
     });
   }
@@ -73,7 +73,7 @@ function buildRecommendations(venues: Venue[]): Recommendation[] {
       subtitle: `${busiest.pct}% capacity — arrive by 8pm or wait`,
       action: 'See alternatives',
       venue: busiest,
-      accent: '#ff4d6a',
+      accent: 'var(--k-color-coral)',
       icon: Flame,
     });
   }
@@ -88,7 +88,7 @@ function buildRecommendations(venues: Venue[]): Recommendation[] {
       subtitle: `${gem.rating}★ rating, not overrun yet`,
       action: 'View details',
       venue: gem,
-      accent: '#a855f7',
+      accent: 'var(--k-color-purple)',
       icon: Zap,
     });
   }
@@ -105,7 +105,7 @@ function buildRecommendations(venues: Venue[]): Recommendation[] {
         subtitle: 'Sunset in 18 min — best views in the city',
         action: 'Take me there',
         venue: rooftop,
-        accent: '#ff8c42',
+        accent: 'var(--k-color-orange)',
         icon: MapPin,
       });
     }
@@ -121,7 +121,7 @@ function buildRecommendations(venues: Venue[]): Recommendation[] {
       subtitle: `Buzzing with ${v.pct}% crowd — momentum rising`,
       action: 'Check it out',
       venue: v,
-      accent: '#22d3ee',
+      accent: 'var(--k-color-cyan)',
       icon: Flame,
     });
   }

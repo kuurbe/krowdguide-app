@@ -12,9 +12,9 @@ import {
 
 /* ── colour helpers ── */
 function crowdColor(value: number): string {
-  if (value >= 70) return '#ff4d6a';
-  if (value >= 40) return '#fbbf24';
-  return '#34d399';
+  if (value >= 70) return 'var(--k-color-coral)';
+  if (value >= 40) return 'var(--k-color-amber)';
+  return 'var(--k-color-green)';
 }
 
 /* ── Custom tooltip ── */

@@ -119,7 +119,7 @@ export function BottomNav({
             />
             <span className={cn(
               'text-[8px] font-bold tracking-[0.03em] transition-all duration-200',
-              isActive ? 'text-[#ff4d6a] opacity-100' : 'text-[var(--k-text-f)] opacity-70'
+              isActive ? 'text-[var(--k-color-coral)] opacity-100' : 'text-[var(--k-text-f)] opacity-70'
             )}>
               {tab.label}
             </span>

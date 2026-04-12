@@ -157,7 +157,7 @@ export function VenueDetailSheet({
 
             {/* Crowd % badge — top right */}
             <div className={`absolute top-3 right-3 z-10 px-3 py-1.5 rounded-full text-[12px] font-extrabold backdrop-blur-md border
-                            ${venue.crowd === 'busy' ? 'bg-[#ff4d6a]/80 border-[#ff4d6a]/40 text-white' :
+                            ${venue.crowd === 'busy' ? 'bg-[var(--k-color-coral)]/80 border-[var(--k-color-coral)]/40 text-white' :
                               venue.crowd === 'moderate' ? 'bg-amber-500/80 border-amber-400/40 text-white' :
                               'bg-emerald-500/80 border-emerald-400/40 text-white'}`}>
               {venue.crowd} {venue.pct}%
@@ -250,10 +250,10 @@ export function VenueDetailSheet({
             <div className="liquid-glass rounded-[16px] p-4 flex items-center gap-4">
               <VibeRadar venue={venue} size={130} />
               <div className="flex-1 min-w-0 space-y-2">
-                <VibeStat label="Energy" value={energyLevel} color="#ff4d6a" />
-                <VibeStat label="Noise" value={noiseLevel} color="#ff8c42" />
-                <VibeStat label="Mix" value={mixLevel} color="#a855f7" />
-                <VibeStat label="Wait" value={waitLevel} color="#fbbf24" />
+                <VibeStat label="Energy" value={energyLevel} color="var(--k-color-coral)" />
+                <VibeStat label="Noise" value={noiseLevel} color="var(--k-color-orange)" />
+                <VibeStat label="Mix" value={mixLevel} color="var(--k-color-purple)" />
+                <VibeStat label="Wait" value={waitLevel} color="var(--k-color-amber)" />
               </div>
             </div>
           </div>
@@ -336,7 +336,7 @@ export function VenueDetailSheet({
           {/* Action row — Save / Share */}
           <div className="flex items-center justify-center gap-6 mb-5">
             <button onClick={() => toggleFavorite(venue.id)} className="flex flex-col items-center gap-1 ios-press">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${fav ? 'bg-[#ff4d6a]/15' : 'glass-chip'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${fav ? 'bg-[var(--k-color-coral)]/15' : 'glass-chip'}`}>
                 <Heart className={`w-[18px] h-[18px] ${fav ? 'text-[var(--k-color-coral)] fill-[var(--k-color-coral)]' : 'text-[var(--k-text-m)]'}`} />
               </div>
               <span className="text-[10px] font-semibold text-[var(--k-text-m)]">{fav ? 'Saved' : 'Save'}</span>

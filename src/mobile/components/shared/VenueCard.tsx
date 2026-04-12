@@ -6,7 +6,7 @@ import { useAppContext } from '../../context';
 export function VenueCard({ venue, verified }: { venue: Venue; verified?: boolean }) {
   const { startDirections } = useAppContext();
   const isOracle = venue.id.startsWith('oracle-');
-  const crowdColor = venue.crowd === 'busy' ? '#ff4d6a' : venue.crowd === 'moderate' ? '#fbbf24' : '#34d399';
+  const crowdColor = venue.crowd === 'busy' ? 'var(--k-color-coral)' : venue.crowd === 'moderate' ? 'var(--k-color-amber)' : 'var(--k-color-green)';
 
   return (
     <div
@@ -32,7 +32,7 @@ export function VenueCard({ venue, verified }: { venue: Venue; verified?: boolea
           <p className="text-[12px] text-amber-400 mt-1 font-semibold">⏱️ ~{venue.wait}</p>
         )}
         {venue.hasHH && (
-          <p className="text-[12px] text-[#ff8c42] mt-1 font-semibold">🍺 HH: {venue.hhDeal}</p>
+          <p className="text-[12px] text-[var(--k-color-orange)] mt-1 font-semibold">🍺 HH: {venue.hhDeal}</p>
         )}
         {(isOracle || verified) && (
           <div className="flex items-center gap-1.5 mt-1.5">
@@ -45,10 +45,10 @@ export function VenueCard({ venue, verified }: { venue: Venue; verified?: boolea
       <button
         onClick={(e) => { e.stopPropagation(); startDirections({ coords: venue.coordinates, name: venue.name }); }}
         aria-label={`Directions to ${venue.name}`}
-        className="self-center flex-shrink-0 w-11 h-11 rounded-2xl bg-[#ff4d6a]/10 flex items-center justify-center
-                   active:scale-90 transition-transform hover:bg-[#ff4d6a]/20"
+        className="self-center flex-shrink-0 w-11 h-11 rounded-2xl bg-[var(--k-color-coral)]/10 flex items-center justify-center
+                   active:scale-90 transition-transform hover:bg-[var(--k-color-coral)]/20"
       >
-        <Navigation className="w-4 h-4 text-[#ff4d6a]" />
+        <Navigation className="w-4 h-4 text-[var(--k-color-coral)]" />
       </button>
     </div>
   );

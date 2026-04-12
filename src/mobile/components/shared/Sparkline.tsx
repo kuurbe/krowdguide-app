@@ -9,7 +9,7 @@ export function Sparkline({
   values,
   width = 56,
   height = 20,
-  color = '#ff4d6a',
+  color = 'var(--k-color-coral)',
   showNowDot = true,
 }: {
   values: number[];

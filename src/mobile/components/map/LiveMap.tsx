@@ -8,6 +8,7 @@ import { NavigationOverlay } from './NavigationOverlay';
 import type { Venue } from '../../types';
 import { Navigation } from 'lucide-react';
 import { formatDistance } from '../../services/directionsService';
+import { getNeighborhoodsForCity, getNeighborhoodCrowd, crowdLevel } from '../../data/neighborhoods';
 
 mapboxgl.accessToken = MAPBOX_TOKEN;
 
@@ -395,6 +396,165 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
     }
   }, [highlightedVenueId, mapLoaded]);
 
+  // 6c. Neighborhood weather heat clouds — soft breathing radar blobs
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded) return;
+
+    const hoods = getNeighborhoodsForCity(selectedCity.id);
+    if (!hoods.length) return;
+
+    const COLOR_BY_LEVEL: Record<string, string> = {
+      quiet: '#34d399',
+      moderate: '#fbbf24',
+      busy: '#ff8c42',
+      peak: '#ff4d6a',
+    };
+
+    type HoodMeta = {
+      id: string;
+      sourceId: string;
+      layerId: string;
+      pct: number;
+      color: string;
+      // Pulse frequency in rad/sec — peak fast (~1.8s), calm slow (~4.5s)
+      freq: number;
+      // Random phase so they don't all breathe in lockstep
+      phase: number;
+    };
+
+    const metas: HoodMeta[] = [];
+    let cancelled = false;
+    let rafId: number | null = null;
+
+    function addCloudLayers() {
+      if (cancelled || !map) return;
+      const beforeLayer = map.getLayer('crowd-heat') ? 'crowd-heat' : undefined;
+
+      hoods.forEach((h, i) => {
+        const sourceId = `nh-heat-${h.id}`;
+        const layerId = `nh-heat-${h.id}`;
+
+        // Clean up any prior instance
+        try { if (map.getLayer(layerId)) map.removeLayer(layerId); } catch { /* no-op */ }
+        try { if (map.getSource(sourceId)) map.removeSource(sourceId); } catch { /* no-op */ }
+
+        const pct = getNeighborhoodCrowd(h);
+        const level = crowdLevel(pct);
+        const color = COLOR_BY_LEVEL[level] || '#34d399';
+
+        // Period scales linearly: peak (95%) → 1.8s, quiet (5%) → 4.5s
+        const periodSec = 4.5 - ((pct - 5) / 90) * (4.5 - 1.8);
+        const freq = (2 * Math.PI) / Math.max(1.5, periodSec);
+        const phase = (i / hoods.length) * Math.PI * 2;
+
+        map.addSource(sourceId, {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'Point', coordinates: [h.center[1], h.center[0]] },
+          },
+        });
+
+        const layerSpec: mapboxgl.CircleLayerSpecification = {
+          id: layerId,
+          type: 'circle',
+          source: sourceId,
+          paint: {
+            'circle-radius': [
+              'interpolate', ['linear'], ['zoom'],
+              6, 60,
+              10, 100,
+              14, 160,
+            ],
+            'circle-color': color,
+            'circle-blur': 1,
+            'circle-opacity': 0.25,
+            'circle-pitch-alignment': 'map',
+          },
+        };
+
+        try {
+          if (beforeLayer) {
+            map.addLayer(layerSpec, beforeLayer);
+          } else {
+            map.addLayer(layerSpec);
+          }
+        } catch {
+          map.addLayer(layerSpec);
+        }
+
+        metas.push({ id: h.id, sourceId, layerId, pct, color, freq, phase });
+      });
+    }
+
+    function startBreathing() {
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        if (cancelled || !map) return;
+        // Battery: pause when tab hidden
+        if (typeof document !== 'undefined' && document.hidden) {
+          rafId = requestAnimationFrame(tick);
+          return;
+        }
+        // Hide overlays during navigation
+        if (directions.navigating) {
+          rafId = requestAnimationFrame(tick);
+          return;
+        }
+        const t = (now - t0) / 1000;
+        for (const m of metas) {
+          if (!map.getLayer(m.layerId)) continue;
+          const sine = 0.5 + 0.5 * Math.sin(t * m.freq + m.phase);
+          // Opacity 0.15 → 0.38
+          const opacity = 0.15 + sine * 0.23;
+          // Radius multiplier 0.85 → 1.15 around base curve
+          const mul = 0.85 + sine * 0.30;
+          try {
+            map.setPaintProperty(m.layerId, 'circle-opacity', opacity);
+            map.setPaintProperty(m.layerId, 'circle-radius', [
+              'interpolate', ['linear'], ['zoom'],
+              6, 60 * mul,
+              10, 100 * mul,
+              14, 160 * mul,
+            ]);
+          } catch { /* no-op */ }
+        }
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function tryAdd(attempt = 0) {
+      if (cancelled || !map) return;
+      try {
+        if (map.isStyleLoaded()) {
+          addCloudLayers();
+          startBreathing();
+        } else if (attempt < 8) {
+          setTimeout(() => tryAdd(attempt + 1), 300 * (attempt + 1));
+        }
+      } catch {
+        if (attempt < 8) {
+          setTimeout(() => tryAdd(attempt + 1), 300 * (attempt + 1));
+        }
+      }
+    }
+    tryAdd();
+
+    return () => {
+      cancelled = true;
+      if (rafId != null) cancelAnimationFrame(rafId);
+      if (map) {
+        for (const m of metas) {
+          try { if (map.getLayer(m.layerId)) map.removeLayer(m.layerId); } catch { /* no-op */ }
+          try { if (map.getSource(m.sourceId)) map.removeSource(m.sourceId); } catch { /* no-op */ }
+        }
+      }
+    };
+  }, [mapLoaded, selectedCity, directions.navigating, mapRef]);
+
   // 7. Route rendering — draw directions polyline on map
   useEffect(() => {
     const map = mapRef.current;
@@ -676,11 +836,11 @@ export function LiveMap({ onKGClick, onSearchResults }: { onKGClick?: () => void
       {directions.active && !directions.navigating && directions.route && directions.route.steps.length > 0 && (
         <div className="absolute bottom-[180px] left-4 right-4 z-[200]">
           <div className="liquid-glass rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#ff4d6a]/15 flex items-center justify-center flex-shrink-0">
-              <Navigation className="w-5 h-5 text-[#ff4d6a]" />
+            <div className="w-10 h-10 rounded-xl bg-[var(--k-color-coral)]/15 flex items-center justify-center flex-shrink-0">
+              <Navigation className="w-5 h-5 text-[var(--k-color-coral)]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-[#ff4d6a] font-bold uppercase tracking-wider">
+              <p className="text-[11px] text-[var(--k-color-coral)] font-bold uppercase tracking-wider">
                 {formatDistance(directions.route.steps[0].distance)}
               </p>
               <p className="text-[14px] text-white font-semibold truncate">{directions.route.steps[0].instruction}</p>

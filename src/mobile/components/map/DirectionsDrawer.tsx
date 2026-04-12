@@ -84,7 +84,7 @@ export function DirectionsDrawer() {
                 </div>
 
                 {/* ETA badge */}
-                <div className="flex-shrink-0 text-center px-4 py-2 rounded-2xl bg-[#ff4d6a]/15">
+                <div className="flex-shrink-0 text-center px-4 py-2 rounded-2xl bg-[var(--k-color-coral)]/15">
                   <span className="text-[28px] font-syne font-black text-[var(--k-color-coral)] leading-none">{totalMin}</span>
                   <p className="text-[11px] font-bold text-[var(--k-color-coral)] -mt-0.5">min</p>
                 </div>
@@ -174,7 +174,7 @@ export function DirectionsDrawer() {
                             </div>
                           )}
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${i === 0 ? 'bg-[#ff4d6a]/15 text-[var(--k-color-coral)]' : 'bg-[var(--k-surface)] text-[var(--k-text-m)]'}`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${i === 0 ? 'bg-[var(--k-color-coral)]/15 text-[var(--k-color-coral)]' : 'bg-[var(--k-surface)] text-[var(--k-text-m)]'}`}>
                           {timeBadge}
                         </span>
                       </div>

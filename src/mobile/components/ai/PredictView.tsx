@@ -571,7 +571,7 @@ export function PredictView() {
                       key={i}
                       onClick={() => handleSend(chip)}
                       className="px-3.5 py-2 text-[12px] rounded-full glass-chip
-                                 hover:bg-[#ff4d6a]/8 hover:border-[#ff4d6a]/20 hover:text-[var(--k-color-coral)] transition-colors
+                                 hover:bg-[var(--k-color-coral)]/8 hover:border-[var(--k-color-coral)]/20 hover:text-[var(--k-color-coral)] transition-colors
                                  text-[var(--k-text-2)] font-medium animate-fadeUp"
                       style={{ animationDelay: `${i * 0.04}s` }}
                     >
@@ -692,7 +692,7 @@ export function PredictView() {
               </div>
             ) : (
               <div className="flex items-center gap-2 p-[5px] pl-4 rounded-2xl glass-chip
-                              focus-within:border-[#ff4d6a]/25 transition-all"
+                              focus-within:border-[var(--k-color-coral)]/25 transition-all"
                    style={{ transition: 'box-shadow 0.3s ease' }}>
                 <input
                   type="text"

@@ -51,7 +51,7 @@ export function EventCard({ event }: { event: TicketmasterEvent }) {
         <p className="text-[12px] text-[var(--k-color-coral)] mt-0.5 font-semibold">{venueName}</p>
         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
           {(date || time) && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--k-color-purple)] bg-[#a855f7]/10 px-2 py-[2px] rounded-full">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--k-color-purple)] bg-[var(--k-color-purple)]/10 px-2 py-[2px] rounded-full">
               <Clock className="w-3 h-3" />
               {date && new Date(date + 'T00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               {time && ` ${formatTime(time)}`}
@@ -66,13 +66,13 @@ export function EventCard({ event }: { event: TicketmasterEvent }) {
         <div className="flex items-center gap-2 mt-2">
           {event.url && (
             <button onClick={handleTickets}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#a855f7]/12 text-[var(--k-color-purple)] text-[11px] font-bold active:scale-95 transition-transform">
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--k-color-purple)]/12 text-[var(--k-color-purple)] text-[11px] font-bold active:scale-95 transition-transform">
               <ExternalLink className="w-3 h-3" /> Tickets
             </button>
           )}
           {venueLocation?.latitude && (
             <button onClick={handleDirections} aria-label={`Directions to ${venueName}`}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#ff4d6a]/10 text-[var(--k-color-coral)] text-[11px] font-bold active:scale-95 transition-transform">
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--k-color-coral)]/10 text-[var(--k-color-coral)] text-[11px] font-bold active:scale-95 transition-transform">
               <Footprints className="w-3 h-3" /> Walk Here
             </button>
           )}

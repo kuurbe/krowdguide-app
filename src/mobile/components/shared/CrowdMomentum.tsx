@@ -18,9 +18,9 @@ function getTrend(venue: Venue): { trend: Trend; label: string } {
 }
 
 const TREND_STYLES: Record<Trend, { color: string; Icon: typeof TrendingUp }> = {
-  rising: { color: '#ff4d6a', Icon: TrendingUp },
-  falling: { color: '#34d399', Icon: TrendingDown },
-  steady: { color: '#fbbf24', Icon: Minus },
+  rising: { color: 'var(--k-color-coral)', Icon: TrendingUp },
+  falling: { color: 'var(--k-color-green)', Icon: TrendingDown },
+  steady: { color: 'var(--k-color-amber)', Icon: Minus },
 };
 
 export function CrowdMomentum({ venue }: { venue: Venue }) {

@@ -13,6 +13,9 @@ import { SearchResultsCarousel } from './components/map/SearchResultsCarousel';
 import { LayerSelector } from './components/map/LayerSelector';
 import { InstallPrompt } from './components/shared/InstallPrompt';
 import { CommandPalette } from './components/search/CommandPalette';
+import { WalkingModePill } from './components/shared/WalkingModePill';
+import { useWalkingMode } from './hooks/useWalkingMode';
+import { LeaveNowToast } from './components/shared/LeaveNowToast';
 
 // ── Code-split heavy views — only loaded when tab activates ──
 const LiveMap = lazy(() => import('./components/map/LiveMap').then(m => ({ default: m.LiveMap })));
@@ -179,8 +182,15 @@ function AppShell({
   searchOpen: boolean;
   setSearchOpen: (v: boolean) => void;
 }) {
-  const { selectedVenue, closeVenueSheet, selectVenue, venues } = useAppContext();
+  const { selectedVenue, closeVenueSheet, selectVenue, venues, selectedCity, directions } = useAppContext();
   const [searchResults, setSearchResults] = useState<typeof venues>([]);
+  const { isWalking } = useWalkingMode();
+  const [walkingDismissed, setWalkingDismissed] = useState(false);
+
+  // Reset dismissal when user stops walking, so the pill shows again on next walk
+  useEffect(() => {
+    if (!isWalking && walkingDismissed) setWalkingDismissed(false);
+  }, [isWalking, walkingDismissed]);
 
   // Clear search results on tab change
   const handleTabChange = useCallback((tab: string) => {
@@ -293,6 +303,22 @@ function AppShell({
         venues={venues}
         onVenueSelect={(venue) => { selectVenue(venue); setSearchOpen(false); }}
         onSearchResults={(results) => { setSearchResults(results); setSearchOpen(false); }}
+      />
+
+      {/* Voice-first walking mode pill */}
+      <WalkingModePill
+        visible={isWalking && !walkingDismissed && !directions.navigating}
+        cityName={selectedCity.name}
+        onDismiss={() => setWalkingDismissed(true)}
+      />
+
+      {/* Leave Now smart nudge */}
+      <LeaveNowToast
+        venues={venues}
+        onAct={(venue) => {
+          selectVenue(venue);
+        }}
+        enabled={!directions.navigating}
       />
 
       {/* PWA install prompt */}

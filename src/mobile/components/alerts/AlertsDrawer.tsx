@@ -15,9 +15,9 @@ interface AlertConfig {
 }
 
 const INITIAL_ALERTS: AlertConfig[] = [
-  { id: '1', name: 'Central Plaza', threshold: 95, enabled: true, time: 'immediate', color: '#ff4d6a' },
-  { id: '2', name: 'Main Station', threshold: 40, enabled: false, time: '30m', snoozed: 'Alerts paused until Monday 8:00 AM', color: '#fbbf24' },
-  { id: '3', name: 'Oxford District', threshold: 60, enabled: true, time: '1h', color: '#34d399' },
+  { id: '1', name: 'Central Plaza', threshold: 95, enabled: true, time: 'immediate', color: 'var(--k-color-coral)' },
+  { id: '2', name: 'Main Station', threshold: 40, enabled: false, time: '30m', snoozed: 'Alerts paused until Monday 8:00 AM', color: 'var(--k-color-amber)' },
+  { id: '3', name: 'Oxford District', threshold: 60, enabled: true, time: '1h', color: 'var(--k-color-green)' },
 ];
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
@@ -71,7 +71,7 @@ export function AlertsDrawer({
           {/* New Alert button */}
           <button className="w-full flex items-center justify-center gap-2 py-3 rounded-[18px]
                              border border-[var(--k-color-coral)] text-[var(--k-color-coral)] text-[14px] font-bold
-                             ios-press hover:bg-[#ff4d6a]/10 transition-colors mb-6">
+                             ios-press hover:bg-[var(--k-color-coral)]/10 transition-colors mb-6">
             <Plus className="w-4 h-4" />
             New Alert
           </button>

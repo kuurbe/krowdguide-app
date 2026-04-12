@@ -28,15 +28,15 @@ function stepColor(index: number, total: number, destPct: number): string {
   const ratio = index / Math.max(total - 1, 1);
   if (destPct > 70) {
     // High density destination — escalate toward red
-    if (ratio > 0.7) return '#FF4D6A'; // red/coral
+    if (ratio > 0.7) return 'var(--k-color-coral)'; // red/coral
     if (ratio > 0.4) return '#FFB84D'; // amber
-    return '#34D399'; // green
+    return 'var(--k-color-green)'; // green
   }
   if (destPct > 40) {
     if (ratio > 0.8) return '#FFB84D';
-    return '#34D399';
+    return 'var(--k-color-green)';
   }
-  return '#34D399';
+  return 'var(--k-color-green)';
 }
 
 /* ── NavigationOverlay ────────────────────────────────────────────── */
@@ -93,7 +93,7 @@ export function NavigationOverlay() {
     return (
       <div className="fixed inset-0 z-[1200] flex items-center justify-center pointer-events-none">
         <div className="pointer-events-auto animate-arrive p-8 rounded-3xl bg-black/80 backdrop-blur-xl text-center max-w-[280px] shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#ff4d6a]/20 to-[#e8364e]/20 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[var(--k-color-coral)]/20 to-[#e8364e]/20 flex items-center justify-center">
             <MapPin className="w-8 h-8 text-[var(--k-color-coral)]" />
           </div>
           <h3 className="font-extrabold text-[20px] text-white tracking-[-0.02em]">
@@ -104,7 +104,7 @@ export function NavigationOverlay() {
           </p>
           <button
             onClick={clearDirections}
-            className="mt-5 w-full py-3 rounded-2xl bg-gradient-to-r from-[#ff4d6a] to-[#e8364e] text-white font-bold text-[14px] shadow-[0_4px_20px_rgba(255,77,106,0.3)] active:scale-[0.97] transition-transform"
+            className="mt-5 w-full py-3 rounded-2xl bg-gradient-to-r from-[var(--k-color-coral)] to-[#e8364e] text-white font-bold text-[14px] shadow-[0_4px_20px_rgba(255,77,106,0.3)] active:scale-[0.97] transition-transform"
           >
             Done
           </button>
@@ -164,7 +164,7 @@ export function NavigationOverlay() {
 
             {/* Crowd density warning chip */}
             {destPct > 70 && (
-              <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[#ff4d6a]/20 border border-[#ff4d6a]/30 rounded-full px-3 py-1">
+              <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[var(--k-color-coral)]/20 border border-[var(--k-color-coral)]/30 rounded-full px-3 py-1">
                 <Users className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
                 <span className="text-[11px] font-bold text-[var(--k-color-coral)] tracking-wide">
                   HIGH DENSITY AHEAD
