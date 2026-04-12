@@ -157,7 +157,7 @@ export function CityGuideDrawer({
             {timeCtx.greeting} &middot; {selectedCity.name}
           </p>
           <DrawerTitle className="font-syne text-[24px] font-extrabold text-[var(--k-text)] tracking-[-0.03em] leading-[1.15] whitespace-nowrap">
-            Find Your <span className="text-[var(--k-color-coral)]">{timeCtx.featured.charAt(0).toUpperCase() + timeCtx.featured.slice(1)}.</span>
+            Find Your <span className="text-[var(--k-color-coral)]">Crowd.</span>
           </DrawerTitle>
         </div>
 
