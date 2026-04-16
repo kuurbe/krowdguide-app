@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { X, Share2, Footprints, Phone, Globe, Route, Star, MapPin, Clock, Heart } from 'lucide-react';
 import { useAppContext } from '../../context';
+import { haptic } from '../../utils/haptics';
 import { enrichPOI, type EnrichedPOI } from '../../services/poiEnrichmentService';
 import { fetchDirections, formatDuration, formatDistance } from '../../services/directionsService';
 import { getUserLocation } from '../../utils/userLocation';
@@ -103,6 +104,7 @@ export function POIDetailSheet() {
   };
 
   const handleDirections = () => {
+    haptic('medium');
     // POI coordinates are [lng, lat]; startDirections expects { coords: [lat, lng] }
     startDirections(
       { coords: [poi.coordinates[1], poi.coordinates[0]], name: poi.name },

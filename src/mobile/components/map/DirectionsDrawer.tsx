@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAppContext } from '../../context';
+import { haptic } from '../../utils/haptics';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { formatDistance } from '../../services/directionsService';
 import type { TravelMode } from '../../services/directionsService';
@@ -95,7 +96,7 @@ export function DirectionsDrawer() {
                 {MODES.map(({ id, label, Icon }) => (
                   <button
                     key={id}
-                    onClick={() => setDirectionsMode(id)}
+                    onClick={() => { haptic('light'); setDirectionsMode(id); }}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all ios-press text-[12px] font-bold
                       ${directions.mode === id
                         ? 'bg-[var(--k-color-coral)] text-white shadow-md'
@@ -128,7 +129,7 @@ export function DirectionsDrawer() {
           {/* Start Navigation button — always visible */}
           {route && !directions.loading && (
             <button
-              onClick={startNavigation}
+              onClick={() => { haptic('heavy'); startNavigation(); }}
               className="w-full py-3.5 rounded-2xl bg-[var(--k-color-coral)] text-white font-black text-[15px] tracking-wide
                          shadow-[0_4px_20px_rgba(66,133,244,0.35)] active:scale-[0.97] transition-transform flex items-center justify-center gap-2 ios-press mb-3"
             >

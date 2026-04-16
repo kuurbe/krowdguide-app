@@ -4,6 +4,7 @@ import {
   AlertTriangle, HelpCircle, FileText, Instagram, Twitter, Heart, Zap, Trophy, Flame,
 } from 'lucide-react';
 import { useAppContext } from '../../context';
+import { haptic } from '../../utils/haptics';
 import { VenueIcon } from '../../utils/icons';
 import type { Venue } from '../../types';
 
@@ -24,10 +25,23 @@ function SettingRow({ icon, title, subtitle, action, onPress }: {
 }
 
 function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+  // iOS UISwitch — 51×31px pill, 27px thumb, iOS green, spring transition
   return (
-    <button role="switch" aria-checked={on} onClick={(e) => { e.stopPropagation(); onChange(!on); }}
-      className={`relative w-[44px] h-[26px] rounded-full transition-colors duration-200 flex-shrink-0 ${on ? 'bg-emerald-500' : 'bg-[var(--k-surface)]'}`}>
-      <div className={`absolute top-[3px] w-[20px] h-[20px] rounded-full bg-white shadow-md transition-transform duration-200 ${on ? 'left-[21px]' : 'left-[3px]'}`} />
+    <button
+      role="switch"
+      aria-checked={on}
+      onClick={(e) => { e.stopPropagation(); haptic('light'); onChange(!on); }}
+      className={`relative w-[51px] h-[31px] rounded-full flex-shrink-0 outline-none ${on ? 'bg-[var(--k-color-green)]' : 'bg-[var(--k-fill-3)]'}`}
+      style={{ transition: 'background-color 200ms cubic-bezier(0.32, 0.72, 0, 1)' }}
+    >
+      <div
+        className="absolute top-[2px] w-[27px] h-[27px] rounded-full bg-white"
+        style={{
+          transform: on ? 'translateX(22px)' : 'translateX(2px)',
+          transition: 'transform 200ms cubic-bezier(0.32, 0.72, 0, 1)',
+          boxShadow: '0 3px 8px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.08), 0 3px 1px rgba(0,0,0,0.06)',
+        }}
+      />
     </button>
   );
 }
@@ -125,7 +139,7 @@ export function AccountView() {
             <p className="type-overline text-[var(--k-text-m)] mb-2 text-[9px]">ACCOUNT PREFERENCES</p>
             <div className="liquid-glass rounded-[16px] divide-y divide-[var(--k-border)] mb-5">
               <SettingRow icon={<MapPin className="w-4 h-4 text-[var(--k-text-m)]" />} title="Location Access" subtitle="Always on for crowd data" action={<ChevronRight className="w-4 h-4 text-[var(--k-text-f)]" />} onPress={() => {}} />
-              <SettingRow icon={<Palette className="w-4 h-4 text-[var(--k-text-m)]" />} title="Visual Theme" subtitle={`${theme === 'dark' ? 'Obsidian Dark' : 'Light'} (System Default)`} action={<ChevronRight className="w-4 h-4 text-[var(--k-text-f)]" />} onPress={toggleTheme} />
+              <SettingRow icon={<Palette className="w-4 h-4 text-[var(--k-text-m)]" />} title="Visual Theme" subtitle={`${theme === 'dark' ? 'Obsidian Dark' : 'Light'} (System Default)`} action={<ChevronRight className="w-4 h-4 text-[var(--k-text-f)]" />} onPress={() => { haptic('light'); toggleTheme(); }} />
               <SettingRow icon={<Bell className="w-4 h-4 text-[var(--k-text-m)]" />} title="Smart Notifications" subtitle="Predictive venue alerts" action={<Toggle on={smartNotifs} onChange={setSmartNotifs} />} />
             </div>
 

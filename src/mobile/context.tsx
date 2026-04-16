@@ -78,7 +78,13 @@ const AppContext = createContext<AppContextType | null>(null);
 export function AppProvider({ city, children }: { city: City; children: ReactNode }) {
   const [selectedCity, setSelectedCity] = useState<City>(city);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('krowd-theme') as 'dark' | 'light') || 'dark';
+    const stored = localStorage.getItem('krowd-theme') as 'dark' | 'light' | null;
+    if (stored === 'dark' || stored === 'light') return stored;
+    // Honor system color scheme on first load
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    return 'dark';
   });
   const [walkingMode, setWalkingMode] = useState(() => {
     return localStorage.getItem('krowd-walking') === 'true';

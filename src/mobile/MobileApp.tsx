@@ -213,7 +213,7 @@ function AppShell({
       </div>
 
       {/* Main content */}
-      <div className="relative h-full flex flex-col z-[1]">
+      <div className="relative h-full flex flex-col z-[1] safe-left safe-right">
         <MobileHeader onBellClick={() => setAlertsOpen(true)} />
 
         <div className="flex-1 overflow-hidden">

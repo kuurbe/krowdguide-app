@@ -13,6 +13,7 @@ import { getNeighborhoodsForCity, type Neighborhood } from '../../data/neighborh
 import { getFriendsForCity } from '../../data/friends';
 import { getQuestsForCity } from '../../data/quests';
 import { SwipeStack } from '../shared/SwipeStack';
+import { haptic } from '../../utils/haptics';
 import {
   Search, Zap, Calendar, Bookmark,
   Cloud, CloudRain, CloudSnow, CloudLightning, CloudSun, Sun, Wind, CloudFog,
@@ -166,7 +167,7 @@ export function CityGuideDrawer({
             ]).map(t => (
               <button
                 key={t.id}
-                onClick={() => setActiveTab(t.id)}
+                onClick={() => { haptic('light'); setActiveTab(t.id); }}
                 className={`flex-1 py-2 rounded-[12px] text-[13px] font-bold transition-all
                   ${activeTab === t.id ? 'bg-[var(--k-accent)] text-white shadow-md' : 'text-[var(--k-text-m)]'}`}
               >

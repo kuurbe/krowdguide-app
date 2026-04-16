@@ -7,6 +7,7 @@ import { CrowdPill as MiniCrowdPill } from '../shared/CrowdPill';
 import { X, Star, Zap, Heart, Share2, Footprints, Sparkles } from 'lucide-react';
 import { useAppContext } from '../../context';
 import { useFoursquareEnrichment } from '../../hooks/useFoursquareEnrichment';
+import { haptic } from '../../utils/haptics';
 import type { Venue } from '../../types';
 import type { TravelMode } from '../../services/directionsService';
 
@@ -236,6 +237,7 @@ export function VenueDetailSheet({
           {/* Walk button */}
           <button
             onClick={() => {
+              haptic('medium');
               startDirections({ coords: venue.coordinates, name: venue.name }, 'walking' as TravelMode);
               onClose();
             }}
@@ -247,13 +249,13 @@ export function VenueDetailSheet({
 
           {/* Action row — Save / Share */}
           <div className="flex items-center justify-center gap-6 mb-5">
-            <button onClick={() => toggleFavorite(venue.id)} className="flex flex-col items-center gap-1 ios-press">
+            <button onClick={() => { haptic('light'); toggleFavorite(venue.id); }} className="flex flex-col items-center gap-1 ios-press">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${fav ? 'bg-[var(--k-color-coral)]/15' : 'glass-chip'}`}>
                 <Heart className={`w-[18px] h-[18px] ${fav ? 'text-[var(--k-color-coral)] fill-[var(--k-color-coral)]' : 'text-[var(--k-text-m)]'}`} />
               </div>
               <span className="text-[10px] font-semibold text-[var(--k-text-m)]">{fav ? 'Saved' : 'Save'}</span>
             </button>
-            <button onClick={handleShare} className="flex flex-col items-center gap-1 ios-press">
+            <button onClick={() => { haptic('light'); handleShare(); }} className="flex flex-col items-center gap-1 ios-press">
               <div className="w-10 h-10 rounded-full glass-chip flex items-center justify-center">
                 <Share2 className="w-[18px] h-[18px] text-[var(--k-text-m)]" />
               </div>
