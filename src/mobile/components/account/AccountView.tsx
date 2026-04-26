@@ -81,7 +81,7 @@ export function AccountView() {
         {/* Prediction Streaks widget */}
         <div className="liquid-glass rounded-[16px] p-4 mb-5 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
-               style={{ background: 'radial-gradient(circle, rgba(255,77,106,0.18), transparent 70%)' }} />
+               style={{ background: 'radial-gradient(circle, rgba(104,219,174,0.22), transparent 70%)' }} />
           <div className="relative">
             <div className="flex items-center gap-1.5 mb-3">
               <Zap className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />

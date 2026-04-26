@@ -61,13 +61,13 @@ export function WalkingModePill({ visible, cityName, onDismiss }: Props) {
 
         {/* Main pill */}
         <div className="liquid-glass rounded-full flex items-center gap-2 pl-2 pr-3 py-2 shadow-lg"
-             style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 0 24px rgba(255,77,106,0.4)' }}>
+             style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 0 24px rgba(104,219,174,0.4)' }}>
           <button
             onClick={handleTap}
             className={`w-11 h-11 rounded-full flex items-center justify-center ios-press ${isListening ? 'animate-pulse' : ''}`}
             style={{
-              background: isListening ? 'var(--k-color-coral)' : 'var(--k-color-coral)',
-              boxShadow: isListening ? '0 0 24px rgba(255,77,106,0.8)' : '0 4px 12px rgba(255,77,106,0.4)',
+              background: 'var(--k-color-mint)',
+              boxShadow: isListening ? '0 0 24px rgba(104,219,174,0.8)' : '0 4px 12px rgba(104,219,174,0.4)',
             }}
             aria-label={isListening ? 'Stop listening' : 'Ask KrowdGuide'}
           >

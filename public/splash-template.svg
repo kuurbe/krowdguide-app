@@ -1,28 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1290" height="2796" viewBox="0 0 1290 2796">
   <defs>
     <radialGradient id="bg" cx="0.5" cy="0.45" r="0.7">
-      <stop offset="0%" stop-color="#2a1020"/>
-      <stop offset="50%" stop-color="#120810"/>
+      <stop offset="0%" stop-color="#0d2820"/>
+      <stop offset="50%" stop-color="#08140f"/>
       <stop offset="100%" stop-color="#05050a"/>
     </radialGradient>
     <radialGradient id="glow" cx="0.5" cy="0.42" r="0.35">
-      <stop offset="0%" stop-color="#ff4d6a" stop-opacity="0.35"/>
-      <stop offset="60%" stop-color="#ff4d6a" stop-opacity="0.08"/>
-      <stop offset="100%" stop-color="#ff4d6a" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#68dbae" stop-opacity="0.32"/>
+      <stop offset="60%" stop-color="#68dbae" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#68dbae" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="coral" cx="0.38" cy="0.32" r="0.9">
-      <stop offset="0%" stop-color="#ff809a"/>
-      <stop offset="55%" stop-color="#ff4d6a"/>
-      <stop offset="100%" stop-color="#c72a47"/>
+    <radialGradient id="mint" cx="0.38" cy="0.32" r="0.9">
+      <stop offset="0%" stop-color="#a8edd4"/>
+      <stop offset="55%" stop-color="#68dbae"/>
+      <stop offset="100%" stop-color="#39b287"/>
     </radialGradient>
   </defs>
   <rect width="1290" height="2796" fill="url(#bg)"/>
   <rect width="1290" height="2796" fill="url(#glow)"/>
   <g transform="translate(645, 1220)">
-    <circle r="180" fill="url(#coral)"/>
+    <circle r="180" fill="url(#mint)"/>
     <circle r="180" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
     <text x="0" y="50" text-anchor="middle" fill="white" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="148" letter-spacing="-2">KG</text>
   </g>
   <text x="645" y="1580" text-anchor="middle" fill="white" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="800" font-size="64" letter-spacing="14">KROWDGUIDE</text>
-  <text x="645" y="1640" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="500" font-size="28" letter-spacing="6">KNOW BEFORE YOU GO</text>
+  <text x="645" y="1640" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="500" font-size="28" letter-spacing="6">PUBLIC SPACE INTELLIGENCE</text>
 </svg>

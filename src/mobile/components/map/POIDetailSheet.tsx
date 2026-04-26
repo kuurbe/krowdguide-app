@@ -168,8 +168,8 @@ export function POIDetailSheet() {
               onClick={handleDirections}
               className="flex-1 flex flex-col items-center gap-1 py-3 rounded-2xl text-white ios-press"
               style={{
-                background: 'var(--k-color-coral)',
-                boxShadow: '0 4px 20px rgba(255,77,106,0.3)',
+                background: 'var(--k-color-mint)',
+                boxShadow: '0 4px 20px rgba(104,219,174,0.35)',
               }}
             >
               <Footprints className="w-5 h-5" />

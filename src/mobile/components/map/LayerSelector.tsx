@@ -74,7 +74,7 @@ export function LayerSelector() {
         className={`w-[44px] h-[44px] rounded-full flex items-center justify-center
                    transition-all ios-press relative
                    ${expanded
-                     ? 'bg-[var(--k-accent)] text-white shadow-[0_4px_20px_rgba(255,77,106,0.3)]'
+                     ? 'bg-[var(--k-accent)] text-white shadow-[0_4px_20px_rgba(104,219,174,0.35)]'
                      : 'liquid-glass text-[var(--k-text-m)] shadow-[var(--k-shadow-md)]'
                    }`}
         aria-label={expanded ? 'Close layers' : 'Map layers & legend'}

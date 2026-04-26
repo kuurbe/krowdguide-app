@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
-    <radialGradient id="coral" cx="0.4" cy="0.35" r="0.9">
-      <stop offset="0%" stop-color="#ff809a"/>
-      <stop offset="55%" stop-color="#ff4d6a"/>
-      <stop offset="100%" stop-color="#b8253f"/>
+    <radialGradient id="mint" cx="0.4" cy="0.35" r="0.9">
+      <stop offset="0%" stop-color="#a8edd4"/>
+      <stop offset="55%" stop-color="#68dbae"/>
+      <stop offset="100%" stop-color="#2a8c66"/>
     </radialGradient>
   </defs>
-  <rect width="512" height="512" fill="url(#coral)"/>
+  <rect width="512" height="512" fill="url(#mint)"/>
   <text x="256" y="302" text-anchor="middle" fill="white" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="150" letter-spacing="-2">KG</text>
 </svg>

@@ -40,10 +40,10 @@ const WEATHER_ICONS: Record<WeatherIcon, typeof Cloud> = {
 /** Adaptive theming based on time of day */
 function getTimeContext() {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 11) return { label: 'Morning', greeting: 'Good morning', accent: 'var(--k-color-orange)', featured: 'dining' as CategoryId };
-  if (hour >= 11 && hour < 17) return { label: 'Afternoon', greeting: 'Good afternoon', accent: 'var(--k-color-amber)', featured: 'parks' as CategoryId };
-  if (hour >= 17 && hour < 21) return { label: 'Evening', greeting: 'Good evening', accent: 'var(--k-color-coral)', featured: 'dining' as CategoryId };
-  return { label: 'Night', greeting: 'Good night', accent: 'var(--k-color-purple)', featured: 'nightlife' as CategoryId };
+  if (hour >= 5 && hour < 11) return { label: 'Morning', greeting: 'Good morning', accent: 'var(--k-color-mint)', featured: 'dining' as CategoryId };
+  if (hour >= 11 && hour < 17) return { label: 'Afternoon', greeting: 'Good afternoon', accent: 'var(--k-color-mint)', featured: 'parks' as CategoryId };
+  if (hour >= 17 && hour < 21) return { label: 'Evening', greeting: 'Good evening', accent: 'var(--k-color-mint)', featured: 'dining' as CategoryId };
+  return { label: 'Night', greeting: 'Good night', accent: 'var(--k-color-mint)', featured: 'nightlife' as CategoryId };
 }
 
 export function CityGuideDrawer({
@@ -154,7 +154,7 @@ export function CityGuideDrawer({
             {timeCtx.greeting} &middot; {selectedCity.name}
           </p>
           <DrawerTitle className="font-syne text-[24px] font-extrabold text-[var(--k-text)] tracking-[-0.03em] leading-[1.15] whitespace-nowrap">
-            Find Your <span className="text-[var(--k-color-coral)]">Crowd.</span>
+            Know Before <span className="text-[var(--k-color-mint)]">You Go.</span>
           </DrawerTitle>
         </div>
 

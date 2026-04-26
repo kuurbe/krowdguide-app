@@ -132,9 +132,9 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
               <button
                 onClick={() => handleSubmit(input)}
                 disabled={!input.trim()}
-                className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#ff4d6a] to-[#ff8c42] flex items-center justify-center
+                className="w-11 h-11 rounded-xl bg-[var(--k-color-mint)] flex items-center justify-center
                            disabled:opacity-20 transition-all flex-shrink-0
-                           shadow-[0_0_20px_rgba(255,77,106,0.2)]"
+                           shadow-[0_0_20px_rgba(104,219,174,0.25)]"
               >
                 <Send className="w-4 h-4 text-white" />
               </button>
@@ -147,8 +147,8 @@ export function IntentScreen({ city, onComplete }: { city: City; onComplete: (in
               className={cn(
                 'w-20 h-20 mx-auto rounded-full flex items-center justify-center transition-all',
                 isListening
-                  ? 'bg-[#ff4d6a] animate-pulse shadow-[0_0_40px_rgba(255,77,106,0.4)]'
-                  : 'bg-gradient-to-br from-[#a855f7] to-[#ff4d6a] hover:scale-105 shadow-[0_0_30px_rgba(168,85,247,0.25)]'
+                  ? 'bg-[#68dbae] animate-pulse shadow-[0_0_40px_rgba(104,219,174,0.45)]'
+                  : 'bg-gradient-to-br from-[#22d3ee] to-[#68dbae] hover:scale-105 shadow-[0_0_30px_rgba(104,219,174,0.30)]'
               )}
             >
               {isListening ? (

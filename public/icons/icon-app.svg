@@ -4,14 +4,14 @@
       <stop offset="0%" stop-color="#141420"/>
       <stop offset="100%" stop-color="#05050a"/>
     </linearGradient>
-    <radialGradient id="coral" cx="0.35" cy="0.30" r="0.85">
-      <stop offset="0%" stop-color="#ff809a"/>
-      <stop offset="55%" stop-color="#ff4d6a"/>
-      <stop offset="100%" stop-color="#c72a47"/>
+    <radialGradient id="mint" cx="0.35" cy="0.30" r="0.85">
+      <stop offset="0%" stop-color="#a8edd4"/>
+      <stop offset="55%" stop-color="#68dbae"/>
+      <stop offset="100%" stop-color="#39b287"/>
     </radialGradient>
     <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%" stop-color="#ff4d6a" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#ff4d6a" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#68dbae" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#68dbae" stop-opacity="0"/>
     </radialGradient>
     <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="12" in="SourceAlpha"/>
@@ -22,7 +22,7 @@
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
   <circle cx="256" cy="256" r="220" fill="url(#glow)"/>
-  <circle cx="256" cy="256" r="172" fill="url(#coral)" filter="url(#shadow)"/>
+  <circle cx="256" cy="256" r="172" fill="url(#mint)" filter="url(#shadow)"/>
   <circle cx="256" cy="256" r="172" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
   <text x="256" y="300" text-anchor="middle" fill="white" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="148" letter-spacing="-2">KG</text>
 </svg>

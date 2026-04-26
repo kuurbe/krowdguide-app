@@ -40,15 +40,16 @@
   --k-fill-2: rgba(120, 120, 128, 0.18);
   --k-fill-3: rgba(120, 120, 128, 0.12);
 
-  /* Accents — coral/red nightlife signature */
-  --k-accent: #ff4d6a;
-  --k-accent-bg: rgba(255, 77, 106, 0.14);
-  --k-accent-pressed: #e63e58;
+  /* Accents — mint/teal "Public Space Intelligence" signature */
+  --k-accent: #68dbae;
+  --k-accent-bg: rgba(104, 219, 174, 0.14);
+  --k-accent-pressed: #4fc796;
   --k-accent-2: #22d3ee;
   --k-accent-3: #a855f7;
 
   /* Semantic color tokens */
-  --k-color-coral: #ff4d6a;
+  --k-color-mint: #68dbae;
+  --k-color-coral: #ff4d6a;   /* reserved for PEAK/ALERT only */
   --k-color-green: #34d399;
   --k-color-amber: #fbbf24;
   --k-color-cyan: #22d3ee;
@@ -66,14 +67,16 @@
   --k-glass-refraction: 0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.2);
 
   /* Mesh gradient system — ambient lighting */
-  --k-mesh-1: radial-gradient(ellipse at 20% 20%, rgba(255, 77, 106, 0.08), transparent 60%);
+  --k-mesh-1: radial-gradient(ellipse at 20% 20%, rgba(104, 219, 174, 0.08), transparent 60%);
   --k-mesh-2: radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.06), transparent 60%);
   --k-mesh-3: radial-gradient(ellipse at 50% 50%, rgba(34, 211, 238, 0.04), transparent 50%);
 
   /* Neon glow tokens — controlled micro-glow accents */
+  --k-glow-mint: 0 0 12px rgba(104, 219, 174, 0.25);
   --k-glow-coral: 0 0 12px rgba(255, 77, 106, 0.25);
   --k-glow-cyan: 0 0 12px rgba(34, 211, 238, 0.20);
   --k-glow-purple: 0 0 12px rgba(168, 85, 247, 0.20);
+  --k-neon-mint: drop-shadow(0 0 8px rgba(104, 219, 174, 0.30));
   --k-neon-coral: drop-shadow(0 0 8px rgba(255, 77, 106, 0.3));
   --k-neon-cyan: drop-shadow(0 0 8px rgba(34, 211, 238, 0.25));
 
@@ -123,15 +126,16 @@
   --k-fill-2: rgba(120, 120, 128, 0.14);
   --k-fill-3: rgba(120, 120, 128, 0.10);
 
-  /* Accents */
-  --k-accent: #e63e58;
-  --k-accent-bg: rgba(230, 62, 88, 0.10);
-  --k-accent-pressed: #cc2e48;
+  /* Accents — mint primary, light tuned */
+  --k-accent: #2ea882;
+  --k-accent-bg: rgba(46, 168, 130, 0.10);
+  --k-accent-pressed: #25886a;
   --k-accent-2: #0891b2;
   --k-accent-3: #9333ea;
 
   /* Semantic color tokens */
-  --k-color-coral: #e63e58;
+  --k-color-mint: #2ea882;
+  --k-color-coral: #e63e58;   /* reserved for PEAK/ALERT only */
   --k-color-green: #059669;
   --k-color-amber: #d97706;
   --k-color-cyan: #0891b2;
@@ -149,7 +153,7 @@
   --k-glass-refraction: 0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
 
   /* Mesh gradients — light mode (subtler) */
-  --k-mesh-1: radial-gradient(ellipse at 20% 20%, rgba(230, 62, 88, 0.04), transparent 60%);
+  --k-mesh-1: radial-gradient(ellipse at 20% 20%, rgba(46, 168, 130, 0.05), transparent 60%);
   --k-mesh-2: radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.03), transparent 60%);
   --k-mesh-3: radial-gradient(ellipse at 50% 50%, rgba(8, 145, 178, 0.03), transparent 50%);
 

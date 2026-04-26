@@ -156,9 +156,9 @@ export function SplashScreen({ onComplete }: { onComplete: (coords?: { lat: numb
           {/* Logo mark */}
           <div
             ref={logoRef}
-            className="w-28 h-28 rounded-[32px] bg-gradient-to-br from-[#ff4d6a]/20 via-[#a855f7]/15 to-[#22d3ee]/10
+            className="w-28 h-28 rounded-[32px] bg-gradient-to-br from-[#68dbae]/25 via-[#22d3ee]/12 to-[#a855f7]/08
                         flex items-center justify-center mb-10 border border-white/[0.06]
-                        shadow-[0_0_60px_rgba(255,77,106,0.15)]"
+                        shadow-[0_0_60px_rgba(104,219,174,0.18)]"
           >
             <span className="font-syne font-extrabold text-3xl tracking-tight gradient-text-warm">KG</span>
           </div>

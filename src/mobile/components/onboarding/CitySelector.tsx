@@ -114,7 +114,7 @@ export function CitySelector({ onSelect }: { onSelect: (city: City) => void }) {
                 className={cn(
                   'w-full p-5 rounded-2xl border transition-all text-left group ios-press',
                   isSelected
-                    ? 'liquid-glass border-[#ff4d6a]/30 shadow-[0_0_30px_rgba(255,77,106,0.1)]'
+                    ? 'liquid-glass border-[#68dbae]/35 shadow-[0_0_30px_rgba(104,219,174,0.14)]'
                     : 'liquid-glass border-transparent hover:border-white/[0.1]'
                 )}
               >

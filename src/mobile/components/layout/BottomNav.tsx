@@ -85,11 +85,11 @@ export function BottomNav({
                    pointer-events-none z-0"
         style={{
           opacity: 0,
-          background: 'radial-gradient(ellipse at 50% 30%, rgba(255,77,106,0.18), rgba(255,255,255,0.08) 70%)',
+          background: 'radial-gradient(ellipse at 50% 30%, rgba(104,219,174,0.20), rgba(255,255,255,0.08) 70%)',
           backdropFilter: 'blur(24px) saturate(200%)',
           WebkitBackdropFilter: 'blur(24px) saturate(200%)',
           border: '1px solid rgba(255,255,255,0.12)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), 0 0 20px rgba(255,77,106,0.06), 0 4px 12px rgba(0,0,0,0.15)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), 0 0 20px rgba(104,219,174,0.08), 0 4px 12px rgba(0,0,0,0.15)',
         }}
       />
 
@@ -119,7 +119,7 @@ export function BottomNav({
             />
             <span className={cn(
               'text-[8px] font-bold tracking-[0.03em] transition-all duration-200',
-              isActive ? 'text-[var(--k-color-coral)] opacity-100' : 'text-[var(--k-text-f)] opacity-70'
+              isActive ? 'text-[var(--k-color-mint)] opacity-100' : 'text-[var(--k-text-f)] opacity-70'
             )}>
               {tab.label}
             </span>

@@ -42,27 +42,25 @@ function PriceLevel({ level }: { level?: number }) {
   );
 }
 
-/** Short venue brief — one-liner about the spot. */
+/** Operational read — current state + actionable signal. */
 function generateSummary(venue: Venue): string {
-  const t = venue.type.toLowerCase();
+  // Crowd state — operational language, not "vibe"
+  const state =
+    venue.pct >= 80 ? `Currently at peak occupancy (${venue.pct}%)` :
+    venue.pct >= 55 ? `Currently busy (${venue.pct}% capacity)` :
+    venue.pct >= 30 ? `Currently moderate (${venue.pct}% capacity)` :
+                      `Currently low traffic (${venue.pct}% capacity)`;
 
-  // Style tag
-  let style = 'Neighborhood favorite';
-  if (/bar|lounge|club|brewery/.test(t)) style = 'Lively atmosphere';
-  else if (/cafe|coffee|bakery/.test(t)) style = 'Cozy and low-key';
-  else if (/restaurant|bistro|grill|steak/.test(t)) style = 'Great for dinner';
-  else if (/park|garden/.test(t)) style = 'Open-air hangout';
-
-  // Actionable detail
-  const detail = venue.wait
-    ? `Typical wait is ${venue.wait}.`
+  // Actionable signal
+  const signal = venue.wait
+    ? `Average wait reported: ${venue.wait}.`
     : venue.hasHH && venue.hhDeal
-      ? `Happy hour: ${venue.hhDeal}.`
+      ? `Active offer: ${venue.hhDeal}.`
       : (venue.rating ?? 0) >= 4.5
-        ? `Highly rated by locals.`
-        : 'Walk-in friendly.';
+        ? `Sustained high rating from local visitors.`
+        : `No queue reported — walk-in capacity available.`;
 
-  return `${style}. ${detail}`;
+  return `${state}. ${signal}`;
 }
 
 export function VenueDetailSheet({
@@ -196,7 +194,7 @@ export function VenueDetailSheet({
           <div className="mb-5">
             <div className="flex items-center gap-1.5 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-[var(--k-color-coral)]" />
-              <span className="type-overline text-[var(--k-text-m)]">ABOUT</span>
+              <span className="type-overline text-[var(--k-text-m)]">CURRENT STATE</span>
             </div>
             <div className="liquid-glass rounded-[14px] p-3.5">
               <p className="text-[13px] text-[var(--k-text)] leading-relaxed">
@@ -242,7 +240,7 @@ export function VenueDetailSheet({
               onClose();
             }}
             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[18px] text-white text-[14px] font-bold ios-press mb-4"
-            style={{ background: 'var(--k-color-coral)', boxShadow: '0 4px 20px rgba(255,77,106,0.3)' }}
+            style={{ background: 'var(--k-color-mint)', boxShadow: '0 4px 20px rgba(104,219,174,0.35)' }}
           >
             <Footprints className="w-4 h-4" /> Walk Here
           </button>

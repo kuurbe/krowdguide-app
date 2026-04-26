@@ -104,7 +104,7 @@ export function NavigationOverlay() {
           </p>
           <button
             onClick={clearDirections}
-            className="mt-5 w-full py-3 rounded-2xl bg-gradient-to-r from-[var(--k-color-coral)] to-[#e8364e] text-white font-bold text-[14px] shadow-[0_4px_20px_rgba(255,77,106,0.3)] active:scale-[0.97] transition-transform"
+            className="mt-5 w-full py-3 rounded-2xl bg-[var(--k-color-mint)] text-white font-bold text-[14px] shadow-[0_4px_20px_rgba(104,219,174,0.35)] active:scale-[0.97] transition-transform"
           >
             Done
           </button>
@@ -232,7 +232,7 @@ export function NavigationOverlay() {
                 {/* End Navigation button */}
                 <button
                   onClick={endNavigation}
-                  className="w-full py-3 rounded-full bg-[var(--k-color-coral)] text-white font-bold text-[15px] active:scale-[0.97] transition-transform shadow-[0_4px_20px_rgba(255,77,106,0.3)]"
+                  className="w-full py-3 rounded-full bg-[var(--k-color-mint)] text-white font-bold text-[15px] active:scale-[0.97] transition-transform shadow-[0_4px_20px_rgba(104,219,174,0.35)]"
                 >
                   End Navigation
                 </button>
